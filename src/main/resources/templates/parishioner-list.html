@@ -23,10 +23,92 @@
         <table class="table table-dark table-hover m-0">
             <thead>
             <tr>
-                <th>ID</th><th>First</th><th>Last</th><th>Baptismal</th><th>Saint</th>
-                <th>Status</th><th>Marital</th><th>Birthday</th><th>Baptism</th><th>Chrismation</th>
-                <th>Marriage</th><th>Name Day</th><th>Household</th><th>Spouse ID</th><th>G.Father</th>
-                <th>G.Mother</th><th>Sponsor</th><th>Action</th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='id', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        ID <span th:if="${sortField == 'id'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='firstName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        First <span th:if="${sortField == 'firstName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Last <span th:if="${sortField == 'lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='baptismalName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Baptismal <span th:if="${sortField == 'baptismalName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='patronSaint', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Saint <span th:if="${sortField == 'patronSaint'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='status', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Status <span th:if="${sortField == 'status'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='maritalStatus', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Marital <span th:if="${sortField == 'maritalStatus'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='birthday', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Birthday <span th:if="${sortField == 'birthday'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='baptismDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Baptism <span th:if="${sortField == 'baptismDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='chrismationDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Chrismation <span th:if="${sortField == 'chrismationDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='marriageDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Marriage <span th:if="${sortField == 'marriageDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='nameDay', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Name Day <span th:if="${sortField == 'nameDay'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='household.familyName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Household <span th:if="${sortField == 'household.familyName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='spouse.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Spouse <span th:if="${sortField == 'spouse.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='godfather.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        G.Father <span th:if="${sortField == 'godfather.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='godmother.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        G.Mother <span th:if="${sortField == 'godmother.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='weddingSponsor.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
+                        Sponsor <span th:if="${sortField == 'weddingSponsor.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>

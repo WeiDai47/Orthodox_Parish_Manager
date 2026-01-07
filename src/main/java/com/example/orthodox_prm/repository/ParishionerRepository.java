@@ -1,6 +1,7 @@
 package com.example.orthodox_prm.repository;
 
 import com.example.orthodox_prm.model.Parishioner;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
@@ -22,11 +23,10 @@ public interface ParishionerRepository extends JpaRepository<Parishioner, Long> 
     // Search by baptismal name
     List<Parishioner> findByBaptismalNameIgnoreCase(String baptismalName);
 
+
+    List<Parishioner> findByWeddingSponsor_Id(Long id);
     // Removed 'static' and the method body to allow Spring Data to implement it
     List<Parishioner> findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrBaptismalNameContainingIgnoreCaseOrHousehold_FamilyNameContainingIgnoreCase(
-            String lastName,
-            String firstName,
-            String baptismalName,
-            String householdName
+            String lastName, String firstName, String baptismalName, String householdName, org.springframework.data.domain.Sort sort
     );
 }

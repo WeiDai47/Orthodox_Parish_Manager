@@ -6,6 +6,7 @@ import com.example.orthodox_prm.model.Household;
 import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.repository.HouseholdRepository;
 import com.example.orthodox_prm.repository.ParishionerRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,17 +29,33 @@ public class ParishionerController {
 
     // Handles: GET /parishioners
     @GetMapping
-    public String list(@RequestParam(required = false) String search, Model model) {
+    public String list(@RequestParam(required = false) String search,
+                       @RequestParam(defaultValue = "lastName") String sortField,
+                       @RequestParam(defaultValue = "asc") String sortDir,
+                       Model model) {
+
+        // Determine sort direction
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+
         List<Parishioner> list;
         if (search != null && !search.isEmpty()) {
+            // Note: Spring Data findBy methods can accept a Sort parameter as the last argument
             list = parishionerRepository.findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrBaptismalNameContainingIgnoreCaseOrHousehold_FamilyNameContainingIgnoreCase(
-                    search, search, search, search
+                    search, search, search, search, sort
             );
         } else {
-            list = parishionerRepository.findAll();
+            list = parishionerRepository.findAll(sort);
         }
+
         model.addAttribute("parishioners", list);
         model.addAttribute("searchQuery", search);
+
+        // Pass sorting info back to the view for the links
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+
         return "parishioner-list";
     }
 
@@ -69,24 +86,44 @@ public class ParishionerController {
                          @RequestParam(required = false) Long godmotherId,
                          @RequestParam(required = false) Long weddingSponsorId) {
 
-        // 1. BI-DIRECTIONAL SPOUSE LOGIC
-        // If an internal member is selected as a spouse
-        if (spouseId != null) {
+        // 1. Fetch the existing state from DB to identify the current spouse before changes
+        Parishioner existingRecord = parishionerRepository.findById(parishioner.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + parishioner.getId()));
+
+        // 2. HANDLE DIVORCE LOGIC
+        if (parishioner.getMaritalStatus() == MaritalStatus.DIVORCED) {
+            Parishioner formerSpouse = existingRecord.getSpouse();
+
+            if (formerSpouse != null) {
+                // Sever the link on the former spouse's side
+                formerSpouse.setSpouse(null);
+                formerSpouse.setMaritalStatus(MaritalStatus.DIVORCED);
+                parishionerRepository.save(formerSpouse);
+            }
+
+            // Sever the link on the current parishioner's side
+            parishioner.setSpouse(null);
+            parishioner.setManualSpouseName(null);
+            // We keep the marriageDate and weddingSponsor for historical/canonical records
+            // unless you specifically wish to nullify them here.
+        }
+
+        // 3. BI-DIRECTIONAL MARRIAGE LOGIC
+        else if (spouseId != null) {
             Parishioner internalSpouse = parishionerRepository.findById(spouseId).orElse(null);
             if (internalSpouse != null) {
                 parishioner.setSpouse(internalSpouse);
-                parishioner.setManualSpouseName(null); // Clear manual if member is picked
+                parishioner.setManualSpouseName(null);
                 parishioner.setMaritalStatus(MaritalStatus.MARRIED);
 
-                // MIRROR: Update the spouse's record to point back to this person
+                // Mirror: Update the spouse's record to point back
                 internalSpouse.setSpouse(parishioner);
                 internalSpouse.setMaritalStatus(MaritalStatus.MARRIED);
                 parishionerRepository.save(internalSpouse);
             }
         }
 
-        // 2. GODCHILDREN / SPIRITUAL PARENT LOGIC
-        // The relationship is "owned" by the child, but we clear manual entries if a member is picked
+        // 4. SPIRITUAL PARENT LOGIC
         if (godfatherId != null) {
             parishioner.setGodfather(parishionerRepository.findById(godfatherId).orElse(null));
             parishioner.setManualGodfatherName(null);
@@ -97,13 +134,48 @@ public class ParishionerController {
             parishioner.setManualGodmotherName(null);
         }
 
-        // 3. WEDDING SPONSOR (KOUMBARO) LOGIC
+        // 5. WEDDING SPONSOR (KOUMBARO) LOGIC
         if (weddingSponsorId != null) {
             parishioner.setWeddingSponsor(parishionerRepository.findById(weddingSponsorId).orElse(null));
             parishioner.setManualSponsorName(null);
         }
 
         parishionerRepository.save(parishioner);
+        return "redirect:/parishioners";
+    }
+    @GetMapping("/delete/{id}")
+    public String deleteParishioner(@PathVariable Long id) {
+        Parishioner p = parishionerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
+
+        // 1. Handle Spouse Link
+        if (p.getSpouse() != null) {
+            Parishioner spouse = p.getSpouse();
+            spouse.setSpouse(null);
+            // Optional: Change spouse status to SINGLE or WIDOWED depending on your parish policy
+            parishionerRepository.save(spouse);
+        }
+
+        // 2. Handle Spiritual Children (as Godfather)
+        List<Parishioner> godchildrenAsFather = parishionerRepository.findByGodfather_Id(id);
+        for (Parishioner child : godchildrenAsFather) {
+            child.setGodfather(null);
+            parishionerRepository.save(child);
+        }
+
+        // 3. Handle Spiritual Children (as Godmother)
+        List<Parishioner> godchildrenAsMother = parishionerRepository.findByGodmother_Id(id);
+        for (Parishioner child : godchildrenAsMother) {
+            child.setGodmother(null);
+            parishionerRepository.save(child);
+        }
+
+        // 4. Handle Wedding Sponsor Link (Koumbaros)
+        // You may need to add findByWeddingSponsor_Id to your repository first
+
+        // 5. Finally, delete the record
+        parishionerRepository.delete(p);
+
         return "redirect:/parishioners";
     }
 

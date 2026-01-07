@@ -152,10 +152,21 @@
                         </ul>
                     </div>
                 </div>
-            </div> <div class="mt-5 border-top pt-3 d-flex justify-content-end">
-            <a href="/parishioners" class="btn btn-outline-secondary me-2">Cancel</a>
-            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">Save Changes</button>
+            </div> <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+            <button type="submit" class="btn btn-warning px-5 fw-bold">Save Changes</button>
+
+            <a th:href="@{/parishioners/delete/{id}(id=${parishioner.id})}"
+               class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this parishioner? This will also remove spiritual kinship links to others.')">
+                Delete Parishioner
+            </a>
         </div>
+
+            <div class="text-center mt-4">
+                <a href="/parishioners" class="text-muted text-decoration-none small">
+                    <i class="bi bi-arrow-left"></i> Cancel and Return to List
+                </a>
+            </div>
         </form>
     </div>
 </div>

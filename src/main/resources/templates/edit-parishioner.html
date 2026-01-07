@@ -146,18 +146,16 @@
                                    th:text="${child.firstName + ' ' + child.lastName}"
                                    class="text-decoration-none text-light ms-2"></a>
                                 <small class="text-muted">(as Godmother)</small>
-                            </li>
                             <li th:if="${#lists.isEmpty(parishioner.childrenAsGodfather) && #lists.isEmpty(parishioner.childrenAsGodmother)}">
                                 <small class="text-muted">No internal godchildren on record.</small>
                             </li>
                         </ul>
                     </div>
                 </div>
-
-            <div class="mt-5 border-top pt-3 d-flex justify-content-end">
-                <a href="/parishioners" class="btn btn-outline-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-warning px-5 fw-bold shadow">Save Changes</button>
-            </div>
+            </div> <div class="mt-5 border-top pt-3 d-flex justify-content-end">
+            <a href="/parishioners" class="btn btn-outline-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-warning px-5 fw-bold shadow">Save Changes</button>
+        </div>
         </form>
     </div>
 </div>

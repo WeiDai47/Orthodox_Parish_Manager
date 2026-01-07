@@ -23,6 +23,8 @@ public interface ParishionerRepository extends JpaRepository<Parishioner, Long> 
     // Search by baptismal name
     List<Parishioner> findByBaptismalNameIgnoreCase(String baptismalName);
 
+    // Inside ParishionerRepository.java
+    List<Parishioner> findByHousehold_Id(Long householdId);
 
     List<Parishioner> findByWeddingSponsor_Id(Long id);
     // Removed 'static' and the method body to allow Spring Data to implement it

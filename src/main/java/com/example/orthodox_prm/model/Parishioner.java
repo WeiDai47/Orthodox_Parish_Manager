@@ -1,0 +1,140 @@
+package com.example.orthodox_prm.model;
+
+import com.example.orthodox_prm.Enum.MaritalStatus;
+import com.example.orthodox_prm.Enum.MembershipStatus;
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Parishioner {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "parishioner_id")
+    private Long id;
+
+    // Legal Name
+    private String firstName;
+    private String lastName;
+
+    // Orthodox Specifics
+    private String baptismalName;// e.g., "Spyridon"
+    private String patronSaint;   // e.g., "St. Spyridon the Wonderworker"
+    private LocalDate nameDay;    // Dec 12th
+
+    @Enumerated(EnumType.STRING)
+    private MembershipStatus status;
+
+    //marriage status
+    @Enumerated(EnumType.STRING)
+    private MaritalStatus maritalStatus;
+
+    @OneToOne
+    @JoinColumn(name = "spouse_id")
+    @ToString.Exclude // Pro-tip: Prevents infinite loops in Lombok's toString()
+    private Parishioner spouse;
+
+    private LocalDate marriageDate; // The Crowning Date
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wedding_sponsor_id")
+    private Parishioner weddingSponsor; // The Koumbaros / Koumbara
+
+    private LocalDate birthday;
+    private LocalDate baptismDate;
+    private LocalDate chrismationDate;
+
+    // Relationships
+    @ManyToOne
+    @JoinColumn(name = "household_id")
+    private Household household;
+
+
+    // --- SPIRITUAL PARENTS ---
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "godfather_id")
+    private Parishioner godfather;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "godmother_id")
+    private Parishioner godmother;
+
+    // --- SPIRITUAL CHILDREN ---
+
+    @OneToMany(mappedBy = "godfather")
+    private List<Parishioner> childrenAsGodfather = new ArrayList<>();
+
+    @OneToMany(mappedBy = "godmother")
+    private List<Parishioner> childrenAsGodmother = new ArrayList<>();
+
+    //manual spouse and godparents
+    // Add these strings to your Parishioner class
+    private String manualSpouseName;
+    private String manualGodfatherName;
+    private String manualGodmotherName;
+
+    // --- HELPER METHODS ---
+
+    public void marry(Parishioner spouse) {
+        this.spouse = spouse;
+        this.maritalStatus = MaritalStatus.MARRIED;
+        // Symmetry: Ensure the other person is also marked as married to this person
+        if (spouse.getSpouse() != this) {
+            spouse.marry(this);
+        }
+    }
+
+    public void assignGodfather(Parishioner sponsor) {
+        this.godfather = sponsor;
+        sponsor.getChildrenAsGodfather().add(this);
+    }
+
+    public void assignGodmother(Parishioner sponsor) {
+        this.godmother = sponsor;
+        sponsor.getChildrenAsGodmother().add(this);
+    }
+
+    // Add these to Parishioner.java (around the other methods)
+
+    public void setHouseholdId(Long id) {
+        if (id != null) {
+            this.household = new Household();
+            this.household.setId(id);
+        }
+    }
+
+    public void setSpouseId(Long id) {
+        if (id != null) {
+            this.spouse = new Parishioner();
+            this.spouse.setId(id);
+        }
+    }
+
+    public void setGodfatherId(Long id) {
+        if (id != null) {
+            this.godfather = new Parishioner();
+            this.godfather.setId(id);
+        }
+    }
+
+    public void setGodmotherId(Long id) {
+        if (id != null) {
+            this.godmother = new Parishioner();
+            this.godmother.setId(id);
+        }
+    }
+
+    public void setWeddingSponsorId(Long id) {
+        if (id != null) {
+            this.weddingSponsor = new Parishioner();
+            this.weddingSponsor.setId(id);
+        }
+    }
+
+}

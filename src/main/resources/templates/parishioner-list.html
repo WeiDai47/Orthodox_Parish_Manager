@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Master Parishioner Directory</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        .table-responsive { overflow-x: auto; }
+        .text-gold { color: #d4af37; }
+        th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #d4af37; border-bottom: 2px solid #444; }
+        td { font-size: 0.85rem; vertical-align: middle; }
+        .table-hover tbody tr:hover { background-color: #1a1a1a; }
+    </style>
+</head>
+<body class="p-4">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-gold m-0">Master Parishioner Management</h2>
+        <a href="/dashboard" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
+    </div>
+
+    <div class="table-responsive shadow border border-secondary rounded">
+        <table class="table table-dark table-hover m-0">
+            <thead>
+            <tr>
+                <th>ID</th><th>First</th><th>Last</th><th>Baptismal</th><th>Saint</th>
+                <th>Status</th><th>Marital</th><th>Birthday</th><th>Baptism</th><th>Chrismation</th>
+                <th>Marriage</th><th>Name Day</th><th>HHD</th><th>Spouse</th><th>G.Father</th>
+                <th>G.Mother</th><th>Sponsor</th><th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${parishioners}">
+                <td th:text="${p.id}"></td>
+                <td th:text="${p.firstName}"></td>
+                <td th:text="${p.lastName}"></td>
+                <td th:text="${p.baptismalName}" class="text-gold"></td>
+                <td th:text="${p.patronSaint}"></td>
+                <td th:text="${p.status}"></td>
+                <td th:text="${p.maritalStatus}"></td>
+                <td th:text="${p.birthday}"></td>
+                <td th:text="${p.baptismDate}"></td>
+                <td th:text="${p.chrismationDate}"></td>
+                <td th:text="${p.marriageDate}"></td>
+                <td th:text="${p.nameDay}"></td>
+                <td th:text="${p.household != null ? p.household.id : ''}"></td>
+                <td th:text="${p.spouse != null ? p.spouse.id : ''}"></td>
+                <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName : p.manualGodfatherName}"></td>
+
+                <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName : p.manualGodmotherName}"></td>
+                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.id : ''}"></td>
+                <td>
+                    <a th:href="@{/parishioners/edit/{id}(id=${p.id})}"
+                       class="btn btn-sm btn-outline-warning">Edit</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -18,6 +18,15 @@
         <h2 class="text-gold m-0">Master Parishioner Management</h2>
         <a href="/dashboard" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
     </div>
+    <div class="mb-3">
+        <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary text-gold">
+            <i class="bi bi-search">🔍</i>
+        </span>
+            <input type="text" id="tableSearch" class="form-control bg-dark text-white border-secondary"
+                   placeholder="Instant filter by name, saint, or status...">
+        </div>
+    </div>
 
     <div class="table-responsive shadow border border-secondary rounded">
         <table class="table table-dark table-hover m-0">
@@ -145,5 +154,17 @@
         </table>
     </div>
 </div>
+<script>
+    document.getElementById('tableSearch').addEventListener('keyup', function() {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('table tbody tr');
+
+        rows.forEach(row => {
+            // This joins all text in the row so you can search by ANY column
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(value) ? '' : 'none';
+        });
+    });
+</script>
 </body>
 </html>

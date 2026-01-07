@@ -18,6 +18,9 @@ public class Parishioner {
     @Column(name = "parishioner_id")
     private Long id;
 
+
+    // Inside Parishioner.java
+    private LocalDate deathDate;
     // Legal Name
     private String firstName;
     private String lastName;

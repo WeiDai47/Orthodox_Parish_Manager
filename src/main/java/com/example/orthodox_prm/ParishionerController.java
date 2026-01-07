@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -65,15 +66,23 @@ public class ParishionerController {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
 
-        List<Parishioner> allParishioners = parishionerRepository.findAll();
-        // ADD THIS LINE
-        List<Household> allHouseholds = householdRepository.findAll();
-
+        // Basic Data for Dropdowns
         model.addAttribute("parishioner", p);
-        model.addAttribute("allParishioners", allParishioners);
-        model.addAttribute("allHouseholds", allHouseholds); // AND THIS LINE
+        model.addAttribute("allParishioners", parishionerRepository.findAll());
+        model.addAttribute("allHouseholds", householdRepository.findAll());
         model.addAttribute("allStatuses", MembershipStatus.values());
         model.addAttribute("allMaritalStatuses", MaritalStatus.values());
+
+        // NEW: Logic for the Household Sidebar
+        if (p.getHousehold() != null) {
+            // Fetch everyone in this household
+            List<Parishioner> family = parishionerRepository.findByHousehold_Id(p.getHousehold().getId());
+
+            // Remove the person currently being edited from the sidebar list
+            family.removeIf(member -> member.getId().equals(id));
+
+            model.addAttribute("family", family);
+        }
 
         return "edit-parishioner";
     }
@@ -177,6 +186,29 @@ public class ParishionerController {
         parishionerRepository.delete(p);
 
         return "redirect:/parishioners";
+    }
+
+    @PostMapping("/departed/{id}")
+    public String markAsDeparted(@PathVariable Long id) {
+        Parishioner p = parishionerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid ID"));
+
+        // 1. Set Status and Date
+        p.setStatus(MembershipStatus.DEPARTED);
+        p.setDeathDate(LocalDate.now());
+
+        // 2. Handle Spouse (Widowhood)
+        if (p.getSpouse() != null) {
+            Parishioner spouse = p.getSpouse();
+            spouse.setMaritalStatus(MaritalStatus.WIDOWED);
+            spouse.setSpouse(null); // Clear the link but keep the status
+            parishionerRepository.save(spouse);
+
+            p.setSpouse(null); // Clear the link on the departed side too
+        }
+
+        parishionerRepository.save(p);
+        return "redirect:/parishioners/edit/" + id;
     }
 
 }

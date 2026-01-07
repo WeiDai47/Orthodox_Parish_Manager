@@ -50,6 +50,16 @@ public class DataInitializer implements CommandLineRunner {
         p2.assignGodfather(p1); // Spiritual Kinship!
         parishionerRepo.save(p2);
 
+        Parishioner p3 = new Parishioner();
+        p3.setFirstName("Sophia");
+        p3.setLastName("Papadopoulos");
+        p3.setBaptismalName("placeholder");
+        p3.setPatronSaint("St. Spyridon");
+        p3.setNameDay(LocalDate.now()); // Setting this to TODAY for the dashboard test
+        p3.setStatus(MembershipStatus.MEMBER);
+        p3.setHousehold(h);
+        parishionerRepo.save(p3);
+
         System.out.println("--- Sample Parish Data Loaded ---");
     }
 }

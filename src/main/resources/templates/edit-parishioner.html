@@ -9,8 +9,9 @@
         .card { background-color: #1a1a1a; border: 1px solid #d4af37; border-radius: 10px; }
         .form-control, .form-select, .ts-control { background-color: #252525 !important; border: 1px solid #444 !important; color: white !important; }
         .text-gold { color: #d4af37; }
-        label { font-size: 0.8rem; color: #aaa; margin-top: 10px; text-transform: uppercase; }
-        .or-divider { font-size: 0.7rem; color: #d4af37; text-align: center; margin: 10px 0; font-weight: bold; }
+        label { font-size: 0.75rem; color: #aaa; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .or-divider { font-size: 0.65rem; color: #d4af37; text-align: center; margin: 8px 0; font-weight: bold; }
+        .section-header { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
         .ts-dropdown { background: #252525 !important; color: white !important; }
         .ts-dropdown .active { background: #d4af37 !important; color: black !important; }
     </style>
@@ -18,82 +19,190 @@
 <body class="p-5">
 <div class="container" style="max-width: 1100px;">
     <div class="card p-4 shadow-lg">
-        <h2 class="text-gold mb-4 border-bottom pb-2">
-            Edit: <span th:text="${parishioner.firstName + ' ' + parishioner.lastName}"></span>
-        </h2>
+        <h2 class="text-gold mb-4">Edit Record: <span th:text="${parishioner.firstName + ' ' + parishioner.lastName}"></span></h2>
 
-        <form th:action="@{/parishioners/update}" th:object="${parishioner}" method="post">
+        <form th:action="@{/parishioners/update}" th:object="${parishioner}" method="post" id="editForm">
             <input type="hidden" th:field="*{id}">
 
             <div class="row g-3">
-                <div class="col-md-3"><label>First Name</label><input type="text" th:field="*{firstName}" class="form-control" required></div>
-                <div class="col-md-3"><label>Last Name</label><input type="text" th:field="*{lastName}" class="form-control" required></div>
-                <div class="col-md-3"><label>Baptismal Name</label><input type="text" th:field="*{baptismalName}" class="form-control"></div>
-                <div class="col-md-3"><label>Status</label>
+                <div class="col-12"><div class="section-header">Legal Identity & Contact</div></div>
+                <div class="col-md-3">
+                    <label>First Name</label>
+                    <input type="text" th:field="*{firstName}" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label>Last Name</label>
+                    <input type="text" th:field="*{lastName}" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label>Birthday</label>
+                    <input type="date" name="birthday" th:value="${parishioner.birthday}" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label>Membership Status</label>
                     <select th:field="*{status}" class="form-select">
                         <option th:each="s : ${allStatuses}" th:value="${s}" th:text="${s}"></option>
                     </select>
                 </div>
 
-                <div class="col-md-12"><hr class="border-secondary"></div>
+                <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
+                <div class="col-md-3">
+                    <label>Baptismal Name</label>
+                    <input type="text" th:field="*{baptismalName}" class="form-control" placeholder="e.g. Spyridon">
+                </div>
+                <div class="col-md-6">
+                    <label>Patron Saint</label>
+                    <input type="text" th:field="*{patronSaint}" class="form-control" placeholder="e.g. St. Spyridon">
+                </div>
+                <div class="col-md-3">
+                    <label>Name Day</label>
+                    <input type="date" name="nameDay" th:value="${parishioner.nameDay}" class="form-control">
+                </div>
 
-                <div class="col-md-6 border-end border-secondary pe-4">
-                    <label class="text-gold">Spouse (In Parish)</label>
-                    <select name="spouseId" class="search-select">
+                <div class="col-12"><div class="section-header">Spouse & Marriage</div></div>
+                <div class="col-md-4">
+                    <label>Marital Status</label>
+                    <select th:field="*{maritalStatus}" id="maritalStatus" class="form-select">
+                        <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>Spouse (Member)</label>
+                    <select name="spouseId" class="search-select link-member" data-target="manualSpouse">
                         <option value="">-- Select Member --</option>
-                        <option th:each="p : ${allParishioners}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName}"
+                        <option th:each="p : ${allParishioners}"
+                                th:if="${p.id != parishioner.id}"
+                                th:value="${p.id}"
+                                th:text="${p.firstName + ' ' + p.lastName}"
                                 th:selected="${parishioner.spouse != null && p.id == parishioner.spouse.id}"></option>
                     </select>
-                    <div class="or-divider">—— OR ENTER MANUALLY (IF NOT IN PARISH) ——</div>
-                    <input type="text" th:field="*{manualSpouseName}" class="form-control" placeholder="Full Name of External Spouse">
+                    <div class="or-divider text-gold">OR MANUAL ENTRY</div>
+                    <input type="text" th:field="*{manualSpouseName}" id="manualSpouse" class="form-control manual-input" placeholder="External Spouse Name">
+                </div>
+                <div class="col-md-4">
+                    <label>Wedding Sponsor (Koumbaro)</label>
+                    <select name="weddingSponsorId" class="search-select link-member" data-target="manualSponsor">
+                        <option value="">-- Select Member --</option>
+                        <option th:each="p : ${allParishioners}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName}"
+                                th:selected="${parishioner.weddingSponsor != null && p.id == parishioner.weddingSponsor.id}"></option>
+                    </select>
+                    <div class="or-divider">OR MANUAL</div>
+                    <input type="text" th:field="*{manualSponsorName}" id="manualSponsor" class="form-control manual-input" placeholder="External Sponsor Name">
                 </div>
 
-                <div class="col-md-6 ps-4">
-                    <label class="text-gold">Household / Family Unit</label>
+                <div class="col-12"><div class="section-header">Household & Family Unit</div></div>
+                <div class="col-md-6">
+                    <label class="text-gold">Assign to Existing Household</label>
                     <select name="householdId" class="search-select">
                         <option value="">-- No Household --</option>
-                        <option th:each="h : ${allHouseholds}" th:value="${h.id}" th:text="${h.familyName}"
-                                th:selected="${parishioner.household != null && h.id == parishioner.household.id}"></option>
+                        <option th:each="h : ${allHouseholds}"
+                                th:value="${h.id}"
+                                th:text="${h.familyName + ' Household'}"
+                                th:selected="${parishioner.household != null && h.id == parishioner.household.id}">
+                        </option>
                     </select>
                 </div>
+                <div class="col-md-6">
+                    <label class="text-gold">OR Create New Household</label>
+                    <input type="text" name="newHouseholdName" class="form-control" placeholder="Enter Family Name">
+                </div>
 
-                <div class="col-md-12"><hr class="border-secondary"></div>
-
-                <div class="col-md-6 border-end border-secondary pe-4">
-                    <label class="text-gold">Godfather (In Parish)</label>
-                    <select name="godfatherId" class="search-select">
+                <div class="col-12"><div class="section-header">Spiritual Parents (Godparents)</div></div>
+                <div class="col-md-6">
+                    <label>Godfather</label>
+                    <select name="godfatherId" class="search-select link-member" data-target="manualGF">
                         <option value="">-- Select Member --</option>
                         <option th:each="p : ${allParishioners}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName}"
                                 th:selected="${parishioner.godfather != null && p.id == parishioner.godfather.id}"></option>
                     </select>
-                    <div class="or-divider">—— OR ENTER MANUALLY (IF NOT IN PARISH) ——</div>
-                    <input type="text" th:field="*{manualGodfatherName}" class="form-control" placeholder="Full Name of External Godfather">
+                    <div class="or-divider">OR MANUAL</div>
+                    <input type="text" th:field="*{manualGodfatherName}" id="manualGF" class="form-control manual-input" placeholder="External Godfather Name">
                 </div>
-
-                <div class="col-md-6 ps-4">
-                    <label class="text-gold">Godmother (In Parish)</label>
-                    <select name="godmotherId" class="search-select">
+                <div class="col-md-6">
+                    <label>Godmother</label>
+                    <select name="godmotherId" class="search-select link-member" data-target="manualGM">
                         <option value="">-- Select Member --</option>
                         <option th:each="p : ${allParishioners}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName}"
                                 th:selected="${parishioner.godmother != null && p.id == parishioner.godmother.id}"></option>
                     </select>
-                    <div class="or-divider">—— OR ENTER MANUALLY (IF NOT IN PARISH) ——</div>
-                    <input type="text" th:field="*{manualGodmotherName}" class="form-control" placeholder="Full Name of External Godmother">
+                    <div class="or-divider">OR MANUAL</div>
+                    <input type="text" th:field="*{manualGodmotherName}" id="manualGM" class="form-control manual-input" placeholder="External Godmother Name">
                 </div>
-            </div>
+                <div class="col-12"><div class="section-header">Spiritual Offspring (Godchildren)</div></div>
+                <div class="col-12">
+                    <div class="p-3 bg-dark border border-secondary rounded">
+                        <label class="mb-2">Members sponsored by this person:</label>
+                        <ul class="list-unstyled mb-0">
+                            <li th:each="child : ${parishioner.childrenAsGodfather}" class="mb-1">
+                                <span class="text-gold">●</span>
+                                <a th:href="@{/parishioners/edit/{id}(id=${child.id})}"
+                                   th:text="${child.firstName + ' ' + child.lastName}"
+                                   class="text-decoration-none text-light ms-2"></a>
+                                <small class="text-muted">(as Godfather)</small>
+                            </li>
+                            <li th:each="child : ${parishioner.childrenAsGodmother}" class="mb-1">
+                                <span class="text-gold">●</span>
+                                <a th:href="@{/parishioners/edit/{id}(id=${child.id})}"
+                                   th:text="${child.firstName + ' ' + child.lastName}"
+                                   class="text-decoration-none text-light ms-2"></a>
+                                <small class="text-muted">(as Godmother)</small>
+                            </li>
+                            <li th:if="${#lists.isEmpty(parishioner.childrenAsGodfather) && #lists.isEmpty(parishioner.childrenAsGodmother)}">
+                                <small class="text-muted">No internal godchildren on record.</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
             <div class="mt-5 border-top pt-3 d-flex justify-content-end">
                 <a href="/parishioners" class="btn btn-outline-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-warning px-5 fw-bold shadow">Save Parishioner Record</button>
+                <button type="submit" class="btn btn-warning px-5 fw-bold shadow">Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
+    // 1. Initialize TomSelect for all searchable dropdowns
     document.querySelectorAll('.search-select').forEach((el) => {
-        new TomSelect(el, { create: false, sortField: {field: "text", direction: "asc"} });
+        new TomSelect(el, {
+            create: false,
+            sortField: {field: "text", direction: "asc"},
+            placeholder: "Search names..."
+        });
+    });
+
+    // 2. Hybrid Logic: If a Member is selected, clear the Manual Input (and vice-versa)
+    const maritalDropdown = document.getElementById('maritalStatus');
+
+    document.querySelectorAll('.link-member').forEach(select => {
+        select.addEventListener('change', function() {
+            if (this.value) {
+                // Find the manual input paired with this select and clear it
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).value = '';
+
+                // If it's a spouse, set status to MARRIED
+                if (targetId === 'manualSpouse') maritalDropdown.value = "MARRIED";
+            }
+        });
+    });
+
+    document.querySelectorAll('.manual-input').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== "") {
+                // If user types manually, clear the Member Selection
+                const selectEl = this.parentElement.querySelector('select');
+                if (selectEl && selectEl.tomselect) {
+                    selectEl.tomselect.clear();
+                }
+                // If it's a spouse, set status to MARRIED
+                if (this.id === 'manualSpouse') maritalDropdown.value = "MARRIED";
+            }
+        });
     });
 </script>
 </body>

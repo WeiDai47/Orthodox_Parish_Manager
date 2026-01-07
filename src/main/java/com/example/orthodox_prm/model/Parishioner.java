@@ -23,14 +23,14 @@ public class Parishioner {
     private String lastName;
 
     // Orthodox Specifics
-    private String baptismalName;// e.g., "Spyridon"
+    private String baptismalName; // e.g., "Spyridon"
     private String patronSaint;   // e.g., "St. Spyridon the Wonderworker"
     private LocalDate nameDay;    // Dec 12th
 
     @Enumerated(EnumType.STRING)
     private MembershipStatus status;
 
-    //marriage status
+    // Marriage status
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
 
@@ -41,7 +41,8 @@ public class Parishioner {
 
     private LocalDate marriageDate; // The Crowning Date
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Changed to EAGER to prevent 500 errors on the edit page
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wedding_sponsor_id")
     private Parishioner weddingSponsor; // The Koumbaros / Koumbara
 
@@ -54,30 +55,31 @@ public class Parishioner {
     @JoinColumn(name = "household_id")
     private Household household;
 
-
     // --- SPIRITUAL PARENTS ---
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Changed to EAGER so these load immediately for the edit form
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "godfather_id")
     private Parishioner godfather;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "godmother_id")
     private Parishioner godmother;
 
-    // --- SPIRITUAL CHILDREN ---
+    // --- SPIRITUAL CHILDREN (Godchildren) ---
 
-    @OneToMany(mappedBy = "godfather")
+    // Changed to EAGER so the godchildren list displays on the sponsor's edit page
+    @OneToMany(mappedBy = "godfather", fetch = FetchType.EAGER)
     private List<Parishioner> childrenAsGodfather = new ArrayList<>();
 
-    @OneToMany(mappedBy = "godmother")
+    @OneToMany(mappedBy = "godmother", fetch = FetchType.EAGER)
     private List<Parishioner> childrenAsGodmother = new ArrayList<>();
 
-    //manual spouse and godparents
-    // Add these strings to your Parishioner class
+    // Manual Overrides for non-members
     private String manualSpouseName;
     private String manualGodfatherName;
     private String manualGodmotherName;
+    private String manualSponsorName; // For the Wedding Sponsor (Koumbaros)
 
     // --- HELPER METHODS ---
 
@@ -100,8 +102,7 @@ public class Parishioner {
         sponsor.getChildrenAsGodmother().add(this);
     }
 
-    // Add these to Parishioner.java (around the other methods)
-
+    // Setter helpers for ID-based updates from the controller
     public void setHouseholdId(Long id) {
         if (id != null) {
             this.household = new Household();
@@ -136,5 +137,4 @@ public class Parishioner {
             this.weddingSponsor.setId(id);
         }
     }
-
 }

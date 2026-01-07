@@ -25,7 +25,7 @@
             <tr>
                 <th>ID</th><th>First</th><th>Last</th><th>Baptismal</th><th>Saint</th>
                 <th>Status</th><th>Marital</th><th>Birthday</th><th>Baptism</th><th>Chrismation</th>
-                <th>Marriage</th><th>Name Day</th><th>HHD</th><th>Spouse</th><th>G.Father</th>
+                <th>Marriage</th><th>Name Day</th><th>Household</th><th>Spouse ID</th><th>G.Father</th>
                 <th>G.Mother</th><th>Sponsor</th><th>Action</th>
             </tr>
             </thead>
@@ -43,12 +43,17 @@
                 <td th:text="${p.chrismationDate}"></td>
                 <td th:text="${p.marriageDate}"></td>
                 <td th:text="${p.nameDay}"></td>
-                <td th:text="${p.household != null ? p.household.id : ''}"></td>
-                <td th:text="${p.spouse != null ? p.spouse.id : ''}"></td>
+
+                <td th:text="${p.household != null ? p.household.familyName : 'N/A'}"></td>
+
+                <td th:text="${p.spouse != null ? p.spouse.firstName + ' ' + p.spouse.lastName : p.manualSpouseName}"></td>
+
                 <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName : p.manualGodfatherName}"></td>
 
                 <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName : p.manualGodmotherName}"></td>
-                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.id : ''}"></td>
+
+                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName : p.manualSponsorName}"></td>
+
                 <td>
                     <a th:href="@{/parishioners/edit/{id}(id=${p.id})}"
                        class="btn btn-sm btn-outline-warning">Edit</a>

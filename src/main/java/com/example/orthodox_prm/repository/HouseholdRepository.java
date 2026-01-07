@@ -13,4 +13,7 @@ public interface HouseholdRepository extends JpaRepository<Household, Long> {
 
     // Find households in a specific city
     List<Household> findByCityIgnoreCase(String city);
+
+
+
 }

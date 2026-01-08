@@ -10,6 +10,7 @@
         .card-header { background-color: #252525; color: #d4af37; font-weight: 600; text-transform: uppercase; }
         .stat-number { color: #d4af37; font-size: 3rem; font-weight: 700; }
         .text-gold { color: #d4af37; }
+        .text-info { color: #0dcaf0 !important; } /* Ensure visibility on dark background */
         .nav-link { color: #d4af37 !important; font-weight: bold; }
         .nav-link:hover { color: #fff !important; }
     </style>
@@ -32,14 +33,24 @@
         <p class="text-muted text-uppercase small">Central Management System</p>
     </div>
 
-    <div class="row g-4 mb-5">
+    <div class="row g-4">
+
         <div class="col-lg-4">
             <div class="card h-100">
-                <div class="card-header">Statistics</div>
-                <div class="card-body text-center">
-                    <p class="text-muted mb-0">Total Souls</p>
+                <div class="card-header">Parish at a Glance</div>
+                <div class="card-body">
+                    <p class="text-muted mb-0 small">Total Souls</p>
                     <div class="stat-number" th:text="${stats.totalMembers}">0</div>
-                    <p class="text-muted mb-0 mt-3">Registered Households</p>
+
+                    <hr class="border-secondary">
+
+                    <p class="text-muted mb-0 small">Visitors</p>
+                    <div class="h3 text-gold" th:text="${stats.visitorCount}">0</div>
+
+                    <p class="text-muted mb-0 small">Catechumens</p>
+                    <div class="h3 text-info" th:text="${stats.catechumenCount}">0</div>
+
+                    <p class="text-muted mb-0 mt-3 small">Registered Households</p>
                     <div class="stat-number" th:text="${stats.totalHouseholds}">0</div>
                 </div>
             </div>
@@ -47,13 +58,17 @@
 
         <div class="col-lg-8">
             <div class="card h-100">
-                <div class="card-header">Daily Commemorations</div>
+                <div class="card-header">Daily Commemorations (Name Days)</div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center" th:each="p : ${stats.todaysNameDays}">
+                        <li class="list-group-item bg-transparent text-muted" th:if="${#lists.isEmpty(stats.todaysNameDays)}">
+                            No name days recorded for today.
+                        </li>
+                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3" th:each="p : ${stats.todaysNameDays}">
                             <div>
-                                <span class="fw-bold text-gold" th:text="${p.baptismalName}">Name</span>
-                                <small class="text-muted ms-2" th:text="${p.firstName} + ' ' + ${p.lastName}"></small>
+                                <span class="fw-bold text-gold h5 mb-0" th:text="${p.baptismalName}">Name</span>
+                                <br>
+                                <small class="text-muted" th:text="${p.firstName} + ' ' + ${p.lastName}"></small>
                             </div>
                             <span class="badge border border-warning text-warning" th:text="${p.patronSaint}">Saint</span>
                         </li>
@@ -61,11 +76,9 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="text-center">
-        <small class="text-muted">System Time: <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM dd, yyyy')}"></span></small>
-    </div>
+    </div> <div class="text-center mt-5">
+    <small class="text-muted">System Time: <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM dd, yyyy')}"></span></small>
+</div>
 </div>
 </body>
 </html>

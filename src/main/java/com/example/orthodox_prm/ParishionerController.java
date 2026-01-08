@@ -29,34 +29,29 @@ public class ParishionerController {
     }
 
     // Handles: GET /parishioners
+    // Inside ParishionerController.java
+
     @GetMapping
-    public String list(@RequestParam(required = false) String search,
+    public String list(@RequestParam(required = false) String searchName,
+                       @RequestParam(required = false) String searchBaptismal,
                        @RequestParam(defaultValue = "lastName") String sortField,
                        @RequestParam(defaultValue = "asc") String sortDir,
                        Model model) {
 
-        // Determine sort direction
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
-                Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        List<Parishioner> parishioners;
 
-        List<Parishioner> list;
-        if (search != null && !search.isEmpty()) {
-            // Note: Spring Data findBy methods can accept a Sort parameter as the last argument
-            list = parishionerRepository.findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrBaptismalNameContainingIgnoreCaseOrHousehold_FamilyNameContainingIgnoreCase(
-                    search, search, search, search, sort
-            );
+        // Logic to decide which search to run
+        if (searchName != null && !searchName.isEmpty()) {
+            parishioners = parishionerRepository.searchBySecularName(searchName, sort);
+        } else if (searchBaptismal != null && !searchBaptismal.isEmpty()) {
+            parishioners = parishionerRepository.searchByBaptismalName(searchBaptismal, sort);
         } else {
-            list = parishionerRepository.findAll(sort);
+            parishioners = parishionerRepository.findAll(sort);
         }
 
-        model.addAttribute("parishioners", list);
-        model.addAttribute("searchQuery", search);
-
-        // Pass sorting info back to the view for the links
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("parishioners", parishioners);
         model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
-
         return "parishioner-list";
     }
 
@@ -210,5 +205,6 @@ public class ParishionerController {
         parishionerRepository.save(p);
         return "redirect:/parishioners/edit/" + id;
     }
+
 
 }

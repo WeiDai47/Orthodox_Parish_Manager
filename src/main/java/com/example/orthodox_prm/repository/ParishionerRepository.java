@@ -1,14 +1,23 @@
 package com.example.orthodox_prm.repository;
 
+import com.example.orthodox_prm.Enum.MaritalStatus;
+import com.example.orthodox_prm.Enum.MembershipStatus;
 import com.example.orthodox_prm.model.Parishioner;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ParishionerRepository extends JpaRepository<Parishioner, Long> {
+public interface ParishionerRepository extends JpaRepository<Parishioner, Long>,
+        JpaSpecificationExecutor<Parishioner> {
+
+    // Add this line
+    long countByStatus(MembershipStatus status);
 
     // Find all parishioners who share a specific Patron Saint
     List<Parishioner> findByPatronSaint(String patronSaint);
@@ -31,4 +40,23 @@ public interface ParishionerRepository extends JpaRepository<Parishioner, Long> 
     List<Parishioner> findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrBaptismalNameContainingIgnoreCaseOrHousehold_FamilyNameContainingIgnoreCase(
             String lastName, String firstName, String baptismalName, String householdName, org.springframework.data.domain.Sort sort
     );
+    // Add to ParishionerRepository.java
+    List<Parishioner> findByStatusAndMaritalStatusAndBaptismDateBetween(
+            MembershipStatus status,
+            MaritalStatus maritalStatus,
+            LocalDate start,
+            LocalDate end
+    );
+    // 1. Searches First + Last name specifically
+    @Query("SELECT p FROM Parishioner p WHERE " +
+            "LOWER(CONCAT(p.firstName, ' ', p.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Parishioner> searchBySecularName(@Param("name") String name, Sort sort);
+
+    // 2. Searches Baptismal name specifically
+    @Query("SELECT p FROM Parishioner p WHERE " +
+            "LOWER(p.baptismalName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Parishioner> searchByBaptismalName(@Param("name") String name, Sort sort);
+
+
+
 }

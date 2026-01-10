@@ -3,6 +3,7 @@ package com.example.orthodox_prm;
 import com.example.orthodox_prm.Enum.SacramentType;
 import com.example.orthodox_prm.model.*;
 import com.example.orthodox_prm.repository.*;
+import com.example.orthodox_prm.service.GoogleCalendarService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -17,14 +18,17 @@ public class ViewParishionerController {
     private final ParishionerRepository parishionerRepository;
     private final NoteRepository noteRepository;
     private final ScheduledEventRepository scheduledEventRepository;
+    private final GoogleCalendarService googleCalendarService;
 
     public ViewParishionerController(
             ParishionerRepository parishionerRepository,
             NoteRepository noteRepository,
-            ScheduledEventRepository scheduledEventRepository) {
+            ScheduledEventRepository scheduledEventRepository,
+            GoogleCalendarService googleCalendarService) {
         this.parishionerRepository = parishionerRepository;
         this.noteRepository = noteRepository;
         this.scheduledEventRepository = scheduledEventRepository;
+        this.googleCalendarService = googleCalendarService;
     }
 
     @GetMapping("/{id}")
@@ -54,6 +58,7 @@ public class ViewParishionerController {
         model.addAttribute("sacraments", sacraments);
         model.addAttribute("regularEvents", regularEvents);
         model.addAttribute("allSacramentTypes", SacramentType.values());
+        model.addAttribute("isGoogleAuthenticated", googleCalendarService.isGoogleOAuth2Authenticated());
 
         return "view-parishioner";
     }
@@ -134,6 +139,14 @@ public class ViewParishionerController {
         }
 
         scheduledEventRepository.save(event);
+
+        // Sync to Google Calendar if user is authenticated with Google OAuth2
+        googleCalendarService.createCalendarEvent(
+                eventTitle.trim(),
+                eventDate,
+                eventDescription != null ? eventDescription.trim() : null,
+                sacramentType
+        );
 
         return "redirect:/parishioners/view/" + id;
     }

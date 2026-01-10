@@ -273,6 +273,14 @@
                     </button>
                 </div>
             </div>
+            <small class="text-muted d-block mt-2">
+                <span th:if="${isGoogleAuthenticated}">
+                    <i class="bi bi-check-circle-fill" style="color: var(--accent-gold);"></i> Events will sync to your Google Calendar
+                </span>
+                <span th:unless="${isGoogleAuthenticated}">
+                    <i class="bi bi-info-circle"></i> <a href="/login" class="text-decoration-none">Sign in with Google</a> to enable Google Calendar sync
+                </span>
+            </small>
         </form>
 
         <!-- Display Sacraments -->
@@ -331,6 +339,14 @@
                 </div>
             </div>
             <input type="hidden" name="sacramentType" value="NONE">
+            <small class="text-muted d-block mt-2">
+                <span th:if="${isGoogleAuthenticated}">
+                    <i class="bi bi-check-circle-fill" style="color: var(--accent-gold);"></i> Events will sync to your Google Calendar
+                </span>
+                <span th:unless="${isGoogleAuthenticated}">
+                    <i class="bi bi-info-circle"></i> <a href="/login" class="text-decoration-none">Sign in with Google</a> to enable Google Calendar sync
+                </span>
+            </small>
         </form>
 
         <!-- Display Regular Events -->

@@ -78,6 +78,12 @@ public class Parishioner {
     @OneToMany(mappedBy = "godmother", fetch = FetchType.EAGER)
     private List<Parishioner> childrenAsGodmother = new ArrayList<>();
 
+    @OneToMany(mappedBy = "parishioner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Note> notes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "parishioner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ScheduledEvent> scheduledEvents = new ArrayList<>();
+
     // Manual Overrides for non-members
     private String manualSpouseName;
     private String manualGodfatherName;

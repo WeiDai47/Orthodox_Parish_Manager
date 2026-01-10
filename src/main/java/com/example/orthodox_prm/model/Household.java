@@ -2,6 +2,7 @@ package com.example.orthodox_prm.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,4 +23,7 @@ public class Household {
 
     @OneToMany(mappedBy = "household")
     private List<Parishioner> members;
+
+    @OneToMany(mappedBy = "household", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Note> notes = new ArrayList<>();
 }

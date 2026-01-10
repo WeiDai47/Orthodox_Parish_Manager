@@ -1,0 +1,210 @@
+/* ===== CSS VARIABLES FOR THEMING ===== */
+:root {
+  /* Dark theme (default) */
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #252525;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaa;
+  --text-muted: #666;
+  --accent-gold: #d4af37;
+  --border-color: #444;
+  --border-secondary: #333;
+  --card-border: #d4af37;
+  --stat-color: #d4af37;
+  --info-color: #0dcaf0;
+}
+
+/* Light theme (warm beige/cream) */
+[data-theme="light"] {
+  --bg-primary: #f5f5dc;
+  --bg-secondary: #faf8f3;
+  --bg-tertiary: #f0ebe0;
+  --text-primary: #3e2723;
+  --text-secondary: #6d4c41;
+  --text-muted: #8d6e63;
+  --accent-gold: #b8860b;
+  --border-color: #d7ccc8;
+  --border-secondary: #bcaaa4;
+  --card-border: #b8860b;
+  --stat-color: #b8860b;
+  --info-color: #0288d1;
+}
+
+/* ===== GLOBAL THEME STYLES ===== */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.card-header {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-gold);
+}
+
+.text-gold {
+  color: var(--accent-gold);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.form-control, .form-select, .ts-control {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+label {
+  color: var(--text-secondary);
+}
+
+.table {
+  color: var(--text-primary);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.nav-link {
+  color: var(--accent-gold) !important;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--text-primary) !important;
+}
+
+.btn-warning {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: #000;
+}
+
+.btn-outline-warning {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.btn-outline-warning:hover {
+  background-color: var(--accent-gold);
+  color: #000;
+}
+
+.border-secondary {
+  border-color: var(--border-secondary) !important;
+}
+
+.section-header {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--accent-gold);
+}
+
+.stat-number {
+  color: var(--stat-color);
+}
+
+.text-info {
+  color: var(--info-color) !important;
+}
+
+/* Tom-Select dropdown theming */
+.ts-dropdown {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ts-dropdown .active {
+  background: var(--accent-gold) !important;
+  color: #000 !important;
+}
+
+/* Badge styling */
+.badge {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Alert styling */
+.alert {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Child row styling */
+.child-row {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* OR Divider styling */
+.or-divider {
+  border-color: var(--border-color);
+  color: var(--accent-gold);
+}
+
+/* Alert warning styling for light theme */
+[data-theme="light"] .alert-warning {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ===== THEME TOGGLE BUTTON ===== */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--accent-gold);
+  padding: 0.5rem;
+  margin-left: 1rem;
+  transition: transform 0.3s ease, color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.theme-toggle.rotating {
+  animation: rotate360 0.5s ease-in-out;
+}
+
+@keyframes rotate360 {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Icon visibility */
+.theme-toggle .sun-icon {
+  display: none;
+}
+
+.theme-toggle .moon-icon {
+  display: inline;
+}
+
+[data-theme="light"] .theme-toggle .sun-icon {
+  display: inline;
+}
+
+[data-theme="light"] .theme-toggle .moon-icon {
+  display: none;
+}

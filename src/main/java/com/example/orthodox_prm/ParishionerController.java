@@ -8,6 +8,7 @@ import com.example.orthodox_prm.repository.HouseholdRepository;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,6 +85,7 @@ public class ParishionerController {
 
     // Handles: POST /parishioners/update
     @PostMapping("/update")
+    @Transactional
     public String update(@ModelAttribute Parishioner parishioner,
                          @RequestParam(required = false) Long spouseId,
                          @RequestParam(required = false) Long godfatherId,
@@ -170,6 +172,13 @@ public class ParishionerController {
 
         // 3. BI-DIRECTIONAL MARRIAGE LOGIC
         else if (spouseId != null) {
+            // Clear old spouse relationship if changing spouse
+            if (existingRecord.getSpouse() != null && !existingRecord.getSpouse().getId().equals(spouseId)) {
+                Parishioner oldSpouse = existingRecord.getSpouse();
+                oldSpouse.setSpouse(null);
+                parishionerRepository.save(oldSpouse);
+            }
+
             Parishioner internalSpouse = parishionerRepository.findById(spouseId).orElse(null);
             if (internalSpouse != null) {
                 parishioner.setSpouse(internalSpouse);
@@ -185,12 +194,38 @@ public class ParishionerController {
 
         // 4. SPIRITUAL PARENT LOGIC
         if (godfatherId != null) {
-            parishioner.setGodfather(parishionerRepository.findById(godfatherId).orElse(null));
+            // Remove from old godfather's list if changing
+            if (existingRecord.getGodfather() != null && !existingRecord.getGodfather().getId().equals(godfatherId)) {
+                existingRecord.getGodfather().getChildrenAsGodfather().remove(existingRecord);
+                parishionerRepository.save(existingRecord.getGodfather());
+            }
+            // Add to new godfather's list
+            Parishioner newGodfather = parishionerRepository.findById(godfatherId).orElse(null);
+            if (newGodfather != null) {
+                parishioner.setGodfather(newGodfather);
+                if (!newGodfather.getChildrenAsGodfather().contains(parishioner)) {
+                    newGodfather.getChildrenAsGodfather().add(parishioner);
+                    parishionerRepository.save(newGodfather);
+                }
+            }
             parishioner.setManualGodfatherName(null);
         }
 
         if (godmotherId != null) {
-            parishioner.setGodmother(parishionerRepository.findById(godmotherId).orElse(null));
+            // Remove from old godmother's list if changing
+            if (existingRecord.getGodmother() != null && !existingRecord.getGodmother().getId().equals(godmotherId)) {
+                existingRecord.getGodmother().getChildrenAsGodmother().remove(existingRecord);
+                parishionerRepository.save(existingRecord.getGodmother());
+            }
+            // Add to new godmother's list
+            Parishioner newGodmother = parishionerRepository.findById(godmotherId).orElse(null);
+            if (newGodmother != null) {
+                parishioner.setGodmother(newGodmother);
+                if (!newGodmother.getChildrenAsGodmother().contains(parishioner)) {
+                    newGodmother.getChildrenAsGodmother().add(parishioner);
+                    parishionerRepository.save(newGodmother);
+                }
+            }
             parishioner.setManualGodmotherName(null);
         }
 
@@ -204,6 +239,7 @@ public class ParishionerController {
         return "redirect:/parishioners";
     }
     @GetMapping("/delete/{id}")
+    @Transactional
     public String deleteParishioner(@PathVariable Long id) {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
@@ -231,10 +267,25 @@ public class ParishionerController {
         }
 
         // 4. Handle Wedding Sponsor Link (Koumbaros)
-        // You may need to add findByWeddingSponsor_Id to your repository first
+        List<Parishioner> weddingSponsoredPeople = parishionerRepository.findByWeddingSponsor_Id(id);
+        for (Parishioner sponsored : weddingSponsoredPeople) {
+            sponsored.setWeddingSponsor(null);
+            parishionerRepository.save(sponsored);
+        }
 
-        // 5. Finally, delete the record
+        // 5. Handle orphaned households
+        Household household = p.getHousehold();
+
+        // 6. Finally, delete the record
         parishionerRepository.delete(p);
+
+        // 7. Check if household is now empty and delete it if so
+        if (household != null) {
+            List<Parishioner> householdMembers = parishionerRepository.findByHousehold_Id(household.getId());
+            if (householdMembers.isEmpty()) {
+                householdRepository.delete(household);
+            }
+        }
 
         return "redirect:/parishioners";
     }
@@ -277,6 +328,7 @@ public class ParishionerController {
 
     // Handles: POST /parishioners/add
     @PostMapping("/add")
+    @Transactional
     public String addMember(
             @RequestParam String firstName,
             @RequestParam String lastName,
@@ -295,6 +347,14 @@ public class ParishionerController {
             @RequestParam(required = false) String[] childNames,
             @RequestParam(required = false) String[] childBirthdays,
             @RequestParam(defaultValue = "false") boolean isOrthodox) {
+
+        // Validate required fields
+        if (firstName == null || firstName.trim().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (lastName == null || lastName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
 
         // 1. CREATE HOUSEHOLD
         Household household = new Household();
@@ -324,7 +384,11 @@ public class ParishionerController {
 
         // Marital status and spouse (for both Orthodox and Non-Orthodox)
         if (maritalStatusStr != null && !maritalStatusStr.isEmpty()) {
-            parent.setMaritalStatus(MaritalStatus.valueOf(maritalStatusStr));
+            try {
+                parent.setMaritalStatus(MaritalStatus.valueOf(maritalStatusStr));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid marital status: " + maritalStatusStr);
+            }
         }
         parent.setManualSpouseName(manualSpouseName);
 
@@ -338,16 +402,24 @@ public class ParishionerController {
 
                     // Split child name into first/last (assume "FirstName LastName" format)
                     String[] nameParts = childNames[i].trim().split("\\s+", 2);
+                    // Ensure first name is not empty
+                    if (nameParts.length == 0 || nameParts[0].trim().isEmpty()) {
+                        throw new IllegalArgumentException("Child name cannot be empty at index " + i);
+                    }
                     child.setFirstName(nameParts[0]);
                     child.setLastName(nameParts.length > 1 ? nameParts[1] : lastName);
 
                     child.setStatus(MembershipStatus.VISITOR);
                     child.setHousehold(savedHousehold);
 
-                    // Parse child birthday if provided
+                    // Parse child birthday if provided - with error handling
                     if (childBirthdays != null && i < childBirthdays.length
-                            && childBirthdays[i] != null && !childBirthdays[i].isEmpty()) {
-                        child.setBirthday(LocalDate.parse(childBirthdays[i]));
+                            && childBirthdays[i] != null && !childBirthdays[i].trim().isEmpty()) {
+                        try {
+                            child.setBirthday(LocalDate.parse(childBirthdays[i]));
+                        } catch (java.time.format.DateTimeParseException e) {
+                            throw new IllegalArgumentException("Invalid date format for child birthday at index " + i + ": " + childBirthdays[i]);
+                        }
                     }
 
                     parishionerRepository.save(child);

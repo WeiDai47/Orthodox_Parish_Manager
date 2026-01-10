@@ -22,11 +22,26 @@ public class ExportService {
         csv.append("Last Name,First Name,Baptismal Name,Status,Phone,Email\n");
 
         for (Parishioner p : parishioners) {
-            csv.append(String.format("%s,%s,%s,%s,%s,%s\n",
-                    p.getLastName(), p.getFirstName(), p.getBaptismalName(),
-                    p.getStatus(), "N/A", "N/A")); // Add phone/email if in your model
+            csv.append(escapeCsvField(p.getLastName())).append(",");
+            csv.append(escapeCsvField(p.getFirstName())).append(",");
+            csv.append(escapeCsvField(p.getBaptismalName())).append(",");
+            csv.append(escapeCsvField(p.getStatus() != null ? p.getStatus().toString() : "")).append(",");
+            csv.append(escapeCsvField("N/A")).append(",");
+            csv.append(escapeCsvField("N/A")).append("\n");
         }
         return csv.toString().getBytes();
+    }
+
+    // Helper method to escape CSV fields according to RFC 4180
+    private String escapeCsvField(String field) {
+        if (field == null) {
+            return "";
+        }
+        // If field contains comma, quote, or newline, wrap in quotes and escape quotes
+        if (field.contains(",") || field.contains("\"") || field.contains("\n")) {
+            return "\"" + field.replace("\"", "\"\"") + "\"";
+        }
+        return field;
     }
 
     public byte[] generateWordDoc(List<Parishioner> parishioners) throws IOException {
@@ -48,10 +63,11 @@ public class ExportService {
 
         for (Parishioner p : parishioners) {
             XWPFTableRow row = table.createRow();
-            row.getCell(0).setText(p.getFirstName() + " " + p.getLastName());
-            row.getCell(1).setText(p.getBaptismalName());
-            row.getCell(2).setText(p.getPatronSaint());
-            row.getCell(3).setText(p.getStatus().toString());
+            String legalName = (p.getFirstName() != null ? p.getFirstName() : "") + " " + (p.getLastName() != null ? p.getLastName() : "");
+            row.getCell(0).setText(legalName.trim());
+            row.getCell(1).setText(p.getBaptismalName() != null ? p.getBaptismalName() : "");
+            row.getCell(2).setText(p.getPatronSaint() != null ? p.getPatronSaint() : "");
+            row.getCell(3).setText(p.getStatus() != null ? p.getStatus().toString() : "");
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -87,11 +103,11 @@ public class ExportService {
             int rowIdx = 1;
             for (Parishioner p : parishioners) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(p.getLastName());
-                row.createCell(1).setCellValue(p.getFirstName());
-                row.createCell(2).setCellValue(p.getBaptismalName());
-                row.createCell(3).setCellValue(p.getStatus().toString());
-                row.createCell(4).setCellValue(p.getPatronSaint());
+                row.createCell(0).setCellValue(p.getLastName() != null ? p.getLastName() : "");
+                row.createCell(1).setCellValue(p.getFirstName() != null ? p.getFirstName() : "");
+                row.createCell(2).setCellValue(p.getBaptismalName() != null ? p.getBaptismalName() : "");
+                row.createCell(3).setCellValue(p.getStatus() != null ? p.getStatus().toString() : "");
+                row.createCell(4).setCellValue(p.getPatronSaint() != null ? p.getPatronSaint() : "");
                 row.createCell(5).setCellValue(p.getNameDay() != null ? p.getNameDay().toString() : "");
             }
 

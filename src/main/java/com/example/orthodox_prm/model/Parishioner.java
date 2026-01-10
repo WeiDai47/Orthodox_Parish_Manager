@@ -87,22 +87,39 @@ public class Parishioner {
     // --- HELPER METHODS ---
 
     public void marry(Parishioner spouse) {
+        // Prevent infinite recursion and null reference errors
+        if (spouse == null || spouse.getId().equals(this.getId())) {
+            throw new IllegalArgumentException("Invalid spouse: cannot marry null or self");
+        }
         this.spouse = spouse;
         this.maritalStatus = MaritalStatus.MARRIED;
         // Symmetry: Ensure the other person is also marked as married to this person
-        if (spouse.getSpouse() != this) {
-            spouse.marry(this);
+        if (spouse.getSpouse() == null || !spouse.getSpouse().getId().equals(this.getId())) {
+            spouse.spouse = this;
+            spouse.maritalStatus = MaritalStatus.MARRIED;
         }
     }
 
     public void assignGodfather(Parishioner sponsor) {
+        if (sponsor == null) {
+            throw new IllegalArgumentException("Godfather cannot be null");
+        }
         this.godfather = sponsor;
-        sponsor.getChildrenAsGodfather().add(this);
+        // Prevent duplicates in the godchildren list
+        if (!sponsor.getChildrenAsGodfather().contains(this)) {
+            sponsor.getChildrenAsGodfather().add(this);
+        }
     }
 
     public void assignGodmother(Parishioner sponsor) {
+        if (sponsor == null) {
+            throw new IllegalArgumentException("Godmother cannot be null");
+        }
         this.godmother = sponsor;
-        sponsor.getChildrenAsGodmother().add(this);
+        // Prevent duplicates in the godchildren list
+        if (!sponsor.getChildrenAsGodmother().contains(this)) {
+            sponsor.getChildrenAsGodmother().add(this);
+        }
     }
 
     // Setter helpers for ID-based updates from the controller

@@ -15,20 +15,23 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // ... existing code ...
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers(PathRequest.toH2Console()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                // FIX: Explicitly set the landing page after login
                 .formLogin(form -> form
+                        .loginPage("/login")
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
-                );
+                )
+                .logout(logout -> logout.permitAll());
 
         return http.build();
     }

@@ -3,28 +3,70 @@
 <head>
     <title>Master Parishioner Directory</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <script src="/js/theme-toggle.js"></script>
     <style>
-        body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
         .table-responsive { overflow-x: auto; }
-        .text-gold { color: #d4af37; }
-        th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #d4af37; border-bottom: 2px solid #444; }
+        .text-gold { color: var(--accent-gold); }
+        th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-gold); border-bottom: 2px solid var(--border-color); }
         td { font-size: 0.85rem; vertical-align: middle; }
-        .table-hover tbody tr:hover { background-color: #1a1a1a; }
+        .table-hover tbody tr:hover { background-color: var(--bg-secondary); }
+        .bg-dark { background-color: var(--bg-tertiary) !important; }
+        .border-secondary { border-color: var(--border-secondary) !important; }
+        /* ADDED: Hide buttons when printing */
+        @media print { .btn, .input-group, .dropdown { display: none !important; } }
     </style>
 </head>
 <body class="p-4">
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-gold m-0">Master Parishioner Management</h2>
+
+
+    <div class="d-flex gap-2">
+        <a href="/export/options" class="btn btn-outline-warning btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Advanced Export
+        </a>
+
         <a href="/dashboard" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
     </div>
     <div class="mb-3">
-        <div class="input-group">
-        <span class="input-group-text bg-dark border-secondary text-gold">
-            <i class="bi bi-search">🔍</i>
-        </span>
-            <input type="text" id="tableSearch" class="form-control bg-dark text-white border-secondary"
-                   placeholder="Instant filter by name, saint, or status...">
+        <div class="row g-2">
+            <!-- Search by First and Last Name -->
+            <div class="col-md-4">
+                <label class="form-label text-gold small"><strong>👤 Secular Name</strong></label>
+                <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-gold">
+                            <i class="bi bi-search"></i>
+                        </span>
+                    <input type="text" id="secularNameSearch" class="form-control bg-dark text-white border-secondary"
+                           placeholder="First & Last Name (e.g., Anna Garcia)">
+                </div>
+            </div>
+
+            <!-- Search by Baptismal and Last Name -->
+            <div class="col-md-4">
+                <label class="form-label text-gold small"><strong>✝️ Baptismal Name</strong></label>
+                <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-gold">
+                            <i class="bi bi-search"></i>
+                        </span>
+                    <input type="text" id="baptismalNameSearch" class="form-control bg-dark text-white border-secondary"
+                           placeholder="Baptismal & Last Name (e.g., Alexandra Garcia)">
+                </div>
+            </div>
+
+            <!-- Search by Household -->
+            <div class="col-md-4">
+                <label class="form-label text-gold small"><strong>🏠 Household</strong></label>
+                <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-gold">
+                            <i class="bi bi-search"></i>
+                        </span>
+                    <input type="text" id="householdSearch" class="form-control bg-dark text-white border-secondary"
+                           placeholder="Family Name (e.g., The Garcia Family)">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -154,17 +196,96 @@
         </table>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.getElementById('tableSearch').addEventListener('keyup', function() {
+    document.getElementById('secularNameSearch').addEventListener('keyup', function() {
         const value = this.value.toLowerCase();
         const rows = document.querySelectorAll('table tbody tr');
+        const baptismalSearch = document.getElementById('baptismalNameSearch').value.toLowerCase();
+        const householdSearch = document.getElementById('householdSearch').value.toLowerCase();
 
         rows.forEach(row => {
-            // This joins all text in the row so you can search by ANY column
-            const rowText = row.textContent.toLowerCase();
-            row.style.display = rowText.includes(value) ? '' : 'none';
+            const cells = row.querySelectorAll('td');
+            // Get First Name (index 1) and Last Name (index 2)
+            const firstName = cells[1].textContent.toLowerCase();
+            const lastName = cells[2].textContent.toLowerCase();
+            const secularMatch = (firstName + ' ' + lastName).includes(value);
+
+            // Get Baptismal Name (index 3)
+            const baptismalName = cells[3].textContent.toLowerCase();
+            const baptismalMatch = (baptismalName + ' ' + lastName).includes(baptismalSearch);
+
+            // Get Household Name (index 12)
+            const household = cells[12].textContent.toLowerCase();
+            const householdMatch = household.includes(householdSearch);
+
+            // Show row only if all active searches match (or are empty)
+            const showSecular = value === '' || secularMatch;
+            const showBaptismal = baptismalSearch === '' || baptismalMatch;
+            const showHousehold = householdSearch === '' || householdMatch;
+            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
+        });
+    });
+
+    document.getElementById('baptismalNameSearch').addEventListener('keyup', function() {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('table tbody tr');
+        const secularSearch = document.getElementById('secularNameSearch').value.toLowerCase();
+        const householdSearch = document.getElementById('householdSearch').value.toLowerCase();
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            // Get First Name (index 1) and Last Name (index 2)
+            const firstName = cells[1].textContent.toLowerCase();
+            const lastName = cells[2].textContent.toLowerCase();
+            const secularMatch = (firstName + ' ' + lastName).includes(secularSearch);
+
+            // Get Baptismal Name (index 3)
+            const baptismalName = cells[3].textContent.toLowerCase();
+            const baptismalMatch = (baptismalName + ' ' + lastName).includes(value);
+
+            // Get Household Name (index 12)
+            const household = cells[12].textContent.toLowerCase();
+            const householdMatch = household.includes(householdSearch);
+
+            // Show row only if all active searches match (or are empty)
+            const showSecular = secularSearch === '' || secularMatch;
+            const showBaptismal = value === '' || baptismalMatch;
+            const showHousehold = householdSearch === '' || householdMatch;
+            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
+        });
+    });
+
+    document.getElementById('householdSearch').addEventListener('keyup', function() {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('table tbody tr');
+        const secularSearch = document.getElementById('secularNameSearch').value.toLowerCase();
+        const baptismalSearch = document.getElementById('baptismalNameSearch').value.toLowerCase();
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            // Get First Name (index 1) and Last Name (index 2)
+            const firstName = cells[1].textContent.toLowerCase();
+            const lastName = cells[2].textContent.toLowerCase();
+            const secularMatch = (firstName + ' ' + lastName).includes(secularSearch);
+
+            // Get Baptismal Name (index 3)
+            const baptismalName = cells[3].textContent.toLowerCase();
+            const baptismalMatch = (baptismalName + ' ' + lastName).includes(baptismalSearch);
+
+            // Get Household Name (index 12)
+            const household = cells[12].textContent.toLowerCase();
+            const householdMatch = household.includes(value);
+
+            // Show row only if all active searches match (or are empty)
+            const showSecular = secularSearch === '' || secularMatch;
+            const showBaptismal = baptismalSearch === '' || baptismalMatch;
+            const showHousehold = value === '' || householdMatch;
+            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
         });
     });
 </script>
+</body>
+</html>
 </body>
 </html>

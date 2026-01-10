@@ -1,5 +1,6 @@
 package com.example.orthodox_prm.service;
 
+import com.example.orthodox_prm.Enum.MembershipStatus;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.repository.HouseholdRepository;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,10 @@ public class DashboardService {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalMembers", parishionerRepo.count());
         stats.put("totalHouseholds", householdRepo.count());
+
+        // NEW: Specific counts for the dashboard cards
+        stats.put("visitorCount", parishionerRepo.countByStatus(MembershipStatus.VISITOR));
+        stats.put("catechumenCount", parishionerRepo.countByStatus(MembershipStatus.CATECHUMEN));
 
         // Find everyone with a Name Day today
         stats.put("todaysNameDays", parishionerRepo.findByNameDay(LocalDate.now()));

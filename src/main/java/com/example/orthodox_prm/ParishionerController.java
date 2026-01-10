@@ -29,34 +29,29 @@ public class ParishionerController {
     }
 
     // Handles: GET /parishioners
+    // Inside ParishionerController.java
+
     @GetMapping
-    public String list(@RequestParam(required = false) String search,
+    public String list(@RequestParam(required = false) String searchName,
+                       @RequestParam(required = false) String searchBaptismal,
                        @RequestParam(defaultValue = "lastName") String sortField,
                        @RequestParam(defaultValue = "asc") String sortDir,
                        Model model) {
 
-        // Determine sort direction
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
-                Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        List<Parishioner> parishioners;
 
-        List<Parishioner> list;
-        if (search != null && !search.isEmpty()) {
-            // Note: Spring Data findBy methods can accept a Sort parameter as the last argument
-            list = parishionerRepository.findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrBaptismalNameContainingIgnoreCaseOrHousehold_FamilyNameContainingIgnoreCase(
-                    search, search, search, search, sort
-            );
+        // Logic to decide which search to run
+        if (searchName != null && !searchName.isEmpty()) {
+            parishioners = parishionerRepository.searchBySecularName(searchName, sort);
+        } else if (searchBaptismal != null && !searchBaptismal.isEmpty()) {
+            parishioners = parishionerRepository.searchByBaptismalName(searchBaptismal, sort);
         } else {
-            list = parishionerRepository.findAll(sort);
+            parishioners = parishionerRepository.findAll(sort);
         }
 
-        model.addAttribute("parishioners", list);
-        model.addAttribute("searchQuery", search);
-
-        // Pass sorting info back to the view for the links
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("parishioners", parishioners);
         model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
-
         return "parishioner-list";
     }
 
@@ -93,11 +88,67 @@ public class ParishionerController {
                          @RequestParam(required = false) Long spouseId,
                          @RequestParam(required = false) Long godfatherId,
                          @RequestParam(required = false) Long godmotherId,
-                         @RequestParam(required = false) Long weddingSponsorId) {
+                         @RequestParam(required = false) Long weddingSponsorId,
+                         @RequestParam(required = false) Long householdId,
+                         @RequestParam(required = false) String newHouseholdName,
+                         @RequestParam(required = false) String address,
+                         @RequestParam(required = false) String city,
+                         @RequestParam(required = false) String phoneNumber,
+                         @RequestParam(required = false) String householdEmail) {
 
         // 1. Fetch the existing state from DB to identify the current spouse before changes
         Parishioner existingRecord = parishionerRepository.findById(parishioner.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + parishioner.getId()));
+
+        // 1.5. HANDLE HOUSEHOLD MANAGEMENT
+        if (newHouseholdName != null && !newHouseholdName.trim().isEmpty()) {
+            // Create new household
+            Household newHousehold = new Household();
+            newHousehold.setFamilyName(newHouseholdName);
+            newHousehold.setAddress(address);
+            newHousehold.setCity(city);
+            newHousehold.setPhoneNumber(phoneNumber);
+            newHousehold.setEmail(householdEmail);
+            Household savedHousehold = householdRepository.save(newHousehold);
+            parishioner.setHousehold(savedHousehold);
+        }
+        else if (householdId != null) {
+            // Assign to existing household
+            Household existingHousehold = householdRepository.findById(householdId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid household Id:" + householdId));
+            parishioner.setHousehold(existingHousehold);
+        }
+        else {
+            // Keep current household but update its address
+            if (parishioner.getHousehold() != null) {
+                Household currentHousehold = parishioner.getHousehold();
+                // Only update if household already exists in DB (not a new shallow reference)
+                if (currentHousehold.getId() != null) {
+                    currentHousehold = householdRepository.findById(currentHousehold.getId())
+                            .orElse(currentHousehold);
+
+                    // Update address fields
+                    currentHousehold.setAddress(address);
+                    currentHousehold.setCity(city);
+                    currentHousehold.setPhoneNumber(phoneNumber);
+                    currentHousehold.setEmail(householdEmail);
+                    householdRepository.save(currentHousehold);
+                    parishioner.setHousehold(currentHousehold);
+                }
+            } else {
+                // No household assigned and none selected - create one if address provided
+                if (address != null && !address.trim().isEmpty()) {
+                    Household newHousehold = new Household();
+                    newHousehold.setFamilyName(parishioner.getLastName() + " Family");
+                    newHousehold.setAddress(address);
+                    newHousehold.setCity(city);
+                    newHousehold.setPhoneNumber(phoneNumber);
+                    newHousehold.setEmail(householdEmail);
+                    Household savedHousehold = householdRepository.save(newHousehold);
+                    parishioner.setHousehold(savedHousehold);
+                }
+            }
+        }
 
         // 2. HANDLE DIVORCE LOGIC
         if (parishioner.getMaritalStatus() == MaritalStatus.DIVORCED) {
@@ -210,5 +261,102 @@ public class ParishionerController {
         parishionerRepository.save(p);
         return "redirect:/parishioners/edit/" + id;
     }
+
+    // Handles: GET /parishioners/add
+    @GetMapping("/add")
+    public String showAddForm(Model model) {
+        Parishioner newParishioner = new Parishioner();
+        newParishioner.setStatus(MembershipStatus.VISITOR);
+
+        model.addAttribute("parishioner", newParishioner);
+        model.addAttribute("allStatuses", MembershipStatus.values());
+        model.addAttribute("allMaritalStatuses", MaritalStatus.values());
+
+        return "add-parishioner";
+    }
+
+    // Handles: POST /parishioners/add
+    @PostMapping("/add")
+    public String addMember(
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam(required = false) String baptismalName,
+            @RequestParam(required = false) String patronSaint,
+            @RequestParam(required = false) String maritalStatusStr,
+            @RequestParam(required = false) String manualSpouseName,
+            @RequestParam(required = false) String manualSponsorName,
+            @RequestParam(required = false) LocalDate birthday,
+            @RequestParam(required = false) LocalDate baptismDate,
+            @RequestParam(required = false) LocalDate chrismationDate,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String[] childNames,
+            @RequestParam(required = false) String[] childBirthdays,
+            @RequestParam(defaultValue = "false") boolean isOrthodox) {
+
+        // 1. CREATE HOUSEHOLD
+        Household household = new Household();
+        household.setFamilyName(lastName + " Family");
+        household.setAddress(address);
+        household.setCity(city);
+        household.setPhoneNumber(phoneNumber);
+        household.setEmail(email);
+        Household savedHousehold = householdRepository.save(household);
+
+        // 2. CREATE PARENT PARISHIONER
+        Parishioner parent = new Parishioner();
+        parent.setFirstName(firstName);
+        parent.setLastName(lastName);
+        parent.setStatus(MembershipStatus.VISITOR);
+        parent.setBirthday(birthday);
+        parent.setHousehold(savedHousehold);
+
+        // Orthodox-specific fields (only if isOrthodox = true)
+        if (isOrthodox) {
+            parent.setBaptismalName(baptismalName);
+            parent.setPatronSaint(patronSaint);
+            parent.setBaptismDate(baptismDate);
+            parent.setChrismationDate(chrismationDate);
+            parent.setManualSponsorName(manualSponsorName);
+        }
+
+        // Marital status and spouse (for both Orthodox and Non-Orthodox)
+        if (maritalStatusStr != null && !maritalStatusStr.isEmpty()) {
+            parent.setMaritalStatus(MaritalStatus.valueOf(maritalStatusStr));
+        }
+        parent.setManualSpouseName(manualSpouseName);
+
+        parishionerRepository.save(parent);
+
+        // 3. CREATE CHILDREN (if any)
+        if (childNames != null && childNames.length > 0) {
+            for (int i = 0; i < childNames.length; i++) {
+                if (childNames[i] != null && !childNames[i].trim().isEmpty()) {
+                    Parishioner child = new Parishioner();
+
+                    // Split child name into first/last (assume "FirstName LastName" format)
+                    String[] nameParts = childNames[i].trim().split("\\s+", 2);
+                    child.setFirstName(nameParts[0]);
+                    child.setLastName(nameParts.length > 1 ? nameParts[1] : lastName);
+
+                    child.setStatus(MembershipStatus.VISITOR);
+                    child.setHousehold(savedHousehold);
+
+                    // Parse child birthday if provided
+                    if (childBirthdays != null && i < childBirthdays.length
+                            && childBirthdays[i] != null && !childBirthdays[i].isEmpty()) {
+                        child.setBirthday(LocalDate.parse(childBirthdays[i]));
+                    }
+
+                    parishionerRepository.save(child);
+                }
+            }
+        }
+
+        return "redirect:/parishioners";
+    }
+
 
 }

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add New Member</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        .card { background-color: #1a1a1a; border: 1px solid #d4af37; border-radius: 10px; }
+        .form-control, .form-select { background-color: #252525 !important; border: 1px solid #444 !important; color: white !important; }
+        .text-gold { color: #d4af37; }
+        label { font-size: 0.75rem; color: #aaa; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-header { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
+        .child-row { background: #252525; border: 1px solid #444; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .child-row .btn-outline-danger { font-size: 0.85rem; }
+        .form-check-input { background-color: #444; border-color: #666; }
+        .form-check-input:checked { background-color: #d4af37; border-color: #d4af37; }
+        .btn-warning { background-color: #d4af37; color: black; font-weight: bold; }
+        .btn-warning:hover { background-color: #e8c547; color: black; }
+        .btn-outline-warning { color: #d4af37; border-color: #d4af37; }
+        .btn-outline-warning:hover { background-color: #d4af37; color: black; }
+        .form-check-label { color: #d4af37; }
+    </style>
+</head>
+<body class="p-5">
+
+<div class="container" style="max-width: 900px;">
+    <div class="card p-4 shadow-lg border-0">
+
+        <h2 class="text-gold mb-4">Add New Member</h2>
+
+        <form th:action="@{/parishioners/add}" method="post" id="addForm">
+
+            <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
+            <div class="mb-4 p-3 border border-warning rounded">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
+                    <label class="form-check-label" for="isOrthodox">
+                        Orthodox Member (uncheck for Non-Orthodox)
+                    </label>
+                </div>
+            </div>
+
+            <div class="row g-3">
+
+                <!-- REQUIRED FIELDS -->
+                <div class="col-12"><div class="section-header">Basic Information (Required)</div></div>
+                <div class="col-md-6">
+                    <label>First Name *</label>
+                    <input type="text" name="firstName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Last Name *</label>
+                    <input type="text" name="lastName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Birthday</label>
+                    <input type="date" name="birthday" class="form-control">
+                </div>
+
+                <!-- ORTHODOX-ONLY FIELDS -->
+                <div id="orthodoxFields">
+                    <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
+                    <div class="col-md-4">
+                        <label>Baptismal Name</label>
+                        <input type="text" name="baptismalName" class="form-control" placeholder="e.g. Spyridon">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Patron Saint</label>
+                        <input type="text" name="patronSaint" class="form-control" placeholder="e.g. St. Spyridon">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Baptism Date</label>
+                        <input type="date" name="baptismDate" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Chrismation Date</label>
+                        <input type="date" name="chrismationDate" class="form-control">
+                    </div>
+                </div>
+
+                <!-- MARRIAGE SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Marriage Information</div></div>
+                <div class="col-md-6">
+                    <label>Marital Status</label>
+                    <select name="maritalStatusStr" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>Spouse Name (if applicable)</label>
+                    <input type="text" name="manualSpouseName" class="form-control" placeholder="Spouse full name">
+                </div>
+
+                <!-- ORTHODOX-ONLY: WEDDING SPONSOR -->
+                <div class="col-md-6 orthodox-only">
+                    <label>Wedding Sponsor (Koumbaro)</label>
+                    <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
+                </div>
+
+                <!-- ADDRESS SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Household Address</div></div>
+                <div class="col-md-12">
+                    <label>Street Address</label>
+                    <input type="text" name="address" class="form-control" placeholder="123 Main St">
+                </div>
+                <div class="col-md-6">
+                    <label>City</label>
+                    <input type="text" name="city" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phoneNumber" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control">
+                </div>
+
+                <!-- CHILDREN SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Children (Optional)</div></div>
+                <div class="col-12">
+                    <div id="childrenContainer">
+                        <!-- Dynamic child rows will be added here -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-warning" id="addChildBtn">
+                        <i class="bi bi-plus-circle"></i> Add Child
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SUBMIT BUTTONS -->
+            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+                <button type="submit" class="btn btn-warning px-5 fw-bold">Create Member</button>
+                <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. ORTHODOX/NON-ORTHODOX TOGGLE LOGIC
+    const orthodoxCheckbox = document.getElementById('isOrthodox');
+    const orthodoxFields = document.getElementById('orthodoxFields');
+    const orthodoxOnlyElements = document.querySelectorAll('.orthodox-only');
+
+    function updateOrthodoxVisibility() {
+        if (orthodoxCheckbox.checked) {
+            // Show Orthodox fields
+            orthodoxFields.style.display = 'block';
+            orthodoxOnlyElements.forEach(el => el.style.display = 'block');
+        } else {
+            // Hide Orthodox fields and clear values
+            orthodoxFields.style.display = 'none';
+            orthodoxOnlyElements.forEach(el => el.style.display = 'none');
+            orthodoxFields.querySelectorAll('input').forEach(input => input.value = '');
+            orthodoxOnlyElements.forEach(el => el.querySelectorAll('input').forEach(input => input.value = ''));
+        }
+    }
+
+    orthodoxCheckbox.addEventListener('change', updateOrthodoxVisibility);
+    // Initialize on page load
+    updateOrthodoxVisibility();
+
+    // 2. DYNAMIC CHILDREN MANAGEMENT
+    let childCount = 0;
+    const childrenContainer = document.getElementById('childrenContainer');
+    const addChildBtn = document.getElementById('addChildBtn');
+
+    addChildBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        childCount++;
+
+        const childRow = document.createElement('div');
+        childRow.className = 'child-row';
+        childRow.id = `child-${childCount}`;
+        childRow.innerHTML = `
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label class="text-warning">Child ${childCount} Name</label>
+                    <input type="text" name="childNames" class="form-control" placeholder="First Last">
+                </div>
+                <div class="col-md-4">
+                    <label class="text-warning">Birthday</label>
+                    <input type="date" name="childBirthdays" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeChild(${childCount})">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+
+        childrenContainer.appendChild(childRow);
+    });
+
+    function removeChild(id) {
+        const childRow = document.getElementById(`child-${id}`);
+        if (childRow) {
+            childRow.remove();
+        }
+    }
+</script>
+</body>
+</html>

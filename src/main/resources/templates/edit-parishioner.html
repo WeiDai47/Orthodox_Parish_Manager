@@ -103,21 +103,56 @@
                             <input type="text" th:field="*{manualSponsorName}" id="manualSponsor" class="form-control manual-input" placeholder="External Sponsor Name">
                         </div>
 
-                        <div class="col-12"><div class="section-header">Household & Family Unit</div></div>
+                        <div class="col-12"><div class="section-header">Household & Address</div></div>
                         <div class="col-md-6">
                             <label class="text-gold">Assign to Existing Household</label>
-                            <select name="householdId" class="search-select">
-                                <option value="">-- No Household --</option>
+                            <select name="householdId" id="householdSelect" class="search-select">
+                                <option value="">-- Keep Current / Create New --</option>
                                 <option th:each="h : ${allHouseholds}"
                                         th:value="${h.id}"
                                         th:text="${h.familyName + ' Household'}"
                                         th:selected="${parishioner.household != null && h.id == parishioner.household.id}">
                                 </option>
                             </select>
+                            <small class="text-muted d-block mt-1">Select to switch to existing household</small>
                         </div>
                         <div class="col-md-6">
                             <label class="text-gold">OR Create New Household</label>
-                            <input type="text" name="newHouseholdName" class="form-control" placeholder="Enter Family Name">
+                            <input type="text" name="newHouseholdName" id="newHouseholdName" class="form-control" placeholder="Enter Family Name">
+                            <small class="text-muted d-block mt-1">Leave blank to keep current household</small>
+                        </div>
+
+                        <!-- Address Fields (editable for current household) -->
+                        <div class="col-12 mt-3">
+                            <div class="alert alert-warning" style="background: #2a2a2a; border-color: #d4af37;">
+                                <small><i class="bi bi-info-circle"></i> <strong>Note:</strong> Address changes affect all members of this household.</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Street Address</label>
+                            <input type="text" name="address"
+                                   th:value="${parishioner.household != null ? parishioner.household.address : ''}"
+                                   class="form-control"
+                                   placeholder="123 Main St">
+                        </div>
+                        <div class="col-md-6">
+                            <label>City</label>
+                            <input type="text" name="city"
+                                   th:value="${parishioner.household != null ? parishioner.household.city : ''}"
+                                   class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label>Phone Number</label>
+                            <input type="tel" name="phoneNumber"
+                                   th:value="${parishioner.household != null ? parishioner.household.phoneNumber : ''}"
+                                   class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label>Email</label>
+                            <input type="email" name="householdEmail"
+                                   th:value="${parishioner.household != null ? parishioner.household.email : ''}"
+                                   class="form-control">
                         </div>
 
                         <div class="col-12"><div class="section-header">Spiritual Parents (Godparents)</div></div>
@@ -240,6 +275,30 @@
             }
         });
     });
+
+    // 3. Household assignment logic
+    const householdSelect = document.getElementById('householdSelect');
+    const newHouseholdInput = document.getElementById('newHouseholdName');
+
+    // Clear new household name when selecting existing household
+    if (householdSelect) {
+        householdSelect.addEventListener('change', function() {
+            if (this.value) {
+                newHouseholdInput.value = '';
+            }
+        });
+    }
+
+    // Clear existing household selection when typing new name
+    if (newHouseholdInput) {
+        newHouseholdInput.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                if (householdSelect.tomselect) {
+                    householdSelect.tomselect.clear();
+                }
+            }
+        });
+    }
 </script>
 </body>
 </html>

@@ -28,6 +28,9 @@
             <a class="nav-link" href="/dashboard">Dashboard</a>
             <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
             <a class="nav-link" href="/parishioners/add">Add Member</a>
+            <a class="nav-link" href="/gmail">
+                <i class="bi bi-envelope"></i> Email
+            </a>
             <a class="nav-link" href="/settings">
                 <i class="bi bi-gear"></i> Settings
             </a>
@@ -107,6 +110,27 @@
                     <button class="btn btn-sm btn-outline-gold" id="nextPageBtn" onclick="showNextPage()">
                         Next <i class="bi bi-chevron-right"></i>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Communication Section -->
+    <div class="row g-4 mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">Email Communication</div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-envelope"></i>
+                        Send emails to parishioners individually or in groups. Track all communications in one place.
+                    </p>
+                    <a href="/gmail" class="btn btn-warning">
+                        <i class="bi bi-envelope"></i> Compose Email
+                    </a>
+                    <a href="/gmail/history" class="btn btn-outline-warning">
+                        <i class="bi bi-clock-history"></i> View History
+                    </a>
                 </div>
             </div>
         </div>

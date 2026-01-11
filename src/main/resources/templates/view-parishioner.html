@@ -250,9 +250,9 @@
         </div>
 
         <!-- Add Sacrament Form -->
-        <form th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+        <form id="sacramentForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
             <!-- Conflict Warning -->
-            <div id="conflictWarning" style="display: none;"></div>
+            <div id="sacramentConflictWarning" style="display: none;"></div>
 
             <!-- Row 1: Event Title, Date, Sacrament Type -->
             <div class="row g-2">
@@ -260,7 +260,7 @@
                     <input type="text" name="eventTitle" class="form-control" placeholder="Event Title" required>
                 </div>
                 <div class="col-md-3">
-                    <input type="date" id="eventDate" name="eventDate" class="form-control" required>
+                    <input type="date" id="sacramentEventDate" name="eventDate" class="form-control" required>
                 </div>
                 <div class="col-md-5">
                     <select name="sacramentType" class="form-select" required>
@@ -275,17 +275,17 @@
             <!-- Row 2: Start Time, End Time, Additional Participants -->
             <div class="row g-2 mt-2">
                 <div class="col-md-2">
-                    <select id="startTime" name="startTime" class="form-select">
+                    <select id="sacramentStartTime" name="startTime" class="form-select">
                         <option value="">Start Time</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select id="endTime" name="endTime" class="form-select">
+                    <select id="sacramentEndTime" name="endTime" class="form-select">
                         <option value="">End Time</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <select id="additionalParticipants" name="additionalParticipants" class="form-select" multiple>
+                    <select id="sacramentAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
                         <option value="" disabled>Add participants (optional)</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"
@@ -376,9 +376,9 @@
         </div>
 
         <!-- Add Regular Event Form -->
-        <form th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+        <form id="regularEventForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
             <!-- Conflict Warning -->
-            <div id="conflictWarning" style="display: none;"></div>
+            <div id="regularEventConflictWarning" style="display: none;"></div>
 
             <!-- Row 1: Event Title, Date -->
             <div class="row g-2">
@@ -386,7 +386,7 @@
                     <input type="text" name="eventTitle" class="form-control" placeholder="Event Title" required>
                 </div>
                 <div class="col-md-3">
-                    <input type="date" id="eventDate" name="eventDate" class="form-control" required>
+                    <input type="date" id="regularEventDate" name="eventDate" class="form-control" required>
                 </div>
                 <div class="col-md-4">
                     <input type="text" name="eventDescription" class="form-control" placeholder="Description (optional)">
@@ -396,17 +396,17 @@
             <!-- Row 2: Start Time, End Time, Additional Participants -->
             <div class="row g-2 mt-2">
                 <div class="col-md-2">
-                    <select id="startTime" name="startTime" class="form-select">
+                    <select id="regularStartTime" name="startTime" class="form-select">
                         <option value="">Start Time</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select id="endTime" name="endTime" class="form-select">
+                    <select id="regularEndTime" name="endTime" class="form-select">
                         <option value="">End Time</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <select id="additionalParticipants" name="additionalParticipants" class="form-select" multiple>
+                    <select id="regularAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
                         <option value="" disabled>Add participants (optional)</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"

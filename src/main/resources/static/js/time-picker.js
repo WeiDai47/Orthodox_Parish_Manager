@@ -39,9 +39,21 @@ function formatTime12Hour(time24) {
  * Auto-fills end time with 30 minutes after start time
  */
 function setupTimeAutoFill() {
-    const startTimeSelect = document.getElementById('startTime');
-    const endTimeSelect = document.getElementById('endTime');
+    // Handle sacrament form
+    const sacramentStartTime = document.getElementById('sacramentStartTime');
+    const sacramentEndTime = document.getElementById('sacramentEndTime');
+    setupTimeAutoFillForInputs(sacramentStartTime, sacramentEndTime);
 
+    // Handle regular event form
+    const regularStartTime = document.getElementById('regularStartTime');
+    const regularEndTime = document.getElementById('regularEndTime');
+    setupTimeAutoFillForInputs(regularStartTime, regularEndTime);
+}
+
+/**
+ * Helper function to set up auto-fill for a pair of start/end time selects
+ */
+function setupTimeAutoFillForInputs(startTimeSelect, endTimeSelect) {
     if (startTimeSelect) {
         startTimeSelect.addEventListener('change', function() {
             if (this.value) {
@@ -90,9 +102,13 @@ function populateTimeSelect(selectId) {
  * Initialize time pickers on page load
  */
 function initializeTimePickers() {
-    // Populate start and end time selects
-    populateTimeSelect('startTime');
-    populateTimeSelect('endTime');
+    // Populate sacrament form time selects
+    populateTimeSelect('sacramentStartTime');
+    populateTimeSelect('sacramentEndTime');
+
+    // Populate regular event form time selects
+    populateTimeSelect('regularStartTime');
+    populateTimeSelect('regularEndTime');
 
     // Setup auto-fill logic
     setupTimeAutoFill();

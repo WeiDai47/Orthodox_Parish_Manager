@@ -6,15 +6,23 @@
 /**
  * Check for scheduling conflicts via AJAX
  * @param {number} parishionerId - The primary parishioner ID
+ * @param {string} formType - 'sacrament' or 'regular' to identify which form
  */
-function checkConflicts(parishionerId) {
-    const eventDate = document.getElementById('eventDate').value;
-    const startTime = document.getElementById('startTime')?.value || '';
-    const endTime = document.getElementById('endTime')?.value || '';
-    const additionalParticipantsSelect = document.getElementById('additionalParticipants');
+function checkConflicts(parishionerId, formType = 'regular') {
+    // Get elements based on form type
+    const eventDateId = formType === 'sacrament' ? 'sacramentEventDate' : 'regularEventDate';
+    const startTimeId = formType === 'sacrament' ? 'sacramentStartTime' : 'regularStartTime';
+    const endTimeId = formType === 'sacrament' ? 'sacramentEndTime' : 'regularEndTime';
+    const participantsId = formType === 'sacrament' ? 'sacramentAdditionalParticipants' : 'regularAdditionalParticipants';
+    const warningId = formType === 'sacrament' ? 'sacramentConflictWarning' : 'regularEventConflictWarning';
+
+    const eventDate = document.getElementById(eventDateId)?.value || '';
+    const startTime = document.getElementById(startTimeId)?.value || '';
+    const endTime = document.getElementById(endTimeId)?.value || '';
+    const additionalParticipantsSelect = document.getElementById(participantsId);
 
     if (!eventDate) {
-        hideConflictWarning();
+        hideConflictWarning(warningId);
         return;
     }
 
@@ -45,24 +53,25 @@ function checkConflicts(parishionerId) {
         return response.json();
     })
     .then(data => {
-        displayConflictWarning(data);
+        displayConflictWarning(data, warningId);
     })
     .catch(error => {
         console.error('Error checking conflicts:', error);
-        hideConflictWarning();
+        hideConflictWarning(warningId);
     });
 }
 
 /**
  * Display conflict warning based on response data
  * @param {Object} data - Response data from conflict check endpoint
+ * @param {string} warningId - ID of the warning div element
  */
-function displayConflictWarning(data) {
-    const warningDiv = document.getElementById('conflictWarning');
+function displayConflictWarning(data, warningId = 'regularEventConflictWarning') {
+    const warningDiv = document.getElementById(warningId);
     if (!warningDiv) return;
 
     if (!data.hasConflicts) {
-        hideConflictWarning();
+        hideConflictWarning(warningId);
         return;
     }
 
@@ -112,9 +121,10 @@ function displayConflictWarning(data) {
 
 /**
  * Hide the conflict warning
+ * @param {string} warningId - ID of the warning div element
  */
-function hideConflictWarning() {
-    const warningDiv = document.getElementById('conflictWarning');
+function hideConflictWarning(warningId = 'regularEventConflictWarning') {
+    const warningDiv = document.getElementById(warningId);
     if (warningDiv) {
         warningDiv.innerHTML = '';
         warningDiv.style.display = 'none';
@@ -122,26 +132,31 @@ function hideConflictWarning() {
 }
 
 /**
- * Set up event listeners for conflict checking
+ * Set up event listeners for conflict checking on a specific form
  */
-function setupConflictChecking(parishionerId) {
+function setupConflictCheckingForForm(parishionerId, formType = 'regular') {
+    const eventDateId = formType === 'sacrament' ? 'sacramentEventDate' : 'regularEventDate';
+    const startTimeId = formType === 'sacrament' ? 'sacramentStartTime' : 'regularStartTime';
+    const endTimeId = formType === 'sacrament' ? 'sacramentEndTime' : 'regularEndTime';
+    const participantsId = formType === 'sacrament' ? 'sacramentAdditionalParticipants' : 'regularAdditionalParticipants';
+
     // Check conflicts when key fields change
-    const eventDateSelect = document.getElementById('eventDate');
-    const startTimeSelect = document.getElementById('startTime');
-    const endTimeSelect = document.getElementById('endTime');
-    const participantsSelect = document.getElementById('additionalParticipants');
+    const eventDateSelect = document.getElementById(eventDateId);
+    const startTimeSelect = document.getElementById(startTimeId);
+    const endTimeSelect = document.getElementById(endTimeId);
+    const participantsSelect = document.getElementById(participantsId);
 
     if (eventDateSelect) {
-        eventDateSelect.addEventListener('change', () => checkConflicts(parishionerId));
+        eventDateSelect.addEventListener('change', () => checkConflicts(parishionerId, formType));
     }
     if (startTimeSelect) {
-        startTimeSelect.addEventListener('change', () => checkConflicts(parishionerId));
+        startTimeSelect.addEventListener('change', () => checkConflicts(parishionerId, formType));
     }
     if (endTimeSelect) {
-        endTimeSelect.addEventListener('change', () => checkConflicts(parishionerId));
+        endTimeSelect.addEventListener('change', () => checkConflicts(parishionerId, formType));
     }
     if (participantsSelect) {
-        participantsSelect.addEventListener('change', () => checkConflicts(parishionerId));
+        participantsSelect.addEventListener('change', () => checkConflicts(parishionerId, formType));
     }
 }
 
@@ -153,7 +168,10 @@ function initializeConflictChecker() {
     const pageElement = document.querySelector('[data-parishioner-id]');
     if (pageElement) {
         const parishionerId = pageElement.getAttribute('data-parishioner-id');
-        setupConflictChecking(parishionerId);
+
+        // Set up conflict checking for both forms
+        setupConflictCheckingForForm(parishionerId, 'sacrament');
+        setupConflictCheckingForForm(parishionerId, 'regular');
     }
 }
 

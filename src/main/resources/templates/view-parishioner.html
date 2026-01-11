@@ -114,6 +114,15 @@
                 </small>
             </h2>
             <div>
+                <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list"></i> All Parishioners
+                </a>
+                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailModal">
+                    <i class="bi bi-envelope"></i> Email
+                </button>
                 <a th:href="@{/parishioners/edit/{id}(id=${parishioner.id})}" class="btn btn-warning btn-sm">
                     <i class="bi bi-pencil"></i> Edit
                 </a>
@@ -123,32 +132,183 @@
             </div>
         </div>
 
-        <!-- Basic Information -->
-        <div class="section-header">Basic Information</div>
+        <!-- Legal Identity & Contact -->
+        <div class="section-header"><i class="bi bi-person"></i> Legal Identity & Contact</div>
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">Status</div>
-                <div class="info-value" th:text="${parishioner.status}"></div>
+                <div class="info-label">First Name</div>
+                <div class="info-value" th:text="${parishioner.firstName}"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Last Name</div>
+                <div class="info-value" th:text="${parishioner.lastName}"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Name Suffix</div>
+                <div class="info-value" th:if="${parishioner.nameSuffix != null && parishioner.nameSuffix.trim() != ''}" th:text="${parishioner.nameSuffix}"></div>
+                <div class="info-value text-muted" th:if="${parishioner.nameSuffix == null || parishioner.nameSuffix.trim() == ''}">(None)</div>
             </div>
             <div class="info-item" th:if="${parishioner.birthday != null}">
                 <div class="info-label">Birthday</div>
-                <div class="info-value" th:text="${parishioner.birthday}"></div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.birthday, 'MMM dd, yyyy')}"></div>
             </div>
-            <div class="info-item" th:if="${parishioner.baptismDate != null}">
-                <div class="info-label">Baptism</div>
-                <div class="info-value" th:text="${parishioner.baptismDate}"></div>
+            <div class="info-item">
+                <div class="info-label">Membership Status</div>
+                <div class="info-value" th:text="${parishioner.status}"></div>
             </div>
-            <div class="info-item" th:if="${parishioner.chrismationDate != null}">
-                <div class="info-label">Chrismation</div>
-                <div class="info-value" th:text="${parishioner.chrismationDate}"></div>
+            <div class="info-item">
+                <div class="info-label">Phone Number</div>
+                <div class="info-value" th:if="${parishioner.phoneNumber != null && parishioner.phoneNumber.trim() != ''}" th:text="${parishioner.phoneNumber}"></div>
+                <div class="info-value text-muted" th:if="${parishioner.phoneNumber == null || parishioner.phoneNumber.trim() == ''}">(Not provided)</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value" th:if="${parishioner.email != null && parishioner.email.trim() != ''}">
+                    <a th:href="@{'mailto:' + parishioner.email}" th:text="${parishioner.email}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+                <div class="info-value text-muted" th:if="${parishioner.email == null || parishioner.email.trim() == ''}">(Not provided)</div>
+            </div>
+        </div>
+
+        <!-- Orthodox Identity -->
+        <div class="section-header"><i class="bi bi-star-fill"></i> Orthodox Identity</div>
+        <div class="info-grid">
+            <div class="info-item" th:if="${parishioner.baptismalName != null}">
+                <div class="info-label">Baptismal Name</div>
+                <div class="info-value" th:text="${parishioner.baptismalName}"></div>
             </div>
             <div class="info-item" th:if="${parishioner.patronSaint != null}">
                 <div class="info-label">Patron Saint</div>
                 <div class="info-value" th:text="${parishioner.patronSaint}"></div>
             </div>
+            <div class="info-item" th:if="${parishioner.nameDay != null}">
+                <div class="info-label">Name Day / Feast Day</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.nameDay, 'MMM dd')}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.baptismDate != null}">
+                <div class="info-label">Baptism Date</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.baptismDate, 'MMM dd, yyyy')}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.chrismationDate != null}">
+                <div class="info-label">Chrismation Date</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.chrismationDate, 'MMM dd, yyyy')}"></div>
+            </div>
+        </div>
+
+        <!-- Marriage & Family -->
+        <div class="section-header"><i class="bi bi-people"></i> Marriage & Family</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Marital Status</div>
+                <div class="info-value" th:text="${parishioner.maritalStatus}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.spouse != null}">
+                <div class="info-label">Spouse</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.spouse.id})}"
+                       th:text="${parishioner.spouse.firstName + ' ' + parishioner.spouse.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.spouse == null && parishioner.manualSpouseName != null}">
+                <div class="info-label">Spouse (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualSpouseName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.weddingSponsor != null}">
+                <div class="info-label">Wedding Sponsor (Koumbaro)</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.weddingSponsor.id})}"
+                       th:text="${parishioner.weddingSponsor.firstName + ' ' + parishioner.weddingSponsor.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.weddingSponsor == null && parishioner.manualSponsorName != null}">
+                <div class="info-label">Wedding Sponsor (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualSponsorName}"></div>
+            </div>
+        </div>
+
+        <!-- Household & Address -->
+        <div class="section-header"><i class="bi bi-house"></i> Household & Address</div>
+        <div class="info-grid">
             <div class="info-item" th:if="${parishioner.household != null}">
-                <div class="info-label">Household</div>
+                <div class="info-label">Household Name</div>
                 <div class="info-value" th:text="${parishioner.household.familyName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && parishioner.household.address != null}">
+                <div class="info-label">Street Address</div>
+                <div class="info-value" th:text="${parishioner.household.address}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && parishioner.household.city != null}">
+                <div class="info-label">City</div>
+                <div class="info-value" th:text="${parishioner.household.city}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && !parishioner.household.members.isEmpty()}">
+                <div class="info-label">Household Members</div>
+                <div class="info-value">
+                    <span th:each="member, iterStat : ${parishioner.household.members}">
+                        <a th:href="@{/parishioners/view/{id}(id=${member.id})}"
+                           th:text="${member.firstName + ' ' + member.lastName}"
+                           class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spiritual Parents (Godparents) -->
+        <div class="section-header"><i class="bi bi-heart-fill"></i> Spiritual Parents (Godparents)</div>
+        <div class="info-grid">
+            <div class="info-item" th:if="${parishioner.godfather != null}">
+                <div class="info-label">Godfather</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.godfather.id})}"
+                       th:text="${parishioner.godfather.firstName + ' ' + parishioner.godfather.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godfather == null && parishioner.manualGodfatherName != null}">
+                <div class="info-label">Godfather (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualGodfatherName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godmother != null}">
+                <div class="info-label">Godmother</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.godmother.id})}"
+                       th:text="${parishioner.godmother.firstName + ' ' + parishioner.godmother.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godmother == null && parishioner.manualGodmotherName != null}">
+                <div class="info-label">Godmother (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualGodmotherName}"></div>
+            </div>
+        </div>
+
+        <!-- Spiritual Offspring (Godchildren) -->
+        <div th:if="${!parishioner.childrenAsGodfather.isEmpty() || !parishioner.childrenAsGodmother.isEmpty()}">
+            <div class="section-header"><i class="bi bi-star-fill"></i> Spiritual Offspring (Godchildren)</div>
+            <div class="info-grid">
+                <div class="info-item" th:if="${!parishioner.childrenAsGodfather.isEmpty()}">
+                    <div class="info-label">Godchildren (as Godfather)</div>
+                    <div class="info-value">
+                        <span th:each="child, iterStat : ${parishioner.childrenAsGodfather}">
+                            <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
+                               th:text="${child.firstName + ' ' + child.lastName}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item" th:if="${!parishioner.childrenAsGodmother.isEmpty()}">
+                    <div class="info-label">Godchildren (as Godmother)</div>
+                    <div class="info-value">
+                        <span th:each="child, iterStat : ${parishioner.childrenAsGodmother}">
+                            <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
+                               th:text="${child.firstName + ' ' + child.lastName}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -286,7 +446,7 @@
                 </div>
                 <div class="col-md-6">
                     <select id="sacramentAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
-                        <option value="" disabled>Add participants (optional)</option>
+                        <option value="" disabled>Add participants (optional) Hold ctrl to select multiple</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"
                                 th:text="${p.firstName + ' ' + p.lastName}"></option>
@@ -407,7 +567,7 @@
                 </div>
                 <div class="col-md-6">
                     <select id="regularAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
-                        <option value="" disabled>Add participants (optional)</option>
+                        <option value="" disabled>Add participants (optional) Hold ctrl to select multiple</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"
                                 th:text="${p.firstName + ' ' + p.lastName}"></option>
@@ -492,6 +652,197 @@
     </div>
 </div>
 
+<!-- Email Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-secondary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-secondary);">
+                <h5 class="modal-title text-gold">Add to Mass Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Select who to include in the mass email:</p>
+
+                <div class="form-check mb-3" style="border-bottom: 1px solid var(--border-secondary); padding-bottom: 15px;">
+                    <input class="form-check-input" type="checkbox" id="checkIndividualOnly" checked>
+                    <label class="form-check-label" for="checkIndividualOnly">
+                        <strong>Just this person</strong> (individual email only)
+                    </label>
+                </div>
+
+                <p class="text-muted mb-2" style="font-size: 0.85rem;">Or add related people:</p>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="checkHouseholdMembers">
+                    <label class="form-check-label" for="checkHouseholdMembers">
+                        All household members <span class="text-muted" th:if="${parishioner.household != null}">
+                            (<span th:text="${parishioner.household.members.size()}"></span> members)</span>
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${parishioner.weddingSponsor != null}">
+                    <input class="form-check-input" type="checkbox" id="checkWeddingSponsor">
+                    <label class="form-check-label" for="checkWeddingSponsor">
+                        Wedding Sponsor (Koumbaros)
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${parishioner.godfather != null}">
+                    <input class="form-check-input" type="checkbox" id="checkGodfather">
+                    <label class="form-check-label" for="checkGodfather">
+                        Godfather
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${parishioner.godmother != null}">
+                    <input class="form-check-input" type="checkbox" id="checkGodmother">
+                    <label class="form-check-label" for="checkGodmother">
+                        Godmother
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${parishioner.spouse != null}">
+                    <input class="form-check-input" type="checkbox" id="checkSpouse">
+                    <label class="form-check-label" for="checkSpouse">
+                        Spouse
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${not parishioner.childrenAsGodfather.isEmpty()}">
+                    <input class="form-check-input" type="checkbox" id="checkGodchildren">
+                    <label class="form-check-label" for="checkGodchildren">
+                        Godchildren (as Godfather) <span class="text-muted">
+                            (<span th:text="${parishioner.childrenAsGodfather.size()}"></span> children)</span>
+                    </label>
+                </div>
+
+                <div class="form-check mb-2" th:if="${not parishioner.childrenAsGodmother.isEmpty()}">
+                    <input class="form-check-input" type="checkbox" id="checkGodmotherChildren">
+                    <label class="form-check-label" for="checkGodmotherChildren">
+                        Godchildren (as Godmother) <span class="text-muted">
+                            (<span th:text="${parishioner.childrenAsGodmother.size()}"></span> children)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-secondary);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="proceedToEmail()">
+                    <i class="bi bi-envelope"></i> Continue to Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden element to store relationship data as JSON -->
+<div id="relationshipData" th:data-parishioner-id="${parishioner.id}"
+     th:data-wedding-sponsor-id="${parishioner.weddingSponsor != null ? parishioner.weddingSponsor.id : ''}"
+     th:data-godfather-id="${parishioner.godfather != null ? parishioner.godfather.id : ''}"
+     th:data-godmother-id="${parishioner.godmother != null ? parishioner.godmother.id : ''}"
+     th:data-spouse-id="${parishioner.spouse != null ? parishioner.spouse.id : ''}"
+     th:data-household-ids="${#strings.listJoin(parishioner.household != null ? parishioner.household.members.![id] : {}, ',')}"
+     th:data-godchildren-ids="${#strings.listJoin(parishioner.childrenAsGodfather.![id], ',')}"
+     th:data-godmother-children-ids="${#strings.listJoin(parishioner.childrenAsGodmother.![id], ',')}"
+     style="display: none;"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Read relationship data from hidden element
+    const dataElement = document.getElementById('relationshipData');
+    const parishionerId = parseInt(dataElement.getAttribute('data-parishioner-id'));
+    const weddingSponsorId = dataElement.getAttribute('data-wedding-sponsor-id') ? parseInt(dataElement.getAttribute('data-wedding-sponsor-id')) : null;
+    const godfatherId = dataElement.getAttribute('data-godfather-id') ? parseInt(dataElement.getAttribute('data-godfather-id')) : null;
+    const godmotherId = dataElement.getAttribute('data-godmother-id') ? parseInt(dataElement.getAttribute('data-godmother-id')) : null;
+    const spouseId = dataElement.getAttribute('data-spouse-id') ? parseInt(dataElement.getAttribute('data-spouse-id')) : null;
+
+    // Extract household member IDs
+    const householdMemberIds = dataElement.getAttribute('data-household-ids') && dataElement.getAttribute('data-household-ids').trim() !== ''
+        ? dataElement.getAttribute('data-household-ids').split(',').map(x => parseInt(x)).filter(x => !isNaN(x))
+        : [];
+
+    // Extract godchildren as godfather
+    const godchildrenIds = dataElement.getAttribute('data-godchildren-ids') && dataElement.getAttribute('data-godchildren-ids').trim() !== ''
+        ? dataElement.getAttribute('data-godchildren-ids').split(',').map(x => parseInt(x)).filter(x => !isNaN(x))
+        : [];
+
+    // Extract godchildren as godmother
+    const godmotherChildrenIds = dataElement.getAttribute('data-godmother-children-ids') && dataElement.getAttribute('data-godmother-children-ids').trim() !== ''
+        ? dataElement.getAttribute('data-godmother-children-ids').split(',').map(x => parseInt(x)).filter(x => !isNaN(x))
+        : [];
+
+    /**
+     * Proceed to email page with selected recipients
+     */
+    function proceedToEmail() {
+        const selectedIds = new Set();
+
+        // Check if "Just this person" is selected
+        const justThisPerson = document.getElementById('checkIndividualOnly').checked;
+
+        if (justThisPerson) {
+            // Only add the current parishioner
+            selectedIds.add(parishionerId);
+        } else {
+            // Add self
+            selectedIds.add(parishionerId);
+
+            // Check household members
+            if (document.getElementById('checkHouseholdMembers') &&
+                document.getElementById('checkHouseholdMembers').checked &&
+                householdMemberIds.length > 0) {
+                householdMemberIds.forEach(id => selectedIds.add(id));
+            }
+
+            // Check wedding sponsor
+            if (document.getElementById('checkWeddingSponsor') &&
+                document.getElementById('checkWeddingSponsor').checked &&
+                weddingSponsorId !== null && weddingSponsorId !== 'null') {
+                selectedIds.add(weddingSponsorId);
+            }
+
+            // Check godfather
+            if (document.getElementById('checkGodfather') &&
+                document.getElementById('checkGodfather').checked &&
+                godfatherId !== null && godfatherId !== 'null') {
+                selectedIds.add(godfatherId);
+            }
+
+            // Check godmother
+            if (document.getElementById('checkGodmother') &&
+                document.getElementById('checkGodmother').checked &&
+                godmotherId !== null && godmotherId !== 'null') {
+                selectedIds.add(godmotherId);
+            }
+
+            // Check spouse
+            if (document.getElementById('checkSpouse') &&
+                document.getElementById('checkSpouse').checked &&
+                spouseId !== null && spouseId !== 'null') {
+                selectedIds.add(spouseId);
+            }
+
+            // Check godchildren as godfather
+            if (document.getElementById('checkGodchildren') &&
+                document.getElementById('checkGodchildren').checked &&
+                godchildrenIds.length > 0) {
+                godchildrenIds.forEach(id => selectedIds.add(id));
+            }
+
+            // Check godchildren as godmother
+            if (document.getElementById('checkGodmotherChildren') &&
+                document.getElementById('checkGodmotherChildren').checked &&
+                godmotherChildrenIds.length > 0) {
+                godmotherChildrenIds.forEach(id => selectedIds.add(id));
+            }
+        }
+
+        // Build query parameter and redirect to email page
+        const ids = Array.from(selectedIds).join(',');
+        console.log('Redirecting to email page with recipients:', ids);
+        window.location.href = '/gmail?preselectedIds=' + encodeURIComponent(ids);
+    }
+</script>
+
 </body>
 </html>

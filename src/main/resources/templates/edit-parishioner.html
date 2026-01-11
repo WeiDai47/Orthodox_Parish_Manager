@@ -33,9 +33,18 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-gold m-0">Edit Record: <span th:text="${parishioner.firstName + ' ' + parishioner.lastName}"></span></h2>
-            <div th:if="${parishioner.status.name() != 'DEPARTED'}">
+            <div>
+                <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list"></i> All Parishioners
+                </a>
+                <a th:href="@{/parishioners/view/{id}(id=${parishioner.id})}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-eye"></i> View
+                </a>
                 <form th:action="@{/parishioners/departed/{id}(id=${parishioner.id})}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-outline-info" onclick="return confirm('Mark as Departed?')">☦ Mark Memory Eternal</button>
+                    <button type="submit" class="btn btn-sm btn-outline-info" th:if="${parishioner.status.name() != 'DEPARTED'}" onclick="return confirm('Mark as Departed?')">☦ Mark Memory Eternal</button>
                 </form>
             </div>
         </div>
@@ -57,6 +66,20 @@
                             <input type="text" th:field="*{lastName}" class="form-control" required>
                         </div>
                         <div class="col-md-3">
+                            <label>Name Suffix</label>
+                            <select th:field="*{nameSuffix}" class="form-select">
+                                <option value="">-- None --</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="I">I</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                                <option value="DO">DO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label>Birthday</label>
                             <input type="date" name="birthday" th:value="${parishioner.birthday}" class="form-control">
                         </div>
@@ -65,6 +88,15 @@
                             <select th:field="*{status}" class="form-select">
                                 <option th:each="s : ${allStatuses}" th:value="${s}" th:text="${s}"></option>
                             </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Phone Number</label>
+                            <input type="tel" th:field="*{phoneNumber}" class="form-control" placeholder="(123) 456-7890">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input type="email" th:field="*{email}" class="form-control" placeholder="email@example.com">
                         </div>
 
                         <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
@@ -149,18 +181,6 @@
                             <label>City</label>
                             <input type="text" name="city"
                                    th:value="${parishioner.household != null ? parishioner.household.city : ''}"
-                                   class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label>Phone Number</label>
-                            <input type="tel" name="phoneNumber"
-                                   th:value="${parishioner.household != null ? parishioner.household.phoneNumber : ''}"
-                                   class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label>Email</label>
-                            <input type="email" name="householdEmail"
-                                   th:value="${parishioner.household != null ? parishioner.household.email : ''}"
                                    class="form-control">
                         </div>
 

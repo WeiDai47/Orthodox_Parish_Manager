@@ -116,7 +116,8 @@ public class ViewParishionerController {
             @RequestParam String eventTitle,
             @RequestParam LocalDate eventDate,
             @RequestParam(required = false) String eventDescription,
-            @RequestParam(required = false) String sacramentType) {
+            @RequestParam(required = false) String sacramentType,
+            @RequestParam(required = false) String syncToGoogle) {
 
         if (eventTitle == null || eventTitle.trim().isEmpty()) {
             throw new IllegalArgumentException("Event title cannot be empty");
@@ -140,13 +141,15 @@ public class ViewParishionerController {
 
         scheduledEventRepository.save(event);
 
-        // Sync to Google Calendar if user is authenticated with Google OAuth2
-        googleCalendarService.createCalendarEvent(
-                eventTitle.trim(),
-                eventDate,
-                eventDescription != null ? eventDescription.trim() : null,
-                sacramentType
-        );
+        // Sync to Google Calendar only if user explicitly chose to (syncToGoogle checkbox is checked)
+        if (syncToGoogle != null && syncToGoogle.equals("true") && googleCalendarService.isGoogleOAuth2Authenticated()) {
+            googleCalendarService.createCalendarEvent(
+                    eventTitle.trim(),
+                    eventDate,
+                    eventDescription != null ? eventDescription.trim() : null,
+                    sacramentType
+            );
+        }
 
         return "redirect:/parishioners/view/" + id;
     }

@@ -143,6 +143,11 @@
                 <div class="info-label">Last Name</div>
                 <div class="info-value" th:text="${parishioner.lastName}"></div>
             </div>
+            <div class="info-item">
+                <div class="info-label">Name Suffix</div>
+                <div class="info-value" th:if="${parishioner.nameSuffix != null && parishioner.nameSuffix.trim() != ''}" th:text="${parishioner.nameSuffix}"></div>
+                <div class="info-value text-muted" th:if="${parishioner.nameSuffix == null || parishioner.nameSuffix.trim() == ''}">(None)</div>
+            </div>
             <div class="info-item" th:if="${parishioner.birthday != null}">
                 <div class="info-label">Birthday</div>
                 <div class="info-value" th:text="${#temporals.format(parishioner.birthday, 'MMM dd, yyyy')}"></div>
@@ -441,7 +446,7 @@
                 </div>
                 <div class="col-md-6">
                     <select id="sacramentAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
-                        <option value="" disabled>Add participants (optional)</option>
+                        <option value="" disabled>Add participants (optional) Hold ctrl to select multiple</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"
                                 th:text="${p.firstName + ' ' + p.lastName}"></option>
@@ -562,7 +567,7 @@
                 </div>
                 <div class="col-md-6">
                     <select id="regularAdditionalParticipants" name="additionalParticipants" class="form-select" multiple>
-                        <option value="" disabled>Add participants (optional)</option>
+                        <option value="" disabled>Add participants (optional) Hold ctrl to select multiple</option>
                         <option th:each="p : ${allParishioners}"
                                 th:value="${p.id}"
                                 th:text="${p.firstName + ' ' + p.lastName}"></option>

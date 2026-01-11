@@ -24,6 +24,7 @@ public class Parishioner {
     // Legal Name
     private String firstName;
     private String lastName;
+    private String nameSuffix; // e.g., "Sr.", "Jr.", "I", "II", "III", "IV", "V"
 
     // Orthodox Specifics
     private String baptismalName; // e.g., "Spyridon"

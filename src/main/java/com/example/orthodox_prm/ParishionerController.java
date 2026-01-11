@@ -326,6 +326,7 @@ public class ParishionerController {
     public String addMember(
             @RequestParam String firstName,
             @RequestParam String lastName,
+            @RequestParam(required = false) String nameSuffix,
             @RequestParam(required = false) String baptismalName,
             @RequestParam(required = false) String patronSaint,
             @RequestParam(required = false) String maritalStatusStr,
@@ -338,9 +339,14 @@ public class ParishionerController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String email,
+            @RequestParam(required = false) String spouseFirstName,
+            @RequestParam(required = false) String spouseLastName,
+            @RequestParam(required = false) String spouseEmail,
+            @RequestParam(required = false) String spousePhoneNumber,
             @RequestParam(required = false) String[] childNames,
             @RequestParam(required = false) String[] childBirthdays,
-            @RequestParam(defaultValue = "false") boolean isOrthodox) {
+            @RequestParam(defaultValue = "false") boolean isOrthodox,
+            @RequestParam(defaultValue = "VISITOR") String membershipStatusStr) {
 
         // Validate required fields
         if (firstName == null || firstName.trim().isEmpty()) {
@@ -363,9 +369,19 @@ public class ParishionerController {
         Parishioner parent = new Parishioner();
         parent.setFirstName(firstName);
         parent.setLastName(lastName);
-        parent.setStatus(MembershipStatus.VISITOR);
+        parent.setNameSuffix(nameSuffix);
+
+        // Set membership status from form
+        try {
+            parent.setStatus(MembershipStatus.valueOf(membershipStatusStr));
+        } catch (IllegalArgumentException e) {
+            parent.setStatus(MembershipStatus.VISITOR);
+        }
+
         parent.setBirthday(birthday);
         parent.setHousehold(savedHousehold);
+        parent.setPhoneNumber(phoneNumber);
+        parent.setEmail(email);
 
         // Orthodox-specific fields (only if isOrthodox = true)
         if (isOrthodox) {
@@ -387,6 +403,27 @@ public class ParishionerController {
         parent.setManualSpouseName(manualSpouseName);
 
         parishionerRepository.save(parent);
+
+        // 2.5 CREATE SPOUSE IF PROVIDED
+        if (spouseFirstName != null && !spouseFirstName.trim().isEmpty() &&
+            spouseLastName != null && !spouseLastName.trim().isEmpty()) {
+
+            Parishioner spouse = new Parishioner();
+            spouse.setFirstName(spouseFirstName);
+            spouse.setLastName(spouseLastName);
+            spouse.setEmail(spouseEmail);
+            spouse.setPhoneNumber(spousePhoneNumber);
+            spouse.setHousehold(savedHousehold); // Same household as parent
+            spouse.setStatus(MembershipStatus.VISITOR);
+            spouse.setMaritalStatus(MaritalStatus.MARRIED);
+
+            // Link spouse to parent
+            parent.setSpouse(spouse);
+            spouse.setSpouse(parent);
+
+            Parishioner savedSpouse = parishionerRepository.save(spouse);
+            parishionerRepository.save(parent); // Save parent with spouse link
+        }
 
         // 3. CREATE CHILDREN (if any)
         if (childNames != null && childNames.length > 0) {

@@ -66,6 +66,20 @@
                             <input type="text" th:field="*{lastName}" class="form-control" required>
                         </div>
                         <div class="col-md-3">
+                            <label>Name Suffix</label>
+                            <select th:field="*{nameSuffix}" class="form-select">
+                                <option value="">-- None --</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="I">I</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                                <option value="DO">DO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label>Birthday</label>
                             <input type="date" name="birthday" th:value="${parishioner.birthday}" class="form-control">
                         </div>

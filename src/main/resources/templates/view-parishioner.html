@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
     <script src="/js/theme-toggle.js"></script>
+    <script src="/js/time-picker.js"></script>
+    <script src="/js/conflict-checker.js"></script>
     <style>
         body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
         .card { background-color: var(--bg-secondary); border: 1px solid var(--accent-gold); border-radius: 10px; }
@@ -100,7 +102,7 @@
     <i class="bi bi-moon-stars-fill moon-icon"></i>
 </button>
 
-<div class="container" style="max-width: 1200px;">
+<div class="container" style="max-width: 1200px;" th:attr="data-parishioner-id=${parishioner.id}">
     <div class="card p-4 shadow-lg">
 
         <!-- Header -->
@@ -249,14 +251,18 @@
 
         <!-- Add Sacrament Form -->
         <form th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+            <!-- Conflict Warning -->
+            <div id="conflictWarning" style="display: none;"></div>
+
+            <!-- Row 1: Event Title, Date, Sacrament Type -->
             <div class="row g-2">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <input type="text" name="eventTitle" class="form-control" placeholder="Event Title" required>
                 </div>
-                <div class="col-md-2">
-                    <input type="date" name="eventDate" class="form-control" required>
+                <div class="col-md-3">
+                    <input type="date" id="eventDate" name="eventDate" class="form-control" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-5">
                     <select name="sacramentType" class="form-select" required>
                         <option value="">Select Sacrament</option>
                         <option th:each="type : ${allSacramentTypes}"
@@ -264,8 +270,27 @@
                                 th:text="${type}"></option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <input type="text" name="eventDescription" class="form-control" placeholder="Description (optional)">
+            </div>
+
+            <!-- Row 2: Start Time, End Time, Additional Participants -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-2">
+                    <select id="startTime" name="startTime" class="form-select">
+                        <option value="">Start Time</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="endTime" name="endTime" class="form-select">
+                        <option value="">End Time</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select id="additionalParticipants" name="additionalParticipants" class="form-select" multiple>
+                        <option value="" disabled>Add participants (optional)</option>
+                        <option th:each="p : ${allParishioners}"
+                                th:value="${p.id}"
+                                th:text="${p.firstName + ' ' + p.lastName}"></option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-warning w-100">
@@ -273,15 +298,23 @@
                     </button>
                 </div>
             </div>
-            <!-- Google Calendar Sync Checkbox (only show if authenticated) -->
-            <div th:if="${isGoogleAuthenticated}" class="mt-2">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="syncSacramentToGoogle" name="syncToGoogle" value="true" checked>
-                    <label class="form-check-label small text-muted" for="syncSacramentToGoogle">
-                        Add to my Google Calendar
-                    </label>
+
+            <!-- Row 3: Description and Google Sync -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-10">
+                    <input type="text" name="eventDescription" class="form-control" placeholder="Description (optional)">
+                </div>
+                <div class="col-md-2" th:if="${isGoogleAuthenticated}">
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" id="syncSacramentToGoogle" name="syncToGoogle" value="true" checked>
+                        <label class="form-check-label small text-muted" for="syncSacramentToGoogle">
+                            Sync to Google
+                        </label>
+                    </div>
                 </div>
             </div>
+
+            <!-- Google Auth Info -->
             <small class="text-muted d-block mt-2">
                 <span th:unless="${isGoogleAuthenticated}">
                     <i class="bi bi-info-circle"></i> <a href="/login" class="text-decoration-none">Sign in with Google</a> to enable Google Calendar sync
@@ -297,9 +330,15 @@
              th:classappend="${event.eventDate.isBefore(T(java.time.LocalDate).now())} ? 'past-event' : 'future-event'">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
-                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                         <strong class="text-gold" th:text="${event.eventTitle}"></strong>
                         <span class="sacrament-badge" th:text="${event.sacramentType}"></span>
+                        <!-- Time Badge (if not all-day event) -->
+                        <span th:if="${event.startTime != null && event.endTime != null}"
+                              class="badge bg-primary" style="font-size: 0.65rem;">
+                            <i class="bi bi-clock"></i>
+                            <span th:text="${event.startTime.toString().substring(0,5) + ' - ' + event.endTime.toString().substring(0,5)}"></span>
+                        </span>
                         <span th:if="${event.eventDate.isBefore(T(java.time.LocalDate).now())}"
                               class="badge bg-secondary" style="font-size: 0.65rem;">PAST</span>
                         <span th:if="${!event.eventDate.isBefore(T(java.time.LocalDate).now())}"
@@ -308,6 +347,16 @@
                     <div class="event-date">
                         <i class="bi bi-calendar3"></i>
                         <span th:text="${#temporals.format(event.eventDate, 'MMMM dd, yyyy')}"></span>
+                    </div>
+                    <!-- Participants List -->
+                    <div th:if="${not event.participants.isEmpty()}" class="mt-2 small">
+                        <i class="bi bi-people-fill" style="color: var(--accent-gold);"></i>
+                        <strong>Participants:</strong>
+                        <span th:each="participant, iterStat : ${event.participants}">
+                            <a th:href="@{/parishioners/view/{id}(id=${participant.parishioner.id})}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"
+                               th:text="${participant.parishioner.firstName + ' ' + participant.parishioner.lastName}"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
                     </div>
                     <div class="event-description" th:if="${event.eventDescription != null}"
                          th:text="${event.eventDescription}"></div>
@@ -328,15 +377,41 @@
 
         <!-- Add Regular Event Form -->
         <form th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+            <!-- Conflict Warning -->
+            <div id="conflictWarning" style="display: none;"></div>
+
+            <!-- Row 1: Event Title, Date -->
             <div class="row g-2">
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <input type="text" name="eventTitle" class="form-control" placeholder="Event Title" required>
                 </div>
-                <div class="col-md-2">
-                    <input type="date" name="eventDate" class="form-control" required>
+                <div class="col-md-3">
+                    <input type="date" id="eventDate" name="eventDate" class="form-control" required>
                 </div>
                 <div class="col-md-4">
                     <input type="text" name="eventDescription" class="form-control" placeholder="Description (optional)">
+                </div>
+            </div>
+
+            <!-- Row 2: Start Time, End Time, Additional Participants -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-2">
+                    <select id="startTime" name="startTime" class="form-select">
+                        <option value="">Start Time</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="endTime" name="endTime" class="form-select">
+                        <option value="">End Time</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select id="additionalParticipants" name="additionalParticipants" class="form-select" multiple>
+                        <option value="" disabled>Add participants (optional)</option>
+                        <option th:each="p : ${allParishioners}"
+                                th:value="${p.id}"
+                                th:text="${p.firstName + ' ' + p.lastName}"></option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-warning w-100">
@@ -344,16 +419,23 @@
                     </button>
                 </div>
             </div>
-            <input type="hidden" name="sacramentType" value="NONE">
-            <!-- Google Calendar Sync Checkbox (only show if authenticated) -->
-            <div th:if="${isGoogleAuthenticated}" class="mt-2">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="syncEventToGoogle" name="syncToGoogle" value="true" checked>
-                    <label class="form-check-label small text-muted" for="syncEventToGoogle">
-                        Add to my Google Calendar
-                    </label>
+
+            <!-- Row 3: Google Sync -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-12" th:if="${isGoogleAuthenticated}">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="syncEventToGoogle" name="syncToGoogle" value="true" checked>
+                        <label class="form-check-label small text-muted" for="syncEventToGoogle">
+                            Add to my Google Calendar
+                        </label>
+                    </div>
                 </div>
             </div>
+
+            <!-- Hidden field for sacrament type -->
+            <input type="hidden" name="sacramentType" value="NONE">
+
+            <!-- Google Auth Info -->
             <small class="text-muted d-block mt-2">
                 <span th:unless="${isGoogleAuthenticated}">
                     <i class="bi bi-info-circle"></i> <a href="/login" class="text-decoration-none">Sign in with Google</a> to enable Google Calendar sync
@@ -369,8 +451,14 @@
              th:classappend="${event.eventDate.isBefore(T(java.time.LocalDate).now())} ? 'past-event' : 'future-event'">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
-                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                         <strong class="text-gold" th:text="${event.eventTitle}"></strong>
+                        <!-- Time Badge (if not all-day event) -->
+                        <span th:if="${event.startTime != null && event.endTime != null}"
+                              class="badge bg-primary" style="font-size: 0.65rem;">
+                            <i class="bi bi-clock"></i>
+                            <span th:text="${event.startTime.toString().substring(0,5) + ' - ' + event.endTime.toString().substring(0,5)}"></span>
+                        </span>
                         <span th:if="${event.eventDate.isBefore(T(java.time.LocalDate).now())}"
                               class="badge bg-secondary" style="font-size: 0.65rem;">PAST</span>
                         <span th:if="${!event.eventDate.isBefore(T(java.time.LocalDate).now())}"
@@ -379,6 +467,16 @@
                     <div class="event-date">
                         <i class="bi bi-calendar3"></i>
                         <span th:text="${#temporals.format(event.eventDate, 'MMMM dd, yyyy')}"></span>
+                    </div>
+                    <!-- Participants List -->
+                    <div th:if="${not event.participants.isEmpty()}" class="mt-2 small">
+                        <i class="bi bi-people-fill" style="color: var(--accent-gold);"></i>
+                        <strong>Participants:</strong>
+                        <span th:each="participant, iterStat : ${event.participants}">
+                            <a th:href="@{/parishioners/view/{id}(id=${participant.parishioner.id})}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"
+                               th:text="${participant.parishioner.firstName + ' ' + participant.parishioner.lastName}"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
                     </div>
                     <div class="event-description" th:if="${event.eventDescription != null}"
                          th:text="${event.eventDescription}"></div>

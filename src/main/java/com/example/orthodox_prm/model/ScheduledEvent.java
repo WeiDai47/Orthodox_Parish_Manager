@@ -7,6 +7,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -37,9 +41,14 @@ public class ScheduledEvent {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "parishioner_id", nullable = false)
-    private Parishioner parishioner;
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<EventParticipant> participants = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -50,5 +59,36 @@ public class ScheduledEvent {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Helper Methods
+
+    /**
+     * Adds a parishioner as a participant to this event
+     */
+    public void addParticipant(Parishioner parishioner) {
+        if (parishioner != null && !participants.stream()
+                .anyMatch(p -> p.getParishioner().getId().equals(parishioner.getId()))) {
+            EventParticipant participant = new EventParticipant();
+            participant.setEvent(this);
+            participant.setParishioner(parishioner);
+            participants.add(participant);
+        }
+    }
+
+    /**
+     * Returns true if this is an all-day event (no start/end times specified)
+     */
+    public boolean isAllDayEvent() {
+        return startTime == null && endTime == null;
+    }
+
+    /**
+     * Gets the list of parishioners participating in this event
+     */
+    public List<Parishioner> getParishioners() {
+        return participants.stream()
+                .map(EventParticipant::getParishioner)
+                .collect(Collectors.toList());
     }
 }

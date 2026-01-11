@@ -82,7 +82,7 @@ public class Parishioner {
     private List<Note> notes = new ArrayList<>();
 
     @OneToMany(mappedBy = "parishioner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduledEvent> scheduledEvents = new ArrayList<>();
+    private List<EventParticipant> eventParticipations = new ArrayList<>();
 
     // Manual Overrides for non-members
     private String manualSpouseName;

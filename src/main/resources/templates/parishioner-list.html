@@ -188,6 +188,8 @@
                 <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName : p.manualSponsorName}"></td>
 
                 <td>
+                    <a th:href="@{/parishioners/view/{id}(id=${p.id})}"
+                       class="btn btn-sm btn-outline-info me-1">View</a>
                     <a th:href="@{/parishioners/edit/{id}(id=${p.id})}"
                        class="btn btn-sm btn-outline-warning">Edit</a>
                 </td>

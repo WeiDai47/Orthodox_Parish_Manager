@@ -114,6 +114,12 @@
                 </small>
             </h2>
             <div>
+                <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list"></i> All Parishioners
+                </a>
                 <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailModal">
                     <i class="bi bi-envelope"></i> Email
                 </button>
@@ -126,32 +132,178 @@
             </div>
         </div>
 
-        <!-- Basic Information -->
-        <div class="section-header">Basic Information</div>
+        <!-- Legal Identity & Contact -->
+        <div class="section-header"><i class="bi bi-person"></i> Legal Identity & Contact</div>
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">Status</div>
-                <div class="info-value" th:text="${parishioner.status}"></div>
+                <div class="info-label">First Name</div>
+                <div class="info-value" th:text="${parishioner.firstName}"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Last Name</div>
+                <div class="info-value" th:text="${parishioner.lastName}"></div>
             </div>
             <div class="info-item" th:if="${parishioner.birthday != null}">
                 <div class="info-label">Birthday</div>
-                <div class="info-value" th:text="${parishioner.birthday}"></div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.birthday, 'MMM dd, yyyy')}"></div>
             </div>
-            <div class="info-item" th:if="${parishioner.baptismDate != null}">
-                <div class="info-label">Baptism</div>
-                <div class="info-value" th:text="${parishioner.baptismDate}"></div>
+            <div class="info-item">
+                <div class="info-label">Membership Status</div>
+                <div class="info-value" th:text="${parishioner.status}"></div>
             </div>
-            <div class="info-item" th:if="${parishioner.chrismationDate != null}">
-                <div class="info-label">Chrismation</div>
-                <div class="info-value" th:text="${parishioner.chrismationDate}"></div>
+            <div class="info-item">
+                <div class="info-label">Phone Number</div>
+                <div class="info-value" th:if="${parishioner.phoneNumber != null && parishioner.phoneNumber.trim() != ''}" th:text="${parishioner.phoneNumber}"></div>
+                <div class="info-value text-muted" th:if="${parishioner.phoneNumber == null || parishioner.phoneNumber.trim() == ''}">(Not provided)</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value" th:if="${parishioner.email != null && parishioner.email.trim() != ''}">
+                    <a th:href="@{'mailto:' + parishioner.email}" th:text="${parishioner.email}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+                <div class="info-value text-muted" th:if="${parishioner.email == null || parishioner.email.trim() == ''}">(Not provided)</div>
+            </div>
+        </div>
+
+        <!-- Orthodox Identity -->
+        <div class="section-header"><i class="bi bi-star-fill"></i> Orthodox Identity</div>
+        <div class="info-grid">
+            <div class="info-item" th:if="${parishioner.baptismalName != null}">
+                <div class="info-label">Baptismal Name</div>
+                <div class="info-value" th:text="${parishioner.baptismalName}"></div>
             </div>
             <div class="info-item" th:if="${parishioner.patronSaint != null}">
                 <div class="info-label">Patron Saint</div>
                 <div class="info-value" th:text="${parishioner.patronSaint}"></div>
             </div>
+            <div class="info-item" th:if="${parishioner.nameDay != null}">
+                <div class="info-label">Name Day / Feast Day</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.nameDay, 'MMM dd')}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.baptismDate != null}">
+                <div class="info-label">Baptism Date</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.baptismDate, 'MMM dd, yyyy')}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.chrismationDate != null}">
+                <div class="info-label">Chrismation Date</div>
+                <div class="info-value" th:text="${#temporals.format(parishioner.chrismationDate, 'MMM dd, yyyy')}"></div>
+            </div>
+        </div>
+
+        <!-- Marriage & Family -->
+        <div class="section-header"><i class="bi bi-people"></i> Marriage & Family</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Marital Status</div>
+                <div class="info-value" th:text="${parishioner.maritalStatus}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.spouse != null}">
+                <div class="info-label">Spouse</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.spouse.id})}"
+                       th:text="${parishioner.spouse.firstName + ' ' + parishioner.spouse.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.spouse == null && parishioner.manualSpouseName != null}">
+                <div class="info-label">Spouse (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualSpouseName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.weddingSponsor != null}">
+                <div class="info-label">Wedding Sponsor (Koumbaro)</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.weddingSponsor.id})}"
+                       th:text="${parishioner.weddingSponsor.firstName + ' ' + parishioner.weddingSponsor.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.weddingSponsor == null && parishioner.manualSponsorName != null}">
+                <div class="info-label">Wedding Sponsor (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualSponsorName}"></div>
+            </div>
+        </div>
+
+        <!-- Household & Address -->
+        <div class="section-header"><i class="bi bi-house"></i> Household & Address</div>
+        <div class="info-grid">
             <div class="info-item" th:if="${parishioner.household != null}">
-                <div class="info-label">Household</div>
+                <div class="info-label">Household Name</div>
                 <div class="info-value" th:text="${parishioner.household.familyName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && parishioner.household.address != null}">
+                <div class="info-label">Street Address</div>
+                <div class="info-value" th:text="${parishioner.household.address}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && parishioner.household.city != null}">
+                <div class="info-label">City</div>
+                <div class="info-value" th:text="${parishioner.household.city}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.household != null && !parishioner.household.members.isEmpty()}">
+                <div class="info-label">Household Members</div>
+                <div class="info-value">
+                    <span th:each="member, iterStat : ${parishioner.household.members}">
+                        <a th:href="@{/parishioners/view/{id}(id=${member.id})}"
+                           th:text="${member.firstName + ' ' + member.lastName}"
+                           class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spiritual Parents (Godparents) -->
+        <div class="section-header"><i class="bi bi-heart-fill"></i> Spiritual Parents (Godparents)</div>
+        <div class="info-grid">
+            <div class="info-item" th:if="${parishioner.godfather != null}">
+                <div class="info-label">Godfather</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.godfather.id})}"
+                       th:text="${parishioner.godfather.firstName + ' ' + parishioner.godfather.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godfather == null && parishioner.manualGodfatherName != null}">
+                <div class="info-label">Godfather (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualGodfatherName}"></div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godmother != null}">
+                <div class="info-label">Godmother</div>
+                <div class="info-value">
+                    <a th:href="@{/parishioners/view/{id}(id=${parishioner.godmother.id})}"
+                       th:text="${parishioner.godmother.firstName + ' ' + parishioner.godmother.lastName}"
+                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                </div>
+            </div>
+            <div class="info-item" th:if="${parishioner.godmother == null && parishioner.manualGodmotherName != null}">
+                <div class="info-label">Godmother (Manual Entry)</div>
+                <div class="info-value" th:text="${parishioner.manualGodmotherName}"></div>
+            </div>
+        </div>
+
+        <!-- Spiritual Offspring (Godchildren) -->
+        <div th:if="${!parishioner.childrenAsGodfather.isEmpty() || !parishioner.childrenAsGodmother.isEmpty()}">
+            <div class="section-header"><i class="bi bi-star-fill"></i> Spiritual Offspring (Godchildren)</div>
+            <div class="info-grid">
+                <div class="info-item" th:if="${!parishioner.childrenAsGodfather.isEmpty()}">
+                    <div class="info-label">Godchildren (as Godfather)</div>
+                    <div class="info-value">
+                        <span th:each="child, iterStat : ${parishioner.childrenAsGodfather}">
+                            <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
+                               th:text="${child.firstName + ' ' + child.lastName}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item" th:if="${!parishioner.childrenAsGodmother.isEmpty()}">
+                    <div class="info-label">Godchildren (as Godmother)</div>
+                    <div class="info-value">
+                        <span th:each="child, iterStat : ${parishioner.childrenAsGodmother}">
+                            <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
+                               th:text="${child.firstName + ' ' + child.lastName}"
+                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 

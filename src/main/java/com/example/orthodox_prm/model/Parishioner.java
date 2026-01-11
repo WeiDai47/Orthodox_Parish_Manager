@@ -53,6 +53,10 @@ public class Parishioner {
     private LocalDate baptismDate;
     private LocalDate chrismationDate;
 
+    // Individual Contact Information
+    private String phoneNumber;
+    private String email;
+
     // Relationships
     @ManyToOne
     @JoinColumn(name = "household_id")

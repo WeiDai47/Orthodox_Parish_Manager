@@ -94,13 +94,15 @@ public class ParishionerController {
                          @RequestParam(required = false) Long householdId,
                          @RequestParam(required = false) String newHouseholdName,
                          @RequestParam(required = false) String address,
-                         @RequestParam(required = false) String city,
-                         @RequestParam(required = false) String phoneNumber,
-                         @RequestParam(required = false) String householdEmail) {
+                         @RequestParam(required = false) String city) {
 
         // 1. Fetch the existing state from DB to identify the current spouse before changes
         Parishioner existingRecord = parishionerRepository.findById(parishioner.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + parishioner.getId()));
+
+        // Helper method to check if any household data is provided
+        boolean hasHouseholdData = (address != null && !address.trim().isEmpty()) ||
+                (city != null && !city.trim().isEmpty());
 
         // 1.5. HANDLE HOUSEHOLD MANAGEMENT
         if (newHouseholdName != null && !newHouseholdName.trim().isEmpty()) {
@@ -109,8 +111,6 @@ public class ParishionerController {
             newHousehold.setFamilyName(newHouseholdName);
             newHousehold.setAddress(address);
             newHousehold.setCity(city);
-            newHousehold.setPhoneNumber(phoneNumber);
-            newHousehold.setEmail(householdEmail);
             Household savedHousehold = householdRepository.save(newHousehold);
             parishioner.setHousehold(savedHousehold);
         }
@@ -121,7 +121,7 @@ public class ParishionerController {
             parishioner.setHousehold(existingHousehold);
         }
         else {
-            // Keep current household but update its address
+            // Keep current household but update its details
             if (parishioner.getHousehold() != null) {
                 Household currentHousehold = parishioner.getHousehold();
                 // Only update if household already exists in DB (not a new shallow reference)
@@ -129,26 +129,20 @@ public class ParishionerController {
                     currentHousehold = householdRepository.findById(currentHousehold.getId())
                             .orElse(currentHousehold);
 
-                    // Update address fields
+                    // Update address fields only
                     currentHousehold.setAddress(address);
                     currentHousehold.setCity(city);
-                    currentHousehold.setPhoneNumber(phoneNumber);
-                    currentHousehold.setEmail(householdEmail);
                     householdRepository.save(currentHousehold);
                     parishioner.setHousehold(currentHousehold);
                 }
-            } else {
-                // No household assigned and none selected - create one if address provided
-                if (address != null && !address.trim().isEmpty()) {
-                    Household newHousehold = new Household();
-                    newHousehold.setFamilyName(parishioner.getLastName() + " Family");
-                    newHousehold.setAddress(address);
-                    newHousehold.setCity(city);
-                    newHousehold.setPhoneNumber(phoneNumber);
-                    newHousehold.setEmail(householdEmail);
-                    Household savedHousehold = householdRepository.save(newHousehold);
-                    parishioner.setHousehold(savedHousehold);
-                }
+            } else if (hasHouseholdData) {
+                // No household assigned and none selected - create one if address or city provided
+                Household newHousehold = new Household();
+                newHousehold.setFamilyName(parishioner.getLastName() + " Family");
+                newHousehold.setAddress(address);
+                newHousehold.setCity(city);
+                Household savedHousehold = householdRepository.save(newHousehold);
+                parishioner.setHousehold(savedHousehold);
             }
         }
 

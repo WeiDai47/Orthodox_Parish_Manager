@@ -2,6 +2,7 @@ package com.example.orthodox_prm.service;
 
 import com.example.orthodox_prm.dto.ConflictReport;
 import com.example.orthodox_prm.dto.GoogleCalendarEvent;
+import com.example.orthodox_prm.repository.UserPreferencesRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -34,16 +35,19 @@ public class GoogleCalendarService {
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final UserPreferencesRepository userPreferencesRepository;
 
     private static final String GOOGLE_CALENDAR_API_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 
     public GoogleCalendarService(
             OAuth2AuthorizedClientService authorizedClientService,
             RestTemplate restTemplate,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            UserPreferencesRepository userPreferencesRepository) {
         this.authorizedClientService = authorizedClientService;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.userPreferencesRepository = userPreferencesRepository;
     }
 
     /**
@@ -198,6 +202,9 @@ public class GoogleCalendarService {
         event.put("summary", title);
         event.put("description", buildDescription(description, sacramentType));
 
+        // Get user's timezone preference
+        String userTimezone = getUserTimezone();
+
         Map<String, Object> start = new HashMap<>();
         Map<String, Object> end = new HashMap<>();
 
@@ -208,17 +215,17 @@ public class GoogleCalendarService {
             start.put("date", dateString);
             end.put("date", nextDayString);
         } else {
-            // Timed event
-            ZoneId zoneId = ZoneId.of("America/New_York");
+            // Timed event - use user's timezone
+            ZoneId zoneId = ZoneId.of(userTimezone);
             LocalDateTime startDateTime = LocalDateTime.of(date, startTime);
             LocalDateTime endDateTime = LocalDateTime.of(date, endTime);
             ZonedDateTime startZoned = startDateTime.atZone(zoneId);
             ZonedDateTime endZoned = endDateTime.atZone(zoneId);
 
             start.put("dateTime", startZoned.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            start.put("timeZone", "America/New_York");
+            start.put("timeZone", userTimezone);
             end.put("dateTime", endZoned.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            end.put("timeZone", "America/New_York");
+            end.put("timeZone", userTimezone);
         }
 
         event.put("start", start);
@@ -245,6 +252,37 @@ public class GoogleCalendarService {
             log.error("Error building event JSON", e);
             return "{}";
         }
+    }
+
+    /**
+     * Get the current user's timezone preference
+     * Defaults to America/New_York if not set
+     */
+    private String getUserTimezone() {
+        try {
+            String username = getCurrentUsername();
+            return userPreferencesRepository.findByUsername(username)
+                    .map(prefs -> prefs.getTimezone())
+                    .orElse("America/New_York");
+        } catch (Exception e) {
+            log.warn("Could not fetch user timezone, using default", e);
+            return "America/New_York";
+        }
+    }
+
+    /**
+     * Get the current authenticated username
+     */
+    private String getCurrentUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.getPrincipal() instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) auth.getPrincipal();
+            Object email = oAuth2User.getAttribute("email");
+            return email != null ? email.toString() : oAuth2User.getName();
+        }
+
+        return auth != null ? auth.getName() : "anonymous";
     }
 
     /**

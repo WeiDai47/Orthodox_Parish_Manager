@@ -73,7 +73,7 @@
                 <select name="sponsorId" id="sponsorSelect" class="form-select">
                     <option value="">Search for a Sponsor...</option>
                     <option th:each="p : ${parishioners}" th:value="${p.id}"
-                            th:text="${p.firstName + ' ' + p.lastName + (p.baptismalName != null ? ' (' + p.baptismalName + ')' : '')}"></option>
+                            th:text="${p.firstName + ' ' + p.lastName + (p.nameSuffix != null && p.nameSuffix.trim() != '' ? ' ' + p.nameSuffix : '') + (p.baptismalName != null ? ' (' + p.baptismalName + ')' : '')}"></option>
                 </select>
             </div>
 

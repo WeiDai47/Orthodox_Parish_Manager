@@ -32,7 +32,7 @@
     <div class="card p-4 shadow-lg border-0">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-gold m-0">Edit Record: <span th:text="${parishioner.firstName + ' ' + parishioner.lastName}"></span></h2>
+            <h2 class="text-gold m-0">Edit Record: <span th:text="${parishioner.firstName + ' ' + parishioner.lastName + (parishioner.nameSuffix != null && parishioner.nameSuffix.trim() != '' ? ' ' + parishioner.nameSuffix : '')}"></span></h2>
             <div>
                 <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-house"></i> Dashboard
@@ -64,6 +64,20 @@
                         <div class="col-md-3">
                             <label>Last Name</label>
                             <input type="text" th:field="*{lastName}" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Name Suffix</label>
+                            <select th:field="*{nameSuffix}" class="form-select">
+                                <option value="">-- None --</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="I">I</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                                <option value="DO">DO</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label>Birthday</label>

@@ -64,12 +64,24 @@ public class GmailController {
                 .map(p -> {
                     RecipientDTO dto = new RecipientDTO();
                     dto.setParishionerId(p.getId());
-                    dto.setFullName(p.getFirstName() + " " + p.getLastName());
+                    String fullName = p.getFirstName() + " " + p.getLastName();
+                    if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                        fullName += " " + p.getNameSuffix();
+                    }
+                    dto.setFullName(fullName);
                     dto.setStatus(p.getStatus() != null ? p.getStatus().toString() : "");
+
+                    // Use individual email first, fall back to household
+                    String email = null;
+                    if (p.getEmail() != null && !p.getEmail().trim().isEmpty()) {
+                        email = p.getEmail();
+                    } else if (p.getHousehold() != null && p.getHousehold().getEmail() != null && !p.getHousehold().getEmail().trim().isEmpty()) {
+                        email = p.getHousehold().getEmail();
+                    }
+                    dto.setEmail(email);
 
                     Household household = p.getHousehold();
                     if (household != null) {
-                        dto.setEmail(household.getEmail());
                         dto.setHouseholdName(household.getFamilyName());
                     }
 
@@ -89,6 +101,20 @@ public class GmailController {
                          @RequestParam String sendMode,
                          Model model,
                          RedirectAttributes redirectAttributes) {
+
+        // Validate subject and body
+        if (subject == null || subject.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Email subject cannot be empty.");
+            return "redirect:/gmail";
+        }
+        if (body == null || body.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Email body cannot be empty.");
+            return "redirect:/gmail";
+        }
+
+        // Trim values
+        subject = subject.trim();
+        body = body.trim();
 
         // Collect recipients
         Set<Parishioner> parishioners = new HashSet<>();
@@ -111,20 +137,27 @@ public class GmailController {
 
         // Add group selections by status
         if (groupStatuses != null && !groupStatuses.isEmpty()) {
-            for (String statusStr : groupStatuses) {
-                try {
-                    MembershipStatus status = MembershipStatus.valueOf(statusStr);
-                    List<Parishioner> statusGroup = parishionerRepository.findAll()
-                            .stream()
-                            .filter(p -> p.getStatus() == status && !isDeparted(p))
-                            .collect(Collectors.toList());
-                    parishioners.addAll(statusGroup);
-                } catch (IllegalArgumentException e) {
-                    log.warn("Invalid membership status: {}", statusStr);
+            // Filter out empty/null status strings
+            List<String> validStatuses = groupStatuses.stream()
+                    .filter(s -> s != null && !s.trim().isEmpty())
+                    .collect(Collectors.toList());
+
+            if (!validStatuses.isEmpty()) {
+                for (String statusStr : validStatuses) {
+                    try {
+                        MembershipStatus status = MembershipStatus.valueOf(statusStr.trim());
+                        List<Parishioner> statusGroup = parishionerRepository.findAll()
+                                .stream()
+                                .filter(p -> p.getStatus() == status && !isDeparted(p))
+                                .collect(Collectors.toList());
+                        parishioners.addAll(statusGroup);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Invalid membership status: {}", statusStr);
+                    }
                 }
+                if (filterCriteria.length() > 0) filterCriteria.append(" + ");
+                filterCriteria.append(String.join(",", validStatuses));
             }
-            if (filterCriteria.length() > 0) filterCriteria.append(" + ");
-            filterCriteria.append(String.join(",", groupStatuses));
         }
 
         // Extract emails and track missing
@@ -132,11 +165,21 @@ public class GmailController {
         List<String> missingEmails = new ArrayList<>();
 
         for (Parishioner p : parishioners) {
-            Household household = p.getHousehold();
             String fullName = p.getFirstName() + " " + p.getLastName();
+            if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                fullName += " " + p.getNameSuffix();
+            }
 
-            if (household != null && household.getEmail() != null && !household.getEmail().trim().isEmpty()) {
-                emailToName.put(household.getEmail(), fullName);
+            // Check individual email first, then household
+            String email = null;
+            if (p.getEmail() != null && !p.getEmail().trim().isEmpty()) {
+                email = p.getEmail();
+            } else if (p.getHousehold() != null && p.getHousehold().getEmail() != null && !p.getHousehold().getEmail().trim().isEmpty()) {
+                email = p.getHousehold().getEmail();
+            }
+
+            if (email != null) {
+                emailToName.put(email, fullName);
             } else {
                 missingEmails.add(fullName);
             }

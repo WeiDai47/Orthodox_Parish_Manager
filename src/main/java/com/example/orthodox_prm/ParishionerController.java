@@ -43,10 +43,10 @@ public class ParishionerController {
         List<Parishioner> parishioners;
 
         // Logic to decide which search to run
-        if (searchName != null && !searchName.isEmpty()) {
-            parishioners = parishionerRepository.searchBySecularName(searchName, sort);
-        } else if (searchBaptismal != null && !searchBaptismal.isEmpty()) {
-            parishioners = parishionerRepository.searchByBaptismalName(searchBaptismal, sort);
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            parishioners = parishionerRepository.searchBySecularName(searchName.trim(), sort);
+        } else if (searchBaptismal != null && !searchBaptismal.trim().isEmpty()) {
+            parishioners = parishionerRepository.searchByBaptismalName(searchBaptismal.trim(), sort);
         } else {
             parishioners = parishionerRepository.findAll(sort);
         }
@@ -356,20 +356,28 @@ public class ParishionerController {
             throw new IllegalArgumentException("Last name is required");
         }
 
+        // Trim all string inputs to prevent whitespace issues
+        firstName = firstName.trim();
+        lastName = lastName.trim();
+
         // 1. CREATE HOUSEHOLD
         Household household = new Household();
         household.setFamilyName(lastName + " Family");
-        household.setAddress(address);
-        household.setCity(city);
-        household.setPhoneNumber(phoneNumber);
-        household.setEmail(email);
+        if (address != null && !address.trim().isEmpty()) {
+            household.setAddress(address.trim());
+        }
+        if (city != null && !city.trim().isEmpty()) {
+            household.setCity(city.trim());
+        }
         Household savedHousehold = householdRepository.save(household);
 
         // 2. CREATE PARENT PARISHIONER
         Parishioner parent = new Parishioner();
         parent.setFirstName(firstName);
         parent.setLastName(lastName);
-        parent.setNameSuffix(nameSuffix);
+        if (nameSuffix != null && !nameSuffix.trim().isEmpty()) {
+            parent.setNameSuffix(nameSuffix.trim());
+        }
 
         // Set membership status from form
         try {
@@ -383,24 +391,40 @@ public class ParishionerController {
         parent.setPhoneNumber(phoneNumber);
         parent.setEmail(email);
 
+        // Trim optional string fields
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            parent.setPhoneNumber(phoneNumber.trim());
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            parent.setEmail(email.trim());
+        }
+
         // Orthodox-specific fields (only if isOrthodox = true)
         if (isOrthodox) {
-            parent.setBaptismalName(baptismalName);
-            parent.setPatronSaint(patronSaint);
+            if (baptismalName != null && !baptismalName.trim().isEmpty()) {
+                parent.setBaptismalName(baptismalName.trim());
+            }
+            if (patronSaint != null && !patronSaint.trim().isEmpty()) {
+                parent.setPatronSaint(patronSaint.trim());
+            }
             parent.setBaptismDate(baptismDate);
             parent.setChrismationDate(chrismationDate);
-            parent.setManualSponsorName(manualSponsorName);
+            if (manualSponsorName != null && !manualSponsorName.trim().isEmpty()) {
+                parent.setManualSponsorName(manualSponsorName.trim());
+            }
         }
 
         // Marital status and spouse (for both Orthodox and Non-Orthodox)
-        if (maritalStatusStr != null && !maritalStatusStr.isEmpty()) {
+        if (maritalStatusStr != null && !maritalStatusStr.trim().isEmpty()) {
             try {
                 parent.setMaritalStatus(MaritalStatus.valueOf(maritalStatusStr));
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Invalid marital status: " + maritalStatusStr);
             }
         }
-        parent.setManualSpouseName(manualSpouseName);
+        if (manualSpouseName != null && !manualSpouseName.trim().isEmpty()) {
+            parent.setManualSpouseName(manualSpouseName.trim());
+        }
 
         parishionerRepository.save(parent);
 
@@ -408,11 +432,20 @@ public class ParishionerController {
         if (spouseFirstName != null && !spouseFirstName.trim().isEmpty() &&
             spouseLastName != null && !spouseLastName.trim().isEmpty()) {
 
+            spouseFirstName = spouseFirstName.trim();
+            spouseLastName = spouseLastName.trim();
+
             Parishioner spouse = new Parishioner();
             spouse.setFirstName(spouseFirstName);
             spouse.setLastName(spouseLastName);
-            spouse.setEmail(spouseEmail);
-            spouse.setPhoneNumber(spousePhoneNumber);
+
+            // Trim optional spouse contact fields
+            if (spouseEmail != null && !spouseEmail.trim().isEmpty()) {
+                spouse.setEmail(spouseEmail.trim());
+            }
+            if (spousePhoneNumber != null && !spousePhoneNumber.trim().isEmpty()) {
+                spouse.setPhoneNumber(spousePhoneNumber.trim());
+            }
             spouse.setHousehold(savedHousehold); // Same household as parent
             spouse.setStatus(MembershipStatus.VISITOR);
             spouse.setMaritalStatus(MaritalStatus.MARRIED);
@@ -433,12 +466,19 @@ public class ParishionerController {
 
                     // Split child name into first/last (assume "FirstName LastName" format)
                     String[] nameParts = childNames[i].trim().split("\\s+", 2);
+
                     // Ensure first name is not empty
                     if (nameParts.length == 0 || nameParts[0].trim().isEmpty()) {
                         throw new IllegalArgumentException("Child name cannot be empty at index " + i);
                     }
-                    child.setFirstName(nameParts[0]);
-                    child.setLastName(nameParts.length > 1 ? nameParts[1] : lastName);
+
+                    String childFirstName = nameParts[0].trim();
+                    String childLastName = (nameParts.length > 1 && !nameParts[1].trim().isEmpty())
+                            ? nameParts[1].trim()
+                            : lastName;  // Falls back to parent's last name
+
+                    child.setFirstName(childFirstName);
+                    child.setLastName(childLastName);
 
                     child.setStatus(MembershipStatus.VISITOR);
                     child.setHousehold(savedHousehold);

@@ -112,9 +112,14 @@ public class DashboardService {
                     eventDate = pNameDay.atYear(startDate.getYear() + 1);
                 }
 
+                String fullName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    fullName += " " + p.getNameSuffix();
+                }
+
                 UpcomingEvent event = new UpcomingEvent();
                 event.setTitle("Name Day: " + (p.getBaptismalName() != null ? p.getBaptismalName() : p.getFirstName()));
-                event.setParishionerName(p.getFirstName() + " " + p.getLastName());
+                event.setParishionerName(fullName);
                 event.setDate(eventDate);
                 event.setTime(null); // Name days are all-day
                 event.setType("NAME_DAY");
@@ -156,9 +161,14 @@ public class DashboardService {
                     eventDate = pBaptismDay.atYear(startDate.getYear() + 1);
                 }
 
+                String fullName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    fullName += " " + p.getNameSuffix();
+                }
+
                 UpcomingEvent event = new UpcomingEvent();
                 event.setTitle("Baptism Anniversary: " + p.getFirstName());
-                event.setParishionerName(p.getFirstName() + " " + p.getLastName());
+                event.setParishionerName(fullName);
                 event.setDate(eventDate);
                 event.setTime(null); // Baptism days are all-day
                 event.setType("BAPTISM_DAY");
@@ -200,9 +210,14 @@ public class DashboardService {
                     eventDate = pBirthday.atYear(startDate.getYear() + 1);
                 }
 
+                String fullName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    fullName += " " + p.getNameSuffix();
+                }
+
                 UpcomingEvent event = new UpcomingEvent();
                 event.setTitle("Birthday: " + p.getFirstName());
-                event.setParishionerName(p.getFirstName() + " " + p.getLastName());
+                event.setParishionerName(fullName);
                 event.setDate(eventDate);
                 event.setTime(null); // Birthdays are all-day
                 event.setType("BIRTHDAY");
@@ -244,13 +259,24 @@ public class DashboardService {
                     eventDate = pMarriageDay.atYear(startDate.getYear() + 1);
                 }
 
-                String spouseName = p.getSpouse() != null
-                    ? p.getSpouse().getFirstName() + " " + p.getSpouse().getLastName()
-                    : (p.getManualSpouseName() != null ? p.getManualSpouseName() : "Unknown");
+                String spouseName;
+                if (p.getSpouse() != null) {
+                    spouseName = p.getSpouse().getFirstName() + " " + p.getSpouse().getLastName();
+                    if (p.getSpouse().getNameSuffix() != null && !p.getSpouse().getNameSuffix().trim().isEmpty()) {
+                        spouseName += " " + p.getSpouse().getNameSuffix();
+                    }
+                } else {
+                    spouseName = (p.getManualSpouseName() != null ? p.getManualSpouseName() : "Unknown");
+                }
+
+                String personName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    personName += " " + p.getNameSuffix();
+                }
 
                 UpcomingEvent event = new UpcomingEvent();
                 event.setTitle("Wedding Anniversary: " + p.getFirstName());
-                event.setParishionerName(p.getFirstName() + " " + p.getLastName() + " & " + spouseName);
+                event.setParishionerName(personName + " & " + spouseName);
                 event.setDate(eventDate);
                 event.setTime(null); // Wedding anniversaries are all-day
                 event.setType("WEDDING_ANNIVERSARY");
@@ -292,9 +318,14 @@ public class DashboardService {
                     eventDate = pChrismationDay.atYear(startDate.getYear() + 1);
                 }
 
+                String fullName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    fullName += " " + p.getNameSuffix();
+                }
+
                 UpcomingEvent event = new UpcomingEvent();
                 event.setTitle("Chrismation Anniversary: " + p.getFirstName());
-                event.setParishionerName(p.getFirstName() + " " + p.getLastName());
+                event.setParishionerName(fullName);
                 event.setDate(eventDate);
                 event.setTime(null); // Chrismation days are all-day
                 event.setType("CHRISMATION_DAY");

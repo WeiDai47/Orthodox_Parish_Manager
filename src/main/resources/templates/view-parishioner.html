@@ -108,7 +108,7 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="text-gold m-0">
-                <span th:text="${parishioner.firstName + ' ' + parishioner.lastName}"></span>
+                <span th:text="${parishioner.firstName + ' ' + parishioner.lastName + (parishioner.nameSuffix != null && parishioner.nameSuffix.trim() != '' ? ' ' + parishioner.nameSuffix : '')}"></span>
                 <small class="text-muted" style="font-size: 0.6em;" th:if="${parishioner.baptismalName != null}">
                     (<span th:text="${parishioner.baptismalName}"></span>)
                 </small>
@@ -207,7 +207,7 @@
                 <div class="info-label">Spouse</div>
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.spouse.id})}"
-                       th:text="${parishioner.spouse.firstName + ' ' + parishioner.spouse.lastName}"
+                       th:text="${parishioner.spouse.firstName + ' ' + parishioner.spouse.lastName + (parishioner.spouse.nameSuffix != null && parishioner.spouse.nameSuffix.trim() != '' ? ' ' + parishioner.spouse.nameSuffix : '')}"
                        class="text-decoration-none" style="color: var(--accent-gold);"></a>
                 </div>
             </div>
@@ -219,7 +219,7 @@
                 <div class="info-label">Wedding Sponsor (Koumbaro)</div>
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.weddingSponsor.id})}"
-                       th:text="${parishioner.weddingSponsor.firstName + ' ' + parishioner.weddingSponsor.lastName}"
+                       th:text="${parishioner.weddingSponsor.firstName + ' ' + parishioner.weddingSponsor.lastName + (parishioner.weddingSponsor.nameSuffix != null && parishioner.weddingSponsor.nameSuffix.trim() != '' ? ' ' + parishioner.weddingSponsor.nameSuffix : '')}"
                        class="text-decoration-none" style="color: var(--accent-gold);"></a>
                 </div>
             </div>
@@ -664,7 +664,7 @@
                 <p class="text-muted mb-3">Select who to include in the mass email:</p>
 
                 <div class="form-check mb-3" style="border-bottom: 1px solid var(--border-secondary); padding-bottom: 15px;">
-                    <input class="form-check-input" type="checkbox" id="checkIndividualOnly" checked>
+                    <input class="form-check-input" type="checkbox" id="checkIndividualOnly">
                     <label class="form-check-label" for="checkIndividualOnly">
                         <strong>Just this person</strong> (individual email only)
                     </label>

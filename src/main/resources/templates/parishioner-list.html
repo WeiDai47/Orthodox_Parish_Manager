@@ -28,7 +28,9 @@
             <i class="bi bi-file-earmark-spreadsheet"></i> Advanced Export
         </a>
 
-        <a href="/dashboard" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
+        <a href="/dashboard" class="btn btn-outline-warning btn-sm">
+            <i class="bi bi-house"></i> Back to Dashboard
+        </a>
     </div>
     <div class="mb-3">
         <div class="row g-2">
@@ -179,13 +181,13 @@
 
                 <td th:text="${p.household != null ? p.household.familyName : 'N/A'}"></td>
 
-                <td th:text="${p.spouse != null ? p.spouse.firstName + ' ' + p.spouse.lastName : p.manualSpouseName}"></td>
+                <td th:text="${p.spouse != null ? p.spouse.firstName + ' ' + p.spouse.lastName + (p.spouse.nameSuffix != null && p.spouse.nameSuffix.trim() != '' ? ' ' + p.spouse.nameSuffix : '') : p.manualSpouseName}"></td>
 
-                <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName : p.manualGodfatherName}"></td>
+                <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName + (p.godfather.nameSuffix != null && p.godfather.nameSuffix.trim() != '' ? ' ' + p.godfather.nameSuffix : '') : p.manualGodfatherName}"></td>
 
-                <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName : p.manualGodmotherName}"></td>
+                <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName + (p.godmother.nameSuffix != null && p.godmother.nameSuffix.trim() != '' ? ' ' + p.godmother.nameSuffix : '') : p.manualGodmotherName}"></td>
 
-                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName : p.manualSponsorName}"></td>
+                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName + (p.weddingSponsor.nameSuffix != null && p.weddingSponsor.nameSuffix.trim() != '' ? ' ' + p.weddingSponsor.nameSuffix : '') : p.manualSponsorName}"></td>
 
                 <td>
                     <a th:href="@{/parishioners/view/{id}(id=${p.id})}"

@@ -84,6 +84,10 @@
                             <input type="date" name="birthday" th:value="${parishioner.birthday}" class="form-control">
                         </div>
                         <div class="col-md-3">
+                            <label>Death Date</label>
+                            <input type="date" name="deathDate" th:value="${parishioner.deathDate}" class="form-control">
+                        </div>
+                        <div class="col-md-3">
                             <label>Membership Status</label>
                             <select th:field="*{status}" class="form-select">
                                 <option th:each="s : ${allStatuses}" th:value="${s}" th:text="${s}"></option>

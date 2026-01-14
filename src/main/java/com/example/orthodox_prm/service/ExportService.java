@@ -58,16 +58,18 @@ public class ExportService {
         XWPFTableRow header = table.getRow(0);
         header.getCell(0).setText("Legal Name");
         header.addNewTableCell().setText("Baptismal Name");
-        header.addNewTableCell().setText("Patron Saint");
         header.addNewTableCell().setText("Status");
+        header.addNewTableCell().setText("Date of Death");
+        header.addNewTableCell().setText("Patron Saint");
 
         for (Parishioner p : parishioners) {
             XWPFTableRow row = table.createRow();
             String legalName = (p.getFirstName() != null ? p.getFirstName() : "") + " " + (p.getLastName() != null ? p.getLastName() : "");
             row.getCell(0).setText(legalName.trim());
             row.getCell(1).setText(p.getBaptismalName() != null ? p.getBaptismalName() : "");
-            row.getCell(2).setText(p.getPatronSaint() != null ? p.getPatronSaint() : "");
-            row.getCell(3).setText(p.getStatus() != null ? p.getStatus().toString() : "");
+            row.getCell(2).setText(p.getStatus() != null ? p.getStatus().toString() : "");
+            row.getCell(3).setText(p.getDeathDate() != null ? p.getDeathDate().toString() : "");
+            row.getCell(4).setText(p.getPatronSaint() != null ? p.getPatronSaint() : "");
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -93,7 +95,7 @@ public class ExportService {
 
             // Header Row
             Row header = sheet.createRow(0);
-            String[] columns = {"Last Name", "First Name", "Baptismal Name", "Status", "Patron Saint", "Name Day"};
+            String[] columns = {"Last Name", "First Name", "Baptismal Name", "Status", "Date of Death", "Patron Saint", "Name Day"};
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = header.createCell(i);
                 cell.setCellValue(columns[i]);
@@ -107,8 +109,9 @@ public class ExportService {
                 row.createCell(1).setCellValue(p.getFirstName() != null ? p.getFirstName() : "");
                 row.createCell(2).setCellValue(p.getBaptismalName() != null ? p.getBaptismalName() : "");
                 row.createCell(3).setCellValue(p.getStatus() != null ? p.getStatus().toString() : "");
-                row.createCell(4).setCellValue(p.getPatronSaint() != null ? p.getPatronSaint() : "");
-                row.createCell(5).setCellValue(p.getNameDay() != null ? p.getNameDay().toString() : "");
+                row.createCell(4).setCellValue(p.getDeathDate() != null ? p.getDeathDate().toString() : "");
+                row.createCell(5).setCellValue(p.getPatronSaint() != null ? p.getPatronSaint() : "");
+                row.createCell(6).setCellValue(p.getNameDay() != null ? p.getNameDay().toString() : "");
             }
 
             workbook.write(out);

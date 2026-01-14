@@ -37,6 +37,10 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .permitAll()
                         .logoutSuccessUrl("/login?logout=true")
+                )
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' apis.google.com www.googleapis.com tenor.com"))
                 );
 
         return http.build();

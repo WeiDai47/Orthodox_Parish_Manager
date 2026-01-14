@@ -36,33 +36,36 @@ public class ExportController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<byte[]> generateExport(@ModelAttribute ParishionerFilterCriteria criteria) throws IOException {
+    public ResponseEntity<byte[]> generateExport(@ModelAttribute ParishionerFilterCriteria criteria) {
+        try {
+            // 1. Find the people using your existing Specification logic
+            // This automatically handles the DEPARTED status if it's in the criteria
+            List<Parishioner> list = parishionerRepository.findAll(ParishionerSpecification.filterBy(criteria));
 
-        // 1. Find the people using your existing Specification logic
-        // This automatically handles the DEPARTED status if it's in the criteria
-        List<Parishioner> list = parishionerRepository.findAll(ParishionerSpecification.filterBy(criteria));
+            // 2. Set the filename
+            String filename = (criteria.getStatus() == MembershipStatus.DEPARTED) ? "Departed_List" : "Parish_Report";
 
-        // 2. Set the filename
-        String filename = (criteria.getStatus() == MembershipStatus.DEPARTED) ? "Departed_List" : "Parish_Report";
+            // 3. Generate the file
+            byte[] data;
+            String contentType;
 
-        // 3. Generate the file
-        byte[] data;
-        String contentType;
+            if ("excel".equals(criteria.getFormat())) {
+                data = exportService.generateExcel(list);
+                filename += ".xlsx";
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            } else {
+                data = exportService.generateWordDoc(list);
+                filename += ".docx";
+                contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            }
 
-        if ("excel".equals(criteria.getFormat())) {
-            data = exportService.generateExcel(list);
-            filename += ".xlsx";
-            contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        } else {
-            data = exportService.generateWordDoc(list);
-            filename += ".docx";
-            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(data);
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(("Error generating export file: " + e.getMessage()).getBytes());
         }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(data);
     }
 
 }

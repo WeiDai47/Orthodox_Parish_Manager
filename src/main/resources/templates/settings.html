@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Settings - Orthodox Parish Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <script src="/js/theme-toggle.js"></script>
+    <style>
+        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; }
+        .card { background-color: var(--bg-secondary); border: 1px solid var(--border-secondary); }
+        .card-header { background-color: var(--bg-tertiary); color: var(--accent-gold); font-weight: 600; text-transform: uppercase; }
+        .text-gold { color: var(--accent-gold); }
+        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
+        .nav-link:hover { color: var(--text-primary) !important; }
+        .navbar { background-color: var(--bg-secondary); }
+        .settings-container { max-width: 800px; margin: 0 auto; }
+        .timezone-group { margin-bottom: 30px; }
+        .timezone-group-title {
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 10px;
+        }
+        .timezone-option {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .timezone-option:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+        }
+        .timezone-option input[type="radio"] {
+            cursor: pointer;
+        }
+        .success-message {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .section-header {
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            color: var(--accent-gold);
+        }
+        .btn-custom {
+            background-color: var(--accent-gold);
+            color: #000;
+            font-weight: 600;
+        }
+        .btn-custom:hover {
+            background-color: #f4c941;
+            color: #000;
+        }
+    </style>
+</head>
+<body class="py-3">
+
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container">
+        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
+            <a class="nav-link" href="/parishioners/add">Add Member</a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <i class="bi bi-sun-fill sun-icon"></i>
+                <i class="bi bi-moon-stars-fill moon-icon"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container settings-container">
+    <div class="mb-4">
+        <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <i class="bi bi-gear"></i> Settings
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Success Message -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show success-message" role="alert">
+                <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle"></i> <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Timezone Settings -->
+            <div class="section-header">
+                <h2 class="mb-0">
+                    <i class="bi bi-clock"></i> Timezone Preference
+                </h2>
+            </div>
+
+            <p class="text-muted mb-4">
+                Select your timezone. This timezone will be used when syncing events to your Google Calendar.
+                All event times will be interpreted and displayed in your selected timezone.
+            </p>
+
+            <form method="post" th:action="@{/settings}">
+                <div class="timezone-groups">
+                    <!-- Eastern -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Eastern Time (ET)</div>
+                        <div th:each="tz : ${timezones['Eastern']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'America/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Central -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Central Time (CT)</div>
+                        <div th:each="tz : ${timezones['Central']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'America/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Mountain -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Mountain Time (MT)</div>
+                        <div th:each="tz : ${timezones['Mountain']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'America/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Pacific -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Pacific Time (PT)</div>
+                        <div th:each="tz : ${timezones['Pacific']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'America/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Alaska -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Alaska Time (AKST)</div>
+                        <div th:each="tz : ${timezones['Alaska']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'America/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Hawaii -->
+                    <div class="timezone-group">
+                        <div class="timezone-group-title">Hawaii-Aleutian Time (HST)</div>
+                        <div th:each="tz : ${timezones['Hawaii']}">
+                            <label class="timezone-option d-flex align-items-center">
+                                <input type="radio" name="timezone" th:value="${tz}"
+                                       th:checked="${userPreferences.timezone == tz}">
+                                <span class="ms-2" th:text="${#strings.replace(tz, 'Pacific/', '').replace('_', ' ')}"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Selection Display -->
+                <div class="alert alert-info mt-4" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Current timezone:</strong>
+                    <span th:text="${userPreferences.timezone}"></span>
+                </div>
+
+                <!-- Save Button -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-custom btn-lg">
+                        <i class="bi bi-check-circle"></i> Save Settings
+                    </button>
+                    <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+
+            <!-- Info Section -->
+            <div class="mt-5 pt-4 border-top border-secondary">
+                <h5 class="text-gold mb-3">
+                    <i class="bi bi-exclamation-circle"></i> How This Works
+                </h5>
+                <ul class="small text-muted">
+                    <li><strong>Event Creation:</strong> When you create events or sacraments with a specific time, they will be interpreted in your selected timezone.</li>
+                    <li><strong>Google Calendar Sync:</strong> Events synced to your Google Calendar will use the timezone you selected here.</li>
+                    <li><strong>All-Day Events:</strong> All-day events are not affected by timezone settings.</li>
+                    <li><strong>Default:</strong> If you haven't set a timezone, the system defaults to Eastern Time (America/New_York).</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

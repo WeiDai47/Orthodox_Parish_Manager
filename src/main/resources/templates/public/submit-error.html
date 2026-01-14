@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card bg-secondary border-danger text-center">
+                    <div class="card-body p-5">
+                        <div style="font-size: 64px; color: #dc3545; margin-bottom: 20px;">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                        </div>
+                        <h2 class="text-danger mb-3">Error</h2>
+                        <p class="lead mb-4" th:text="${errorMessage}">An error occurred.</p>
+                        <hr class="my-4">
+                        <p class="text-muted small">If you believe this is a mistake, please contact your parish office.</p>
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-outline-gold">Return to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

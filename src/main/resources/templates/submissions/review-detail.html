@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Submission Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    <style>
+        .comparison-table { margin-top: 20px; }
+        .comparison-table th { background-color: var(--accent-gold); color: black; }
+        .changed { background-color: rgba(212, 175, 55, 0.2); }
+        .field-label { font-weight: bold; color: var(--accent-gold); }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="text-gold fw-bold">Review Submission</h1>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/submissions/review" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+        </div>
+
+        <div class="card bg-secondary border-gold mb-4">
+            <div class="card-header bg-gold text-dark fw-bold">
+                <i class="bi bi-info-circle"></i> Submission Details
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><span class="field-label">Type:</span>
+                            <span th:if="${submission.submissionType.name() == 'NEW'}" class="badge bg-info">NEW PARISHIONER</span>
+                            <span th:unless="${submission.submissionType.name() == 'NEW'}" class="badge bg-warning">UPDATE REQUEST</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><span class="field-label">Status:</span>
+                            <span th:if="${submission.status.name() == 'PENDING'}" class="badge bg-warning">PENDING</span>
+                            <span th:if="${submission.status.name() == 'APPROVED'}" class="badge bg-success">APPROVED</span>
+                            <span th:if="${submission.status.name() == 'REJECTED'}" class="badge bg-danger">REJECTED</span>
+                        </p>
+                    </div>
+                </div>
+                <p><span class="field-label">Submitted:</span> <span th:text="${#temporals.format(submission.submittedAt, 'MMMM dd, yyyy HH:mm')}"></span></p>
+                <div th:if="${submission.reviewedAt != null}">
+                    <p><span class="field-label">Reviewed:</span> <span th:text="${#temporals.format(submission.reviewedAt, 'MMMM dd, yyyy HH:mm')}"></span> by <span th:text="${submission.reviewedBy}"></span></p>
+                </div>
+                <div th:if="${submission.reviewNotes != null}">
+                    <p><span class="field-label">Notes:</span> <span th:text="${submission.reviewNotes}"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPDATE SUBMISSION: SIDE-BY-SIDE COMPARISON -->
+        <div th:if="${isUpdate && currentParishioner != null}" class="card bg-secondary border-gold mb-4">
+            <div class="card-header bg-gold text-dark fw-bold">
+                <i class="bi bi-arrow-left-right"></i> Current Data vs. Submitted Changes
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Current Value</th>
+                                <th>Submitted Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>First Name</td>
+                                <td th:text="${currentParishioner.firstName}"></td>
+                                <td th:classappend="${currentParishioner.firstName != submission.firstName ? 'changed' : ''}">
+                                    <span th:text="${submission.firstName}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Last Name</td>
+                                <td th:text="${currentParishioner.lastName}"></td>
+                                <td th:classappend="${currentParishioner.lastName != submission.lastName ? 'changed' : ''}">
+                                    <span th:text="${submission.lastName}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Email</td>
+                                <td th:text="${currentParishioner.email}"></td>
+                                <td th:classappend="${(currentParishioner.email != null ? currentParishioner.email : '') != (submission.email != null ? submission.email : '') ? 'changed' : ''}">
+                                    <span th:text="${submission.email}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Phone</td>
+                                <td th:text="${currentParishioner.phoneNumber}"></td>
+                                <td th:classappend="${(currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '') != (submission.phoneNumber != null ? submission.phoneNumber : '') ? 'changed' : ''}">
+                                    <span th:text="${submission.phoneNumber}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SUBMISSION: FULL DATA DISPLAY -->
+        <div th:unless="${isUpdate}" class="card bg-secondary border-gold mb-4">
+            <div class="card-header bg-gold text-dark fw-bold">
+                <i class="bi bi-file-earmark-text"></i> Submitted Information
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <p><span class="field-label">First Name:</span> <span th:text="${submission.firstName}"></span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><span class="field-label">Last Name:</span> <span th:text="${submission.lastName}"></span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><span class="field-label">Email:</span> <span th:text="${submission.email}"></span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><span class="field-label">Phone:</span> <span th:text="${submission.phoneNumber}"></span></p>
+                    </div>
+                    <div th:if="${submission.isOrthodox}" class="col-md-6 mb-3">
+                        <p><span class="field-label">Baptismal Name:</span> <span th:text="${submission.baptismalName}"></span></p>
+                    </div>
+                    <div th:if="${submission.isOrthodox}" class="col-md-6 mb-3">
+                        <p><span class="field-label">Patron Saint:</span> <span th:text="${submission.patronSaint}"></span></p>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <p><span class="field-label">Address:</span> <span th:text="${submission.address}"></span> <span th:text="${submission.city}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPROVAL/REJECTION ACTIONS -->
+        <div th:if="${submission.status.name() == 'PENDING'}" class="row">
+            <div class="col-md-6">
+                <form th:action="@{/submissions/review/{id}/approve(id=${submission.id})}" method="post" class="card bg-success border-0">
+                    <div class="card-body">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-success w-100 fw-bold">
+                            <i class="bi bi-check-circle"></i> Approve & Create/Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <form th:action="@{/submissions/review/{id}/reject(id=${submission.id})}" method="post" class="card bg-danger border-0">
+                    <div class="card-body">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <textarea name="rejectionNotes" class="form-control form-control-sm mb-2" placeholder="Reason for rejection (optional)"></textarea>
+                        <button type="submit" class="btn btn-danger w-100 fw-bold">
+                            <i class="bi bi-x-circle"></i> Reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="/submissions/review" class="btn btn-outline-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

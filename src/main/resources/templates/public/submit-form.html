@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Submit Parish Information</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <script src="/js/theme-toggle.js"></script>
+    <style>
+        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
+        .card { background-color: var(--bg-secondary); border: 1px solid var(--accent-gold); border-radius: 10px; }
+        .form-control, .form-select { background-color: var(--bg-tertiary) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
+        .text-gold { color: var(--accent-gold); }
+        label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-header { border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-top: 25px; color: var(--accent-gold); font-weight: bold; font-size: 0.9rem; }
+        .child-row { background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .child-row .btn-outline-danger { font-size: 0.85rem; }
+        .form-check-input { background-color: var(--border-color); border-color: var(--border-color); }
+        .form-check-input:checked { background-color: var(--accent-gold); border-color: var(--accent-gold); }
+        .btn-warning { background-color: var(--accent-gold); color: black; font-weight: bold; }
+        .btn-warning:hover { background-color: var(--stat-color); color: black; }
+        .btn-outline-warning { color: var(--accent-gold); border-color: var(--accent-gold); }
+        .btn-outline-warning:hover { background-color: var(--accent-gold); color: black; }
+        .form-check-label { color: var(--accent-gold); }
+        .submission-type-section { background: var(--bg-tertiary); border: 1px solid var(--accent-gold); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    </style>
+</head>
+<body class="p-5">
+
+<button id="themeToggle" class="theme-toggle"
+        style="position: fixed; top: 20px; right: 20px; z-index: 1000;"
+        title="Toggle theme">
+    <i class="bi bi-sun-fill sun-icon"></i>
+    <i class="bi bi-moon-stars-fill moon-icon"></i>
+</button>
+
+<div class="container" style="max-width: 900px;">
+    <div class="card p-4 shadow-lg border-0">
+
+        <h2 class="text-gold mb-4">Submit Parish Information</h2>
+
+        <form th:action="@{/public/submit/{token}(token=${token})}" method="post" id="submitForm">
+
+            <!-- SUBMISSION TYPE SELECTION -->
+            <div class="submission-type-section">
+                <div class="section-header mb-3">Submission Type</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="submissionType" id="submissionNew" value="NEW" checked>
+                            <label class="form-check-label" for="submissionNew">
+                                <i class="bi bi-plus-circle"></i> New Information
+                            </label>
+                        </div>
+                        <small class="text-muted d-block ms-4">Submit information about a new member</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="submissionType" id="submissionUpdate" value="UPDATE">
+                            <label class="form-check-label" for="submissionUpdate">
+                                <i class="bi bi-pencil-square"></i> Update Existing
+                            </label>
+                        </div>
+                        <small class="text-muted d-block ms-4">Update information for someone already in our system</small>
+                    </div>
+                </div>
+                <div id="updateNameField" style="display: none; margin-top: 15px;">
+                    <label for="updateName">Your Full Name (to help us find your record)</label>
+                    <input type="text" id="updateName" name="updateName" class="form-control" placeholder="First Last Name">
+                </div>
+            </div>
+
+            <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
+            <div class="mb-4 p-3 border border-warning rounded">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
+                    <label class="form-check-label" for="isOrthodox">
+                        Orthodox Member (uncheck for Non-Orthodox)
+                    </label>
+                </div>
+            </div>
+
+            <div class="row g-3">
+
+                <!-- REQUIRED FIELDS -->
+                <div class="col-12"><div class="section-header">Basic Information (Required)</div></div>
+                <div class="col-md-6">
+                    <label>First Name *</label>
+                    <input type="text" name="firstName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Last Name *</label>
+                    <input type="text" name="lastName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Name Suffix</label>
+                    <select name="nameSuffix" class="form-select">
+                        <option value="">-- None --</option>
+                        <option value="Sr.">Sr.</option>
+                        <option value="Jr.">Jr.</option>
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                        <option value="DO">DO</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>Birthday</label>
+                    <input type="date" name="birthday" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label>Membership Status</label>
+                    <select name="membershipStatusStr" class="form-select">
+                        <option value="VISITOR">Visitor</option>
+                        <option value="INQUIRER">Inquirer</option>
+                        <option value="CATECHUMEN">Catechumen</option>
+                        <option value="MEMBER" selected>Member</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Personal Phone Number</label>
+                    <input type="tel" name="phoneNumber" class="form-control" placeholder="(123) 456-7890">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Personal Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="email@example.com">
+                </div>
+
+                <!-- ORTHODOX-ONLY FIELDS -->
+                <div id="orthodoxFields">
+                    <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
+                    <div class="col-md-4">
+                        <label>Baptismal Name</label>
+                        <input type="text" name="baptismalName" class="form-control" placeholder="e.g. Spyridon">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Patron Saint</label>
+                        <input type="text" name="patronSaint" class="form-control" placeholder="e.g. St. Spyridon">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Baptism Date</label>
+                        <input type="date" name="baptismDate" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Chrismation Date</label>
+                        <input type="date" name="chrismationDate" class="form-control">
+                    </div>
+                </div>
+
+                <!-- MARRIAGE SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Marriage Information</div></div>
+                <div class="col-md-6">
+                    <label>Marital Status</label>
+                    <select name="maritalStatusStr" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="SINGLE">Single</option>
+                        <option value="MARRIED">Married</option>
+                        <option value="WIDOW">Widow</option>
+                        <option value="DIVORCED">Divorced</option>
+                    </select>
+                </div>
+
+                <!-- SPOUSE INFORMATION -->
+                <div id="spouseFields" style="display: none;">
+                    <div class="col-12">
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> If your spouse is already in the system, please reference their information below. Otherwise, provide their details here.
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse First Name</label>
+                        <input type="text" name="spouseFirstName" class="form-control" placeholder="First name">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Last Name</label>
+                        <input type="text" name="spouseLastName" class="form-control" placeholder="Last name">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Email</label>
+                        <input type="email" name="spouseEmail" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Phone</label>
+                        <input type="tel" name="spousePhoneNumber" class="form-control" placeholder="(123) 456-7890">
+                    </div>
+                </div>
+
+                <!-- MANUAL RELATIONSHIP FIELDS (FALLBACK FOR NON-MATCHED RECORDS) -->
+                <div class="col-12"><div class="section-header">Relationships (Optional)</div></div>
+                <div class="col-md-6">
+                    <label>Godfather (Koumparos)</label>
+                    <input type="text" name="manualGodfatherName" class="form-control" placeholder="Godfather name">
+                </div>
+                <div class="col-md-6">
+                    <label>Godmother (Koumpara)</label>
+                    <input type="text" name="manualGodmotherName" class="form-control" placeholder="Godmother name">
+                </div>
+                <div class="col-md-6 orthodox-only">
+                    <label>Wedding Sponsor (Koumbaro)</label>
+                    <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
+                </div>
+                <div class="col-md-6">
+                    <label>Spouse Name (if not in system)</label>
+                    <input type="text" name="manualSpouseName" class="form-control" placeholder="Spouse name">
+                </div>
+
+                <!-- ADDRESS SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Household Address</div></div>
+                <div class="col-md-12">
+                    <label>Street Address</label>
+                    <input type="text" name="address" class="form-control" placeholder="123 Main St">
+                </div>
+                <div class="col-md-6">
+                    <label>City</label>
+                    <input type="text" name="city" class="form-control">
+                </div>
+
+                <!-- CHILDREN SECTION (BOTH TYPES) -->
+                <div class="col-12"><div class="section-header">Children (Optional)</div></div>
+                <div class="col-12">
+                    <div id="childrenContainer">
+                        <!-- Dynamic child rows will be added here -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-warning" id="addChildBtn">
+                        <i class="bi bi-plus-circle"></i> Add Child
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SUBMIT BUTTONS -->
+            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+                <button type="submit" class="btn btn-warning px-5 fw-bold">Submit Information</button>
+                <a href="/" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // 0. SUBMISSION TYPE TOGGLE LOGIC
+    const submissionNewRadio = document.getElementById('submissionNew');
+    const submissionUpdateRadio = document.getElementById('submissionUpdate');
+    const updateNameField = document.getElementById('updateNameField');
+    const updateNameInput = document.getElementById('updateName');
+
+    function updateSubmissionTypeVisibility() {
+        if (submissionUpdateRadio.checked) {
+            updateNameField.style.display = 'block';
+        } else {
+            updateNameField.style.display = 'none';
+            updateNameInput.value = '';
+        }
+    }
+
+    submissionNewRadio.addEventListener('change', updateSubmissionTypeVisibility);
+    submissionUpdateRadio.addEventListener('change', updateSubmissionTypeVisibility);
+    // Initialize on page load
+    updateSubmissionTypeVisibility();
+
+    // 1. ORTHODOX/NON-ORTHODOX TOGGLE LOGIC
+    const orthodoxCheckbox = document.getElementById('isOrthodox');
+    const orthodoxFields = document.getElementById('orthodoxFields');
+    const orthodoxOnlyElements = document.querySelectorAll('.orthodox-only');
+
+    function updateOrthodoxVisibility() {
+        if (orthodoxCheckbox.checked) {
+            // Show Orthodox fields
+            orthodoxFields.style.display = 'block';
+            orthodoxOnlyElements.forEach(el => el.style.display = 'block');
+        } else {
+            // Hide Orthodox fields and clear values
+            orthodoxFields.style.display = 'none';
+            orthodoxOnlyElements.forEach(el => el.style.display = 'none');
+            orthodoxFields.querySelectorAll('input').forEach(input => input.value = '');
+            orthodoxOnlyElements.forEach(el => el.querySelectorAll('input').forEach(input => input.value = ''));
+        }
+    }
+
+    orthodoxCheckbox.addEventListener('change', updateOrthodoxVisibility);
+    // Initialize on page load
+    updateOrthodoxVisibility();
+
+    // 2. DYNAMIC CHILDREN MANAGEMENT
+    let childCount = 0;
+    const childrenContainer = document.getElementById('childrenContainer');
+    const addChildBtn = document.getElementById('addChildBtn');
+
+    addChildBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        childCount++;
+
+        const childRow = document.createElement('div');
+        childRow.className = 'child-row';
+        childRow.id = `child-${childCount}`;
+        childRow.innerHTML = `
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label class="text-warning">Child ${childCount} Name</label>
+                    <input type="text" name="childNames" class="form-control" placeholder="First Last">
+                </div>
+                <div class="col-md-4">
+                    <label class="text-warning">Birthday</label>
+                    <input type="date" name="childBirthdays" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeChild(${childCount})">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+
+        childrenContainer.appendChild(childRow);
+    });
+
+    function removeChild(id) {
+        const childRow = document.getElementById(`child-${id}`);
+        if (childRow) {
+            childRow.remove();
+        }
+    }
+
+    // 3. SPOUSE FIELDS VISIBILITY BASED ON MARITAL STATUS
+    const maritalStatusSelect = document.querySelector('select[name="maritalStatusStr"]');
+    const spouseFields = document.getElementById('spouseFields');
+
+    function updateSpouseVisibility() {
+        const selectedStatus = maritalStatusSelect.value;
+        if (selectedStatus === 'MARRIED' || selectedStatus === 'WIDOW' || selectedStatus === 'DIVORCED') {
+            // Show spouse fields for married/widow/divorced statuses
+            spouseFields.style.display = 'block';
+        } else {
+            // Hide spouse fields and clear values
+            spouseFields.style.display = 'none';
+            spouseFields.querySelectorAll('input').forEach(input => input.value = '');
+        }
+    }
+
+    maritalStatusSelect.addEventListener('change', updateSpouseVisibility);
+    // Initialize on page load
+    updateSpouseVisibility();
+</script>
+</body>
+</html>

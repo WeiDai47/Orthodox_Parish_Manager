@@ -63,8 +63,42 @@
                     <input type="text" name="lastName" class="form-control" required>
                 </div>
                 <div class="col-md-6">
+                    <label>Name Suffix</label>
+                    <select name="nameSuffix" class="form-select">
+                        <option value="">-- None --</option>
+                        <option value="Sr.">Sr.</option>
+                        <option value="Jr.">Jr.</option>
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                        <option value="DO">DO</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
                     <label>Birthday</label>
                     <input type="date" name="birthday" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label>Membership Status</label>
+                    <select name="membershipStatusStr" class="form-select">
+                        <option value="VISITOR">Visitor</option>
+                        <option value="INQUIRER">Inquirer</option>
+                        <option value="CATECHUMEN">Catechumen</option>
+                        <option value="MEMBER" selected>Member</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Personal Phone Number</label>
+                    <input type="tel" name="phoneNumber" class="form-control" placeholder="(123) 456-7890">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Personal Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="email@example.com">
                 </div>
 
                 <!-- ORTHODOX-ONLY FIELDS -->
@@ -97,9 +131,30 @@
                         <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label>Spouse Name (if applicable)</label>
-                    <input type="text" name="manualSpouseName" class="form-control" placeholder="Spouse full name">
+
+                <!-- SPOUSE INFORMATION -->
+                <div id="spouseFields" style="display: none;">
+                    <div class="col-12">
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> This will create a new parishioner record for the spouse with the same household and address. If your spouse is already in the system, use the Edit page to link them instead.
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse First Name</label>
+                        <input type="text" name="spouseFirstName" class="form-control" placeholder="First name">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Last Name</label>
+                        <input type="text" name="spouseLastName" class="form-control" placeholder="Last name">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Email</label>
+                        <input type="email" name="spouseEmail" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Spouse Phone</label>
+                        <input type="tel" name="spousePhoneNumber" class="form-control" placeholder="(123) 456-7890">
+                    </div>
                 </div>
 
                 <!-- ORTHODOX-ONLY: WEDDING SPONSOR -->
@@ -117,14 +172,6 @@
                 <div class="col-md-6">
                     <label>City</label>
                     <input type="text" name="city" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label>Phone Number</label>
-                    <input type="tel" name="phoneNumber" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label>Email</label>
-                    <input type="email" name="email" class="form-control">
                 </div>
 
                 <!-- CHILDREN SECTION (BOTH TYPES) -->
@@ -213,6 +260,26 @@
             childRow.remove();
         }
     }
+
+    // 3. SPOUSE FIELDS VISIBILITY BASED ON MARITAL STATUS
+    const maritalStatusSelect = document.querySelector('select[name="maritalStatusStr"]');
+    const spouseFields = document.getElementById('spouseFields');
+
+    function updateSpouseVisibility() {
+        const selectedStatus = maritalStatusSelect.value;
+        if (selectedStatus === 'MARRIED' || selectedStatus === 'WIDOW' || selectedStatus === 'DIVORCED') {
+            // Show spouse fields for married/widow/divorced statuses
+            spouseFields.style.display = 'block';
+        } else {
+            // Hide spouse fields and clear values
+            spouseFields.style.display = 'none';
+            spouseFields.querySelectorAll('input').forEach(input => input.value = '');
+        }
+    }
+
+    maritalStatusSelect.addEventListener('change', updateSpouseVisibility);
+    // Initialize on page load
+    updateSpouseVisibility();
 </script>
 </body>
 </html>

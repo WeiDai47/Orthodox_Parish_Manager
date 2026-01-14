@@ -17,6 +17,20 @@
         .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
         .nav-link:hover { color: var(--text-primary) !important; }
         .navbar { background-color: var(--bg-secondary); }
+        .btn-logout {
+            background-color: #dc3545;
+            border: 2px solid #dc3545;
+            color: white;
+            font-weight: bold;
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
     </style>
 </head>
 <body class="py-3">
@@ -28,6 +42,18 @@
             <a class="nav-link" href="/dashboard">Dashboard</a>
             <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
             <a class="nav-link" href="/parishioners/add">Add Member</a>
+            <a class="nav-link" href="/gmail">
+                <i class="bi bi-envelope"></i> Email
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+            <form action="/logout" method="POST" style="display: inline;">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
             <button id="themeToggle" class="theme-toggle" title="Toggle theme">
                 <i class="bi bi-sun-fill sun-icon"></i>
                 <i class="bi bi-moon-stars-fill moon-icon"></i>
@@ -44,7 +70,7 @@
 
     <div class="row g-4">
 
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="card h-100">
                 <div class="card-header">Parish at a Glance</div>
                 <div class="card-body">
@@ -65,29 +91,113 @@
             </div>
         </div>
 
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <div class="card h-100">
-                <div class="card-header">Daily Commemorations (Name Days)</div>
+                <div class="card-header">Daily Commemorations & Upcoming Events (Next 7 Days)</div>
                 <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-transparent text-muted" th:if="${#lists.isEmpty(stats.todaysNameDays)}">
-                            No name days recorded for today.
+                    <ul class="list-group list-group-flush" id="upcomingEventsList">
+                        <li class="list-group-item bg-transparent text-muted" th:if="${#lists.isEmpty(stats.upcomingEvents)}">
+                            No upcoming events for the next 7 days.
                         </li>
-                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3" th:each="p : ${stats.todaysNameDays}">
-                            <div>
-                                <span class="fw-bold text-gold h5 mb-0" th:text="${p.baptismalName}">Name</span>
-                                <br>
-                                <small class="text-muted" th:text="${p.firstName} + ' ' + ${p.lastName}"></small>
+                        <li class="list-group-item bg-transparent border-secondary py-2 upcoming-event-item" th:each="event : ${stats.upcomingEvents}" th:data-event-type="${event.type}">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div style="font-size: 0.9rem;">
+                                    <span class="fw-bold text-gold" style="font-size: 0.95rem;" th:text="${event.title}">Event Title</span>
+                                    <br>
+                                    <span class="text-muted" style="font-size: 0.85rem;" th:text="${event.parishionerName}">Parishioner</span>
+                                    <br>
+                                    <span class="text-info" style="font-size: 0.85rem;">
+                                        <i class="bi bi-calendar-event"></i>
+                                        <span th:text="${#temporals.format(event.date, 'MMM dd, yyyy')}">Date</span>
+                                        <span th:if="${event.time != null}">
+                                            at <span th:text="${#temporals.format(event.time, 'h:mm a')}">Time</span>
+                                        </span>
+                                        <span th:if="${event.time == null}">(all-day)</span>
+                                    </span>
+                                </div>
+                                <span class="badge" style="font-size: 0.75rem; white-space: nowrap;" th:classappend="${event.type == 'NAME_DAY' ? 'bg-info' : event.type == 'BAPTISM_DAY' ? 'bg-warning text-dark' : event.type == 'BIRTHDAY' ? 'bg-primary' : event.type == 'WEDDING_ANNIVERSARY' ? 'bg-secondary' : event.type == 'CHRISMATION_DAY' ? 'bg-purple' : event.type == 'SACRAMENT' ? 'bg-danger' : 'bg-success'}" th:text="${event.type.replace('_', ' ')}">Type</span>
                             </div>
-                            <span class="badge border border-warning text-warning" th:text="${p.patronSaint}">Saint</span>
+                            <span class="text-muted d-block mt-1" style="font-size: 0.8rem;" th:if="${event.description}" th:text="${event.description}">Description</span>
                         </li>
                     </ul>
                 </div>
+                <!-- Pagination Controls -->
+                <div class="card-footer bg-transparent d-flex justify-content-between align-items-center" th:if="${not #lists.isEmpty(stats.upcomingEvents)}">
+                    <button class="btn btn-sm btn-outline-gold" id="prevPageBtn" onclick="showPreviousPage()">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span class="text-muted" id="pageInfo">Page 1 of 1</span>
+                    <button class="btn btn-sm btn-outline-gold" id="nextPageBtn" onclick="showNextPage()">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
-    </div> <div class="text-center mt-5">
-    <small class="text-muted">System Time: <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM dd, yyyy')}"></span></small>
+    </div>
+
+    <!-- Email Communication Section -->
+    <div class="row g-4 mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">Email Communication</div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-envelope"></i>
+                        Send emails to parishioners individually or in groups. Track all communications in one place.
+                    </p>
+                    <a href="/gmail" class="btn btn-warning">
+                        <i class="bi bi-envelope"></i> Compose Email
+                    </a>
+                    <a href="/gmail/history" class="btn btn-outline-warning">
+                        <i class="bi bi-clock-history"></i> View History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Calendar Section -->
+    <div class="row g-4 mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">Google Calendar</div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        Your Google Calendar events are synced with local sacraments and events. To view and manage your calendar directly:
+                    </p>
+                    <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right"></i> Open Google Calendar
+                    </a>
+                    <p class="text-muted mt-3 small">
+                        <strong>Note:</strong> Google Calendar events are automatically synced when you create sacraments and events in this system. View upcoming synced events in the Daily Commemorations section above.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <small class="text-muted">System Time: <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM dd, yyyy')}"></span></small>
+    </div>
 </div>
-</div>
+
+<style>
+    .btn-outline-gold {
+        color: var(--accent-gold);
+        border-color: var(--accent-gold);
+    }
+    .btn-outline-gold:hover {
+        background-color: var(--accent-gold);
+        border-color: var(--accent-gold);
+        color: var(--bg-primary);
+    }
+    .btn-outline-gold:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<script src="/js/pagination.js"></script>
 </body>
 </html>

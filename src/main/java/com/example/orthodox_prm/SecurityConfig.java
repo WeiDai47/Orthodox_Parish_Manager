@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -15,7 +16,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // ... existing code ...
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -23,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/login", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
@@ -31,7 +37,15 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll());
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .permitAll()
+                        .logoutSuccessUrl("/login?logout=true")
+                );
 
         return http.build();
     }

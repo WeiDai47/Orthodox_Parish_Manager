@@ -115,7 +115,7 @@
                                         <span th:if="${event.time == null}">(all-day)</span>
                                     </span>
                                 </div>
-                                <span class="badge" style="font-size: 0.75rem; white-space: nowrap;" th:classappend="${event.type == 'NAME_DAY' ? 'bg-info' : event.type == 'BAPTISM_DAY' ? 'bg-warning text-dark' : event.type == 'BIRTHDAY' ? 'bg-primary' : event.type == 'WEDDING_ANNIVERSARY' ? 'bg-secondary' : event.type == 'CHRISMATION_DAY' ? 'bg-purple' : event.type == 'SACRAMENT' ? 'bg-danger' : 'bg-success'}" th:text="${event.type.replace('_', ' ')}">Type</span>
+                                <span class="badge" style="font-size: 0.75rem; white-space: nowrap;" th:classappend="${event.type == 'NAME_DAY' ? 'bg-info' : event.type == 'BAPTISM_DAY' ? 'bg-warning text-dark' : event.type == 'BIRTHDAY' ? 'bg-primary' : event.type == 'WEDDING_ANNIVERSARY' ? 'bg-secondary' : event.type == 'CHRISMATION_DAY' ? 'bg-purple' : event.type == 'DEATH_ANNIVERSARY' ? 'bg-dark' : event.type == 'SACRAMENT' ? 'bg-danger' : 'bg-success'}" th:text="${event.type.replace('_', ' ')}">Type</span>
                             </div>
                             <span class="text-muted d-block mt-1" style="font-size: 0.8rem;" th:if="${event.description}" th:text="${event.description}">Description</span>
                         </li>

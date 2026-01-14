@@ -70,10 +70,13 @@ public class DashboardService {
         // 5. Get chrismation day anniversaries for next 7 days
         events.addAll(getChrismationDaysInRange(today, sevenDaysFromNow));
 
-        // 6. Get scheduled sacraments (new baptisms and chrismations) for next 7 days
+        // 6. Get death anniversaries for next 7 days
+        events.addAll(getDeathAnniversariesInRange(today, sevenDaysFromNow));
+
+        // 7. Get scheduled sacraments (new baptisms and chrismations) for next 7 days
         events.addAll(getScheduledSacraments(today, sevenDaysFromNow));
 
-        // 7. Get scheduled events for next 7 days
+        // 8. Get scheduled events for next 7 days
         events.addAll(getScheduledEvents(today, sevenDaysFromNow));
 
         // Sort by date and time (soonest first)
@@ -330,6 +333,55 @@ public class DashboardService {
                 event.setTime(null); // Chrismation days are all-day
                 event.setType("CHRISMATION_DAY");
                 event.setDescription("Chrismated on " + p.getChrismationDate());
+                event.setParishionerId(p.getId());
+                events.add(event);
+            }
+        }
+
+        return events;
+    }
+
+    /**
+     * Get death anniversaries for the specified date range
+     */
+    private List<UpcomingEvent> getDeathAnniversariesInRange(LocalDate startDate, LocalDate endDate) {
+        List<UpcomingEvent> events = new ArrayList<>();
+        List<Parishioner> allParishioners = parishionerRepo.findAll();
+
+        MonthDay startMonthDay = MonthDay.from(startDate);
+        MonthDay endMonthDay = MonthDay.from(endDate);
+
+        for (Parishioner p : allParishioners) {
+            if (p.getDeathDate() == null) continue;
+
+            MonthDay pDeathDay = MonthDay.from(p.getDeathDate());
+
+            // Check if death day anniversary falls within the range
+            boolean isInRange;
+            if (startMonthDay.isBefore(endMonthDay)) {
+                isInRange = !pDeathDay.isBefore(startMonthDay) && !pDeathDay.isAfter(endMonthDay);
+            } else {
+                isInRange = !pDeathDay.isBefore(startMonthDay) || !pDeathDay.isAfter(endMonthDay);
+            }
+
+            if (isInRange) {
+                LocalDate eventDate = pDeathDay.atYear(startDate.getYear());
+                if (eventDate.isBefore(startDate)) {
+                    eventDate = pDeathDay.atYear(startDate.getYear() + 1);
+                }
+
+                String fullName = p.getFirstName() + " " + p.getLastName();
+                if (p.getNameSuffix() != null && !p.getNameSuffix().trim().isEmpty()) {
+                    fullName += " " + p.getNameSuffix();
+                }
+
+                UpcomingEvent event = new UpcomingEvent();
+                event.setTitle("Repose Anniversary: " + p.getFirstName());
+                event.setParishionerName(fullName);
+                event.setDate(eventDate);
+                event.setTime(null); // Death anniversaries are all-day
+                event.setType("DEATH_ANNIVERSARY");
+                event.setDescription("Reposed on " + p.getDeathDate());
                 event.setParishionerId(p.getId());
                 events.add(event);
             }

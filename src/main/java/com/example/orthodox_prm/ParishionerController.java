@@ -388,6 +388,8 @@ public class ParishionerController {
 
         parent.setBirthday(birthday);
         parent.setHousehold(savedHousehold);
+        parent.setPhoneNumber(phoneNumber);
+        parent.setEmail(email);
 
         // Trim optional string fields
         if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {

@@ -108,7 +108,6 @@ public class PublicSubmissionController {
             @RequestParam(required = false) String[] childNames,
             @RequestParam(required = false) String[] childBirthdays,
             @RequestParam(required = false, defaultValue = "false") boolean isOrthodox,
-            @RequestParam(required = false) String updateName,
             Model model) {
 
         // Validate the link again
@@ -229,16 +228,8 @@ public class PublicSubmissionController {
             submission.setChildrenList(children);
         }
 
-        // For UPDATE submissions, search for target parishioner
-        if (type == SubmissionType.UPDATE) {
-            if (updateName != null && !updateName.isEmpty()) {
-                String[] parts = updateName.trim().split(" ", 2);
-                List<Parishioner> matches = submissionService.searchParishionersByName(parts[0], parts.length > 1 ? parts[1] : "");
-                if (!matches.isEmpty()) {
-                    submission.setTargetParishioner(matches.get(0));
-                }
-            }
-        }
+        // For UPDATE submissions, priest will manually assign the target parishioner during review
+        // No automatic search - submission is saved with updateName field only
 
         // Validate submission
         List<String> errors = submissionService.validateSubmission(submission);

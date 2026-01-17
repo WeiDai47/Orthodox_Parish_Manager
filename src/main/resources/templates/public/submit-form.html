@@ -64,22 +64,35 @@
                         <small class="text-muted d-block ms-4">Update information for someone already in our system</small>
                     </div>
                 </div>
-                <div id="updateNameField" style="display: none; margin-top: 15px;">
-                    <label for="updateName">Your Full Name (to help us find your record)</label>
-                    <input type="text" id="updateName" name="updateName" class="form-control" placeholder="First Last Name">
-                </div>
             </div>
 
-            <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
+            <!-- ORTHODOX/NON-ORTHODOX SELECTION -->
             <div class="mb-4 p-3 border border-warning rounded">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
-                    <label class="form-check-label" for="isOrthodox">
-                        Orthodox Member (uncheck for Non-Orthodox)
-                    </label>
+                <div class="section-header mb-3">Church Affiliation *</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="isOrthodox" id="orthodoxYes" value="true">
+                            <label class="form-check-label" for="orthodoxYes">
+                                <i class="bi bi-check-circle"></i> Orthodox Member
+                            </label>
+                            <small class="text-muted d-block ms-4">I have been Baptized and Chrismated in the Orthodox Church</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="isOrthodox" id="orthodoxNo" value="false">
+                            <label class="form-check-label" for="orthodoxNo">
+                                <i class="bi bi-circle"></i> Not Orthodox (yet)
+                            </label>
+                            <small class="text-muted d-block ms-4">I am exploring or preparing for the Orthodox Church</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- FORM CONTENT - HIDDEN UNTIL SELECTION IS MADE -->
+            <div id="formContent" style="display: none;">
             <div class="row g-3">
 
                 <!-- REQUIRED FIELDS -->
@@ -232,9 +245,10 @@
                 </div>
 
             </div>
+            </div><!-- END formContent -->
 
             <!-- SUBMIT BUTTONS -->
-            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+            <div id="submitSection" style="display: none;" class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
                 <button type="submit" class="btn btn-warning px-5 fw-bold">Submit Information</button>
                 <a href="/" class="btn btn-outline-secondary">Cancel</a>
             </div>
@@ -244,37 +258,33 @@
 </div>
 
 <script>
-    // 0. SUBMISSION TYPE TOGGLE LOGIC
-    const submissionNewRadio = document.getElementById('submissionNew');
-    const submissionUpdateRadio = document.getElementById('submissionUpdate');
-    const updateNameField = document.getElementById('updateNameField');
-    const updateNameInput = document.getElementById('updateName');
 
-    function updateSubmissionTypeVisibility() {
-        if (submissionUpdateRadio.checked) {
-            updateNameField.style.display = 'block';
-        } else {
-            updateNameField.style.display = 'none';
-            updateNameInput.value = '';
-        }
-    }
-
-    submissionNewRadio.addEventListener('change', updateSubmissionTypeVisibility);
-    submissionUpdateRadio.addEventListener('change', updateSubmissionTypeVisibility);
-    // Initialize on page load
-    updateSubmissionTypeVisibility();
-
-    // 1. ORTHODOX/NON-ORTHODOX TOGGLE LOGIC
-    const orthodoxCheckbox = document.getElementById('isOrthodox');
+    // 1. ORTHODOX AFFILIATION SELECTION LOGIC
+    const orthodoxYesRadio = document.getElementById('orthodoxYes');
+    const orthodoxNoRadio = document.getElementById('orthodoxNo');
+    const formContent = document.getElementById('formContent');
+    const submitSection = document.getElementById('submitSection');
     const orthodoxFields = document.getElementById('orthodoxFields');
     const orthodoxOnlyElements = document.querySelectorAll('.orthodox-only');
 
-    function updateOrthodoxVisibility() {
-        if (orthodoxCheckbox.checked) {
+    function updateOrthodoxSelection() {
+        const hasSelection = orthodoxYesRadio.checked || orthodoxNoRadio.checked;
+
+        // Show/hide form content and submit section based on selection
+        if (hasSelection) {
+            formContent.style.display = 'block';
+            submitSection.style.display = 'flex';
+        } else {
+            formContent.style.display = 'none';
+            submitSection.style.display = 'none';
+        }
+
+        // Show/hide Orthodox-specific fields based on selection
+        if (orthodoxYesRadio.checked) {
             // Show Orthodox fields
             orthodoxFields.style.display = 'block';
             orthodoxOnlyElements.forEach(el => el.style.display = 'block');
-        } else {
+        } else if (orthodoxNoRadio.checked) {
             // Hide Orthodox fields and clear values
             orthodoxFields.style.display = 'none';
             orthodoxOnlyElements.forEach(el => el.style.display = 'none');
@@ -283,9 +293,10 @@
         }
     }
 
-    orthodoxCheckbox.addEventListener('change', updateOrthodoxVisibility);
+    orthodoxYesRadio.addEventListener('change', updateOrthodoxSelection);
+    orthodoxNoRadio.addEventListener('change', updateOrthodoxSelection);
     // Initialize on page load
-    updateOrthodoxVisibility();
+    updateOrthodoxSelection();
 
     // 2. DYNAMIC CHILDREN MANAGEMENT
     let childCount = 0;

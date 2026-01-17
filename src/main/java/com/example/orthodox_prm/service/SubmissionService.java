@@ -78,10 +78,8 @@ public class SubmissionService {
             errors.add("Last name is required");
         }
 
-        // For UPDATE submissions, require target parishioner
-        if (submission.getSubmissionType() == SubmissionType.UPDATE && submission.getTargetParishioner() == null) {
-            errors.add("Target parishioner is required for update submissions");
-        }
+        // For UPDATE submissions, priest will manually assign target parishioner during review
+        // No validation required here
 
         // Validate email if provided
         if (submission.getEmail() != null && !submission.getEmail().isEmpty()) {

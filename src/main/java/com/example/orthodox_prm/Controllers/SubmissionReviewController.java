@@ -4,6 +4,7 @@ import com.example.orthodox_prm.Enum.SubmissionStatus;
 import com.example.orthodox_prm.Enum.SubmissionType;
 import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.model.ParishionerSubmission;
+import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.SubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,9 @@ public class SubmissionReviewController {
 
     @Autowired
     private SubmissionService submissionService;
+
+    @Autowired
+    private ParishionerRepository parishionerRepository;
 
     /**
      * Get the current user's email/username from authentication context
@@ -92,6 +96,7 @@ public class SubmissionReviewController {
         model.addAttribute("submission", submission);
         model.addAttribute("currentParishioner", currentParishioner);
         model.addAttribute("isUpdate", submission.getSubmissionType() == SubmissionType.UPDATE);
+        model.addAttribute("allParishioners", parishionerRepository.findAll());
 
         return "submissions/review-detail";
     }
@@ -100,7 +105,7 @@ public class SubmissionReviewController {
      * Approve a submission
      */
     @PostMapping("/{id}/approve")
-    public String approveSubmission(@PathVariable Long id, Model model) {
+    public String approveSubmission(@PathVariable Long id, @RequestParam(required = false) Long targetParishionerId, Model model) {
         Optional<ParishionerSubmission> submissionOpt = submissionService.getSubmissionById(id);
 
         if (submissionOpt.isEmpty()) {
@@ -114,6 +119,13 @@ public class SubmissionReviewController {
             if (submission.getSubmissionType() == SubmissionType.NEW) {
                 submissionService.approveNewSubmission(submission, currentUser);
             } else if (submission.getSubmissionType() == SubmissionType.UPDATE) {
+                // For UPDATE, set the target parishioner if one was selected
+                if (targetParishionerId != null && targetParishionerId > 0) {
+                    Optional<Parishioner> targetParish = parishionerRepository.findById(targetParishionerId);
+                    if (targetParish.isPresent()) {
+                        submission.setTargetParishioner(targetParish.get());
+                    }
+                }
                 submissionService.approveUpdateSubmission(submission, currentUser);
             }
         } catch (Exception e) {
@@ -122,6 +134,26 @@ public class SubmissionReviewController {
         }
 
         return "redirect:/submissions/review";
+    }
+
+    /**
+     * Load and display a parishioner for comparison
+     */
+    @PostMapping("/{id}/load-parishioner")
+    public String loadParishionerForComparison(@PathVariable Long id, @RequestParam Long targetParishionerId) {
+        Optional<ParishionerSubmission> submissionOpt = submissionService.getSubmissionById(id);
+
+        if (submissionOpt.isPresent()) {
+            ParishionerSubmission submission = submissionOpt.get();
+            Optional<Parishioner> parishioner = parishionerRepository.findById(targetParishionerId);
+
+            if (parishioner.isPresent()) {
+                submission.setTargetParishioner(parishioner.get());
+                submissionService.saveSubmission(submission);
+            }
+        }
+
+        return "redirect:/submissions/review/" + id;
     }
 
     /**

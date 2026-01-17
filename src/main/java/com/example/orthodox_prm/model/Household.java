@@ -18,6 +18,7 @@ public class Household {
     private String familyName; // e.g., "The Papadopoulos Family"
     private String address;
     private String city;
+    private String zipCode;
     private String phoneNumber;
     private String email;
 

@@ -105,7 +105,11 @@ public class SubmissionReviewController {
      * Approve a submission
      */
     @PostMapping("/{id}/approve")
-    public String approveSubmission(@PathVariable Long id, @RequestParam(required = false) Long targetParishionerId, Model model) {
+    public String approveSubmission(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long targetParishionerId,
+            @RequestParam(required = false) List<String> fieldsToUpdate,
+            Model model) {
         Optional<ParishionerSubmission> submissionOpt = submissionService.getSubmissionById(id);
 
         if (submissionOpt.isEmpty()) {
@@ -126,7 +130,8 @@ public class SubmissionReviewController {
                         submission.setTargetParishioner(targetParish.get());
                     }
                 }
-                submissionService.approveUpdateSubmission(submission, currentUser);
+                // Pass the list of fields to update (null means update all)
+                submissionService.approveUpdateSubmission(submission, currentUser, fieldsToUpdate);
             }
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error approving submission: " + e.getMessage());

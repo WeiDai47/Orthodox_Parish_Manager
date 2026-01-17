@@ -105,6 +105,7 @@ public class PublicSubmissionController {
             @RequestParam(required = false) String manualSponsorName,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zipCode,
             @RequestParam(required = false) String[] childNames,
             @RequestParam(required = false) String[] childBirthdays,
             @RequestParam(required = false, defaultValue = "false") boolean isOrthodox,
@@ -140,6 +141,7 @@ public class PublicSubmissionController {
         submission.setIsOrthodox(isOrthodox);
         submission.setAddress(address);
         submission.setCity(city);
+        submission.setZipCode(zipCode);
 
         // Parse dates
         if (birthday != null && !birthday.isEmpty()) {

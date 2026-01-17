@@ -120,6 +120,9 @@ public class ParishionerSubmission {
     @Column(length = 100)
     private String city;
 
+    @Column(length = 20)
+    private String zipCode;
+
     // --- CHILDREN (stored as JSON string) ---
     @Column(columnDefinition = "TEXT")
     private String childrenJson;
@@ -449,6 +452,14 @@ public class ParishionerSubmission {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
     }
 
     public String getChildrenJson() {

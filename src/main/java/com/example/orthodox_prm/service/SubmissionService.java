@@ -103,10 +103,12 @@ public class SubmissionService {
         // Create household if address provided
         Household household = null;
         if ((submission.getAddress() != null && !submission.getAddress().isEmpty()) ||
-            (submission.getCity() != null && !submission.getCity().isEmpty())) {
+            (submission.getCity() != null && !submission.getCity().isEmpty()) ||
+            (submission.getZipCode() != null && !submission.getZipCode().isEmpty())) {
             household = new Household();
             household.setAddress(submission.getAddress());
             household.setCity(submission.getCity());
+            household.setZipCode(submission.getZipCode());
             household = householdRepository.save(household);
         }
 
@@ -193,9 +195,12 @@ public class SubmissionService {
 
     /**
      * Approve an UPDATE submission - updates an existing Parishioner record
+     * @param submission The submission to approve
+     * @param reviewedBy Who is approving
+     * @param fieldsToUpdate List of field names to update, or null/empty to update all fields
      */
     @Transactional
-    public Parishioner approveUpdateSubmission(ParishionerSubmission submission, String reviewedBy) {
+    public Parishioner approveUpdateSubmission(ParishionerSubmission submission, String reviewedBy, List<String> fieldsToUpdate) {
         if (submission.getSubmissionType() != SubmissionType.UPDATE) {
             throw new IllegalArgumentException("Only UPDATE submissions can use approveUpdateSubmission");
         }
@@ -205,63 +210,99 @@ public class SubmissionService {
             throw new IllegalArgumentException("Target parishioner not set for update submission");
         }
 
+        // Helper to check if a field should be updated
+        boolean updateAll = fieldsToUpdate == null || fieldsToUpdate.isEmpty();
+
         // Update basic fields
-        if (submission.getFirstName() != null && !submission.getFirstName().isEmpty()) {
+        if ((updateAll || fieldsToUpdate.contains("firstName")) && submission.getFirstName() != null && !submission.getFirstName().isEmpty()) {
             parishioner.setFirstName(submission.getFirstName().trim());
         }
-        if (submission.getLastName() != null && !submission.getLastName().isEmpty()) {
+        if ((updateAll || fieldsToUpdate.contains("lastName")) && submission.getLastName() != null && !submission.getLastName().isEmpty()) {
             parishioner.setLastName(submission.getLastName().trim());
         }
-        if (submission.getNameSuffix() != null) {
+        if ((updateAll || fieldsToUpdate.contains("nameSuffix")) && submission.getNameSuffix() != null) {
             parishioner.setNameSuffix(submission.getNameSuffix());
         }
-        if (submission.getBirthday() != null) {
+        if ((updateAll || fieldsToUpdate.contains("birthday")) && submission.getBirthday() != null) {
             parishioner.setBirthday(submission.getBirthday());
         }
-        if (submission.getEmail() != null) {
+        if ((updateAll || fieldsToUpdate.contains("email")) && submission.getEmail() != null) {
             parishioner.setEmail(submission.getEmail().trim());
         }
-        if (submission.getPhoneNumber() != null) {
+        if ((updateAll || fieldsToUpdate.contains("phoneNumber")) && submission.getPhoneNumber() != null) {
             parishioner.setPhoneNumber(submission.getPhoneNumber());
         }
-        if (submission.getMembershipStatus() != null) {
+        if ((updateAll || fieldsToUpdate.contains("membershipStatus")) && submission.getMembershipStatus() != null) {
             parishioner.setStatus(submission.getMembershipStatus());
         }
-        if (submission.getMaritalStatus() != null) {
+        if ((updateAll || fieldsToUpdate.contains("maritalStatus")) && submission.getMaritalStatus() != null) {
             parishioner.setMaritalStatus(submission.getMaritalStatus());
         }
-        if (submission.getMarriageDate() != null) {
+        if ((updateAll || fieldsToUpdate.contains("marriageDate")) && submission.getMarriageDate() != null) {
             parishioner.setMarriageDate(submission.getMarriageDate());
         }
 
         // Update Orthodox fields
         if (Boolean.TRUE.equals(submission.getIsOrthodox())) {
-            if (submission.getBaptismalName() != null) {
+            if ((updateAll || fieldsToUpdate.contains("baptismalName")) && submission.getBaptismalName() != null) {
                 parishioner.setBaptismalName(submission.getBaptismalName());
             }
-            if (submission.getPatronSaint() != null) {
+            if ((updateAll || fieldsToUpdate.contains("patronSaint")) && submission.getPatronSaint() != null) {
                 parishioner.setPatronSaint(submission.getPatronSaint());
             }
-            if (submission.getBaptismDate() != null) {
+            if ((updateAll || fieldsToUpdate.contains("baptismDate")) && submission.getBaptismDate() != null) {
                 parishioner.setBaptismDate(submission.getBaptismDate());
             }
-            if (submission.getChrismationDate() != null) {
+            if ((updateAll || fieldsToUpdate.contains("chrismationDate")) && submission.getChrismationDate() != null) {
                 parishioner.setChrismationDate(submission.getChrismationDate());
             }
         }
 
         // Update relationship manual fields
-        if (submission.getManualSpouseName() != null) {
+        if ((updateAll || fieldsToUpdate.contains("manualSpouseName")) && submission.getManualSpouseName() != null) {
             parishioner.setManualSpouseName(submission.getManualSpouseName());
         }
-        if (submission.getManualGodfatherName() != null) {
+        if ((updateAll || fieldsToUpdate.contains("manualGodfatherName")) && submission.getManualGodfatherName() != null) {
             parishioner.setManualGodfatherName(submission.getManualGodfatherName());
         }
-        if (submission.getManualGodmotherName() != null) {
+        if ((updateAll || fieldsToUpdate.contains("manualGodmotherName")) && submission.getManualGodmotherName() != null) {
             parishioner.setManualGodmotherName(submission.getManualGodmotherName());
         }
-        if (submission.getManualSponsorName() != null) {
+        if ((updateAll || fieldsToUpdate.contains("manualSponsorName")) && submission.getManualSponsorName() != null) {
             parishioner.setManualSponsorName(submission.getManualSponsorName());
+        }
+
+        // Update household address fields if selected
+        boolean updateAddress = updateAll || fieldsToUpdate.contains("address");
+        boolean updateCity = updateAll || fieldsToUpdate.contains("city");
+        boolean updateZipCode = updateAll || fieldsToUpdate.contains("zipCode");
+
+        if (updateAddress || updateCity || updateZipCode) {
+            Household household = parishioner.getHousehold();
+            // Create household if needed and any address field is being set
+            if (household == null) {
+                boolean hasAddressData = (updateAddress && submission.getAddress() != null && !submission.getAddress().isEmpty()) ||
+                                        (updateCity && submission.getCity() != null && !submission.getCity().isEmpty()) ||
+                                        (updateZipCode && submission.getZipCode() != null && !submission.getZipCode().isEmpty());
+                if (hasAddressData) {
+                    household = new Household();
+                    household = householdRepository.save(household);
+                    parishioner.setHousehold(household);
+                }
+            }
+
+            if (household != null) {
+                if (updateAddress && submission.getAddress() != null) {
+                    household.setAddress(submission.getAddress());
+                }
+                if (updateCity && submission.getCity() != null) {
+                    household.setCity(submission.getCity());
+                }
+                if (updateZipCode && submission.getZipCode() != null) {
+                    household.setZipCode(submission.getZipCode());
+                }
+                householdRepository.save(household);
+            }
         }
 
         // Save updated parishioner

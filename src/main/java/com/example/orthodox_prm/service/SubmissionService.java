@@ -101,6 +101,7 @@ public class SubmissionService {
             Long selectedSpouseId,
             Long selectedGodfatherId,
             Long selectedGodmotherId,
+            Long selectedSponsorId,
             Long selectedHouseholdId,
             String selectedNewHouseholdName,
             List<Long> childLinkIds,
@@ -180,6 +181,14 @@ public class SubmissionService {
                 parishioner.assignGodmother(godmotherOpt.get());
                 parishionerRepository.save(parishioner);
                 parishionerRepository.save(godmotherOpt.get());
+            }
+        }
+
+        if (selectedSponsorId != null && selectedSponsorId > 0) {
+            Optional<Parishioner> sponsorOpt = parishionerRepository.findById(selectedSponsorId);
+            if (sponsorOpt.isPresent()) {
+                parishioner.setWeddingSponsor(sponsorOpt.get());
+                parishionerRepository.save(parishioner);
             }
         }
 
@@ -278,6 +287,7 @@ public class SubmissionService {
             Long selectedSpouseId,
             Long selectedGodfatherId,
             Long selectedGodmotherId,
+            Long selectedSponsorId,
             Long selectedHouseholdId,
             String selectedNewHouseholdName,
             List<Long> childLinkIds,
@@ -414,6 +424,14 @@ public class SubmissionService {
                 parishioner.assignGodmother(godmotherOpt.get());
                 parishionerRepository.save(parishioner);
                 parishionerRepository.save(godmotherOpt.get());
+            }
+        }
+
+        if (selectedSponsorId != null && selectedSponsorId > 0) {
+            Optional<Parishioner> sponsorOpt = parishionerRepository.findById(selectedSponsorId);
+            if (sponsorOpt.isPresent()) {
+                parishioner.setWeddingSponsor(sponsorOpt.get());
+                parishionerRepository.save(parishioner);
             }
         }
 

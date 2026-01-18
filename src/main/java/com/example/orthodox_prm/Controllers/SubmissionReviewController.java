@@ -142,6 +142,8 @@ public class SubmissionReviewController {
             @RequestParam(required = false) String manualGodfatherName,
             @RequestParam(required = false) Long selectedGodmotherId,
             @RequestParam(required = false) String manualGodmotherName,
+            @RequestParam(required = false) Long selectedSponsorId,
+            @RequestParam(required = false) String manualSponsorName,
             @RequestParam(required = false) Long selectedHouseholdId,
             @RequestParam(required = false) String selectedNewHouseholdName,
             // NEW: Children linking parameters
@@ -182,6 +184,7 @@ public class SubmissionReviewController {
         if (manualSpouseName != null) submission.setManualSpouseName(manualSpouseName);
         if (manualGodfatherName != null) submission.setManualGodfatherName(manualGodfatherName);
         if (manualGodmotherName != null) submission.setManualGodmotherName(manualGodmotherName);
+        if (manualSponsorName != null) submission.setManualSponsorName(manualSponsorName);
 
         String currentUser = getCurrentUserEmail();
 
@@ -190,7 +193,7 @@ public class SubmissionReviewController {
                 // Pass relationship parameters to service
                 submissionService.approveNewSubmission(
                     submission, currentUser,
-                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId,
+                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId, selectedSponsorId,
                     selectedHouseholdId, selectedNewHouseholdName,
                     childLinkIds, childCreateIndexes
                 );
@@ -203,7 +206,7 @@ public class SubmissionReviewController {
                 }
                 submissionService.approveUpdateSubmission(
                     submission, currentUser, fieldsToUpdate,
-                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId,
+                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId, selectedSponsorId,
                     selectedHouseholdId, selectedNewHouseholdName,
                     childLinkIds, childCreateIndexes
                 );

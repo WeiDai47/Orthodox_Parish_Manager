@@ -11,16 +11,16 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
         .comparison-table { margin-top: 20px; }
-        .comparison-table th { background-color: var(--accent-gold); color: black; }
-        .changed { background-color: rgba(212, 175, 55, 0.2); }
-        .field-label { font-weight: bold; color: var(--accent-gold); }
+        .comparison-table th { background-color: #f8f9fa; color: black; border-bottom: 2px solid #333; }
+        .changed { background-color: #e9ecef; }
+        .field-label { font-weight: bold; color: black; }
     </style>
 </head>
 <body>
     <div class="container mt-5">
         <div class="row mb-4">
             <div class="col-md-8">
-                <h1 class="text-gold fw-bold">Review Submission</h1>
+                <h1 class="text-dark fw-bold">Review Submission</h1>
             </div>
             <div class="col-md-4 text-end">
                 <button id="toggleEditMode" class="btn btn-warning me-2" th:if="${submission.status.name() == 'PENDING' && !isUpdate}">
@@ -30,8 +30,8 @@
             </div>
         </div>
 
-        <div class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold">
+        <div class="card bg-white border-dark mb-4">
+            <div class="card-header bg-light text-dark fw-bold border-bottom border-dark">
                 <i class="bi bi-info-circle"></i> Submission Details
             </div>
             <div class="card-body">
@@ -61,118 +61,322 @@
         </div>
 
         <!-- UPDATE SUBMISSION: FULL SUBMITTED DATA DISPLAY -->
-        <div th:if="${isUpdate}" class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold">
-                <i class="bi bi-file-earmark-text"></i> Submitted Information
+        <div th:if="${isUpdate}" class="card bg-white border-dark mb-4">
+            <div class="card-header bg-light text-dark fw-bold border-bottom border-dark d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-text"></i> Submitted Information</span>
+                <button id="toggleEditModeUpdate" class="btn btn-sm btn-warning" th:if="${submission.status.name() == 'PENDING'}">
+                    <i class="bi bi-pencil-square"></i> Enable Edit Mode
+                </button>
             </div>
             <div class="card-body">
                 <!-- BASIC INFORMATION -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Basic Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Basic Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
-                            <p><span class="field-label">First Name:</span> <span th:text="${submission.firstName}"></span></p>
+                            <span class="field-label">First Name:</span>
+                            <span class="view-mode" th:text="${submission.firstName}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="firstName"
+                                   th:value="${submission.firstName}" style="display:none;">
                         </div>
                         <div class="col-md-6 mb-2">
-                            <p><span class="field-label">Last Name:</span> <span th:text="${submission.lastName}"></span></p>
-                        </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.nameSuffix != null}">
-                            <p><span class="field-label">Name Suffix:</span> <span th:text="${submission.nameSuffix}"></span></p>
-                        </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.birthday != null}">
-                            <p><span class="field-label">Birthday:</span> <span th:text="${#temporals.format(submission.birthday, 'MMMM dd, yyyy')}"></span></p>
+                            <span class="field-label">Last Name:</span>
+                            <span class="view-mode" th:text="${submission.lastName}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="lastName"
+                                   th:value="${submission.lastName}" style="display:none;">
                         </div>
                         <div class="col-md-6 mb-2">
-                            <p><span class="field-label">Membership Status:</span> <span th:text="${submission.membershipStatus}"></span></p>
+                            <span class="field-label">Name Suffix:</span>
+                            <span class="view-mode" th:text="${submission.nameSuffix != null ? submission.nameSuffix : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="nameSuffix"
+                                   th:value="${submission.nameSuffix}" style="display:none;">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Birthday:</span>
+                            <span class="view-mode" th:text="${submission.birthday != null ? #temporals.format(submission.birthday, 'MMMM dd, yyyy') : '(not set)'}"></span>
+                            <input type="date" class="edit-mode form-control form-control-sm" name="birthday"
+                                   th:value="${submission.birthday}" style="display:none;">
                         </div>
                     </div>
                 </div>
 
                 <!-- CONTACT INFORMATION -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Contact Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Contact Information</h6>
                     <div class="row">
-                        <div class="col-md-6 mb-2" th:if="${submission.email != null}">
-                            <p><span class="field-label">Email:</span> <span th:text="${submission.email}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Email:</span>
+                            <span class="view-mode" th:text="${submission.email != null ? submission.email : '(not set)'}"></span>
+                            <input type="email" class="edit-mode form-control form-control-sm" name="email"
+                                   th:value="${submission.email}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.phoneNumber != null}">
-                            <p><span class="field-label">Phone:</span> <span th:text="${submission.phoneNumber}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Phone:</span>
+                            <span class="view-mode" th:text="${submission.phoneNumber != null ? submission.phoneNumber : '(not set)'}"></span>
+                            <input type="tel" class="edit-mode form-control form-control-sm" name="phoneNumber"
+                                   th:value="${submission.phoneNumber}" style="display:none;">
                         </div>
                     </div>
                 </div>
 
                 <!-- ADDRESS -->
-                <div class="mb-4" th:if="${submission.address != null or submission.city != null or submission.zipCode != null}">
-                    <h6 class="text-gold fw-bold mb-3">Address</h6>
+                <div class="mb-4">
+                    <h6 class="text-dark fw-bold mb-3">Address</h6>
                     <div class="row">
-                        <div class="col-md-12 mb-2" th:if="${submission.address != null}">
-                            <p><span class="field-label">Street:</span> <span th:text="${submission.address}"></span></p>
+                        <div class="col-md-12 mb-2">
+                            <span class="field-label">Street:</span>
+                            <span class="view-mode" th:text="${submission.address != null ? submission.address : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="address"
+                                   th:value="${submission.address}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.city != null}">
-                            <p><span class="field-label">City:</span> <span th:text="${submission.city}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">City:</span>
+                            <span class="view-mode" th:text="${submission.city != null ? submission.city : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="city"
+                                   th:value="${submission.city}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.zipCode != null}">
-                            <p><span class="field-label">Zip Code:</span> <span th:text="${submission.zipCode}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Zip Code:</span>
+                            <span class="view-mode" th:text="${submission.zipCode != null ? submission.zipCode : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="zipCode"
+                                   th:value="${submission.zipCode}" style="display:none;">
                         </div>
                     </div>
                 </div>
 
                 <!-- MARITAL STATUS -->
-                <div class="mb-4" th:if="${submission.maritalStatus != null}">
-                    <h6 class="text-gold fw-bold mb-3">Marital Information</h6>
+                <div class="mb-4">
+                    <h6 class="text-dark fw-bold mb-3">Marital Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
-                            <p><span class="field-label">Marital Status:</span> <span th:text="${submission.maritalStatus}"></span></p>
+                            <span class="field-label">Marital Status:</span>
+                            <span class="view-mode" th:text="${submission.maritalStatus != null ? submission.maritalStatus : '(not set)'}"></span>
+                            <select class="edit-mode form-control form-control-sm" name="maritalStatus" style="display:none;">
+                                <option value="">-- Select --</option>
+                                <option value="SINGLE">SINGLE</option>
+                                <option value="MARRIED">MARRIED</option>
+                                <option value="WIDOWED">WIDOWED</option>
+                                <option value="DIVORCED">DIVORCED</option>
+                            </select>
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.marriageDate != null}">
-                            <p><span class="field-label">Marriage Date:</span> <span th:text="${#temporals.format(submission.marriageDate, 'MMMM dd, yyyy')}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Marriage Date:</span>
+                            <span class="view-mode" th:text="${submission.marriageDate != null ? #temporals.format(submission.marriageDate, 'MMMM dd, yyyy') : '(not set)'}"></span>
+                            <input type="date" class="edit-mode form-control form-control-sm" name="marriageDate"
+                                   th:value="${submission.marriageDate}" style="display:none;">
                         </div>
                     </div>
                 </div>
 
-                <!-- RELATIONSHIPS -->
-                <div class="mb-4" th:if="${submission.manualSpouseName != null or submission.manualGodfatherName != null or submission.manualGodmotherName != null or submission.manualSponsorName != null}">
-                    <h6 class="text-gold fw-bold mb-3">Relationships (Manual Entry)</h6>
+                <!-- RELATIONSHIPS (MANUAL ENTRY) -->
+                <div class="mb-4">
+                    <h6 class="text-dark fw-bold mb-3">Relationships (Manual Entry)</h6>
                     <div class="row">
-                        <div class="col-md-6 mb-2" th:if="${submission.manualSpouseName != null}">
-                            <p><span class="field-label">Spouse:</span> <span th:text="${submission.manualSpouseName}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Spouse:</span>
+                            <span class="view-mode" th:text="${submission.manualSpouseName != null ? submission.manualSpouseName : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSpouseName"
+                                   th:value="${submission.manualSpouseName}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.manualGodfatherName != null}">
-                            <p><span class="field-label">Godfather:</span> <span th:text="${submission.manualGodfatherName}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Godfather:</span>
+                            <span class="view-mode" th:text="${submission.manualGodfatherName != null ? submission.manualGodfatherName : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodfatherName"
+                                   th:value="${submission.manualGodfatherName}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.manualGodmotherName != null}">
-                            <p><span class="field-label">Godmother:</span> <span th:text="${submission.manualGodmotherName}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Godmother:</span>
+                            <span class="view-mode" th:text="${submission.manualGodmotherName != null ? submission.manualGodmotherName : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodmotherName"
+                                   th:value="${submission.manualGodmotherName}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.manualSponsorName != null}">
-                            <p><span class="field-label">Sponsor:</span> <span th:text="${submission.manualSponsorName}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Sponsor:</span>
+                            <span class="view-mode" th:text="${submission.manualSponsorName != null ? submission.manualSponsorName : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSponsorName"
+                                   th:value="${submission.manualSponsorName}" style="display:none;">
                         </div>
                     </div>
                 </div>
 
                 <!-- ORTHODOX INFORMATION -->
-                <div class="mb-4" th:if="${submission.isOrthodox}">
-                    <h6 class="text-gold fw-bold mb-3">Orthodox Church Information</h6>
+                <div class="mb-4">
+                    <h6 class="text-dark fw-bold mb-3">Orthodox Church Information</h6>
                     <div class="row">
-                        <div class="col-md-6 mb-2" th:if="${submission.baptismalName != null}">
-                            <p><span class="field-label">Baptismal Name:</span> <span th:text="${submission.baptismalName}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Baptismal Name:</span>
+                            <span class="view-mode" th:text="${submission.baptismalName != null ? submission.baptismalName : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="baptismalName"
+                                   th:value="${submission.baptismalName}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.patronSaint != null}">
-                            <p><span class="field-label">Patron Saint:</span> <span th:text="${submission.patronSaint}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Patron Saint:</span>
+                            <span class="view-mode" th:text="${submission.patronSaint != null ? submission.patronSaint : '(not set)'}"></span>
+                            <input type="text" class="edit-mode form-control form-control-sm" name="patronSaint"
+                                   th:value="${submission.patronSaint}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.baptismDate != null}">
-                            <p><span class="field-label">Baptism Date:</span> <span th:text="${#temporals.format(submission.baptismDate, 'MMMM dd, yyyy')}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Baptism Date:</span>
+                            <span class="view-mode" th:text="${submission.baptismDate != null ? #temporals.format(submission.baptismDate, 'MMMM dd, yyyy') : '(not set)'}"></span>
+                            <input type="date" class="edit-mode form-control form-control-sm" name="baptismDate"
+                                   th:value="${submission.baptismDate}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2" th:if="${submission.chrismationDate != null}">
-                            <p><span class="field-label">Chrismation Date:</span> <span th:text="${#temporals.format(submission.chrismationDate, 'MMMM dd, yyyy')}"></span></p>
+                        <div class="col-md-6 mb-2">
+                            <span class="field-label">Chrismation Date:</span>
+                            <span class="view-mode" th:text="${submission.chrismationDate != null ? #temporals.format(submission.chrismationDate, 'MMMM dd, yyyy') : '(not set)'}"></span>
+                            <input type="date" class="edit-mode form-control form-control-sm" name="chrismationDate"
+                                   th:value="${submission.chrismationDate}" style="display:none;">
                         </div>
+                    </div>
+                </div>
+
+                <!-- RELATIONSHIP ASSIGNMENT (EDIT MODE - UPDATE) -->
+                <div class="mb-4 edit-mode" style="display:none;">
+                    <h6 class="text-dark fw-bold mb-3"><i class="bi bi-link-45deg"></i> Assign Relationships</h6>
+
+                    <!-- Spouse -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Link Spouse to Existing Member</label>
+                            <select id="spouseSelectUpdate" class="search-select" data-manual-target="manualSpouseNameUpdate">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="p : ${allParishioners}"
+                                        th:value="${p.id}"
+                                        th:text="${p.firstName + ' ' + p.lastName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Keep as Manual Entry</label>
+                            <input type="text" id="manualSpouseNameUpdate" class="form-control manual-input"
+                                   placeholder="Manual spouse name"
+                                   data-select-target="spouseSelectUpdate">
+                        </div>
+                    </div>
+
+                    <!-- Godfather -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Link Godfather to Member</label>
+                            <select id="godfatherSelectUpdate" class="search-select" data-manual-target="manualGodfatherNameUpdate">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="p : ${allParishioners}"
+                                        th:value="${p.id}"
+                                        th:text="${p.firstName + ' ' + p.lastName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Keep Manual</label>
+                            <input type="text" id="manualGodfatherNameUpdate" class="form-control manual-input"
+                                   placeholder="Manual godfather name"
+                                   data-select-target="godfatherSelectUpdate">
+                        </div>
+                    </div>
+
+                    <!-- Godmother -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Link Godmother to Member</label>
+                            <select id="godmotherSelectUpdate" class="search-select" data-manual-target="manualGodmotherNameUpdate">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="p : ${allParishioners}"
+                                        th:value="${p.id}"
+                                        th:text="${p.firstName + ' ' + p.lastName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Keep Manual</label>
+                            <input type="text" id="manualGodmotherNameUpdate" class="form-control manual-input"
+                                   placeholder="Manual godmother name"
+                                   data-select-target="godmotherSelectUpdate">
+                        </div>
+                    </div>
+
+                    <!-- Sponsor -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Link Sponsor to Member</label>
+                            <select id="sponsorSelectUpdate" class="search-select" data-manual-target="manualSponsorNameUpdate">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="p : ${allParishioners}"
+                                        th:value="${p.id}"
+                                        th:text="${p.firstName + ' ' + p.lastName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Keep Manual</label>
+                            <input type="text" id="manualSponsorNameUpdate" class="form-control manual-input"
+                                   placeholder="Manual sponsor name"
+                                   data-select-target="sponsorSelectUpdate">
+                        </div>
+                    </div>
+
+                    <!-- Household -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Assign to Existing Household</label>
+                            <select id="householdSelectUpdate" class="search-select">
+                                <option value="">-- None / Create New --</option>
+                                <option th:each="h : ${allHouseholds}"
+                                        th:value="${h.id}"
+                                        th:text="${h.familyName + ' Household (' + (h.address != null ? h.address : 'no address') + ')'}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Create New Household</label>
+                            <input type="text" id="newHouseholdNameUpdate" class="form-control"
+                                   placeholder="Enter family name for new household">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHILDREN LINKING/CREATION (EDIT MODE - UPDATE) -->
+                <div class="mb-4 edit-mode" style="display:none;" th:if="${submission.childrenList != null and submission.childrenList.size() > 0}">
+                    <h6 class="text-dark fw-bold mb-3"><i class="bi bi-people-fill"></i> Assign Children</h6>
+                    <p class="text-muted">For each child, either link to an existing parishioner or mark for creation.</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead style="background-color: #f8f9fa; color: black; border-bottom: 2px solid #333;">
+                                <tr>
+                                    <th>Child Name (from submission)</th>
+                                    <th>Birthday</th>
+                                    <th>Link to Existing Member</th>
+                                    <th>OR Create New</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="child, iterStat : ${submission.childrenList}">
+                                    <td th:text="${child.name}"></td>
+                                    <td th:text="${child.birthday != null ? #temporals.format(child.birthday, 'MMM dd, yyyy') : 'Not provided'}"></td>
+                                    <td>
+                                        <select th:name="|childLinkIds[${iterStat.index}]|" class="search-select-child form-control-sm" th:data-child-index="${iterStat.index}">
+                                            <option value="">-- Select Member --</option>
+                                            <option th:each="p : ${allParishioners}"
+                                                    th:value="${p.id}"
+                                                    th:text="${p.firstName + ' ' + p.lastName + (p.birthday != null ? ' (born ' + #temporals.format(p.birthday, 'yyyy') + ')' : '')}">
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" th:name="|childCreateIndexes|" th:value="${iterStat.index}" class="form-check-input child-create-checkbox" th:data-child-index="${iterStat.index}" checked>
+                                        <small class="text-muted d-block">Create as new</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- UPDATE SUBMISSION: SELECT TARGET PARISHIONER -->
-        <div th:if="${isUpdate}" class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold">
+        <div th:if="${isUpdate}" class="card bg-white border-dark mb-4">
+            <div class="card-header bg-light text-dark fw-bold border-bottom border-dark">
                 <i class="bi bi-search"></i> Select Parishioner to Update
             </div>
             <div class="card-body">
@@ -181,7 +385,7 @@
                     <i class="bi bi-info-circle"></i> Manually select which parishioner this update applies to, or leave blank to create as a new record.
                 </div>
                 <div class="mb-3">
-                    <label for="targetParishionerSelect" class="form-label text-gold">Select Parishioner to Update:</label>
+                    <label for="targetParishionerSelect" class="form-label text-dark">Select Parishioner to Update:</label>
                     <select id="targetParishionerSelect" name="targetParishionerId" class="form-select">
                         <option value="">-- Create as new parishioner --</option>
                         <option th:each="p : ${allParishioners}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName}" th:selected="${currentParishioner != null && currentParishioner.id == p.id}"></option>
@@ -191,8 +395,8 @@
         </div>
 
         <!-- UPDATE SUBMISSION: SIDE-BY-SIDE COMPARISON (shown if target selected) -->
-        <div th:if="${isUpdate && currentParishioner != null}" class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold d-flex justify-content-between align-items-center">
+        <div th:if="${isUpdate && currentParishioner != null}" class="card bg-white border-dark mb-4">
+            <div class="card-header bg-light text-dark fw-bold border-bottom border-dark d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-arrow-left-right"></i> Current Data vs. Submitted Changes</span>
                 <div>
                     <button type="button" class="btn btn-sm btn-outline-light" onclick="selectAllFields()">Select All</button>
@@ -516,14 +720,14 @@
         </div>
 
         <!-- NEW SUBMISSION: FULL DATA DISPLAY -->
-        <div th:unless="${isUpdate}" class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold">
+        <div th:unless="${isUpdate}" class="card bg-white border-dark mb-4">
+            <div class="card-header bg-light text-dark fw-bold border-bottom border-dark">
                 <i class="bi bi-file-earmark-text"></i> Submitted Information
             </div>
             <div class="card-body">
                 <!-- BASIC INFORMATION -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Basic Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Basic Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <span class="field-label">First Name:</span>
@@ -549,23 +753,12 @@
                             <input type="date" class="edit-mode form-control form-control-sm" name="birthday"
                                    th:value="${submission.birthday}" style="display:none;">
                         </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Membership Status:</span>
-                            <span class="view-mode" th:text="${submission.membershipStatus != null ? submission.membershipStatus : '(not set)'}"></span>
-                            <select class="edit-mode form-control form-control-sm" name="membershipStatus" style="display:none;">
-                                <option value="">-- Select --</option>
-                                <option value="MEMBER">MEMBER</option>
-                                <option value="CATECHUMEN">CATECHUMEN</option>
-                                <option value="VISITOR">VISITOR</option>
-                                <option value="INACTIVE">INACTIVE</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
 
                 <!-- CONTACT INFORMATION -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Contact Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Contact Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <span class="field-label">Email:</span>
@@ -584,7 +777,7 @@
 
                 <!-- ADDRESS -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Address</h6>
+                    <h6 class="text-dark fw-bold mb-3">Address</h6>
                     <div class="row">
                         <div class="col-md-12 mb-2">
                             <span class="field-label">Street:</span>
@@ -609,7 +802,7 @@
 
                 <!-- MARITAL STATUS -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Marital Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Marital Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <span class="field-label">Marital Status:</span>
@@ -633,7 +826,7 @@
 
                 <!-- RELATIONSHIPS (MANUAL ENTRY) -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Relationships (Manual Entry)</h6>
+                    <h6 class="text-dark fw-bold mb-3">Relationships (Manual Entry)</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <span class="field-label">Spouse:</span>
@@ -664,7 +857,7 @@
 
                 <!-- SPOUSE CREATION INFORMATION -->
                 <div class="mb-4" th:if="${submission.spouseFirstName != null or submission.spouseLastName != null or submission.spouseEmail != null or submission.spousePhoneNumber != null}">
-                    <h6 class="text-gold fw-bold mb-3">New Spouse Information (To Create)</h6>
+                    <h6 class="text-dark fw-bold mb-3">New Spouse Information (To Create)</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2" th:if="${submission.spouseFirstName != null}">
                             <p><span class="field-label">Spouse First Name:</span> <span th:text="${submission.spouseFirstName}"></span></p>
@@ -683,7 +876,7 @@
 
                 <!-- ORTHODOX INFORMATION -->
                 <div class="mb-4">
-                    <h6 class="text-gold fw-bold mb-3">Orthodox Church Information</h6>
+                    <h6 class="text-dark fw-bold mb-3">Orthodox Church Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <span class="field-label">Baptismal Name:</span>
@@ -714,13 +907,13 @@
 
                 <!-- CHILDREN -->
                 <div class="mb-4" th:if="${submission.childrenList != null and submission.childrenList.size() > 0}">
-                    <h6 class="text-gold fw-bold mb-3">Children</h6>
+                    <h6 class="text-dark fw-bold mb-3">Children</h6>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead>
-                                        <tr style="background-color: var(--accent-gold); color: black;">
+                                        <tr style="background-color: #f8f9fa; color: black; border-bottom: 2px solid #333;">
                                             <th>Child Name</th>
                                             <th>Birthday</th>
                                         </tr>
@@ -739,12 +932,12 @@
 
                 <!-- RELATIONSHIP ASSIGNMENT (EDIT MODE) -->
                 <div class="mb-4 edit-mode" style="display:none;">
-                    <h6 class="text-gold fw-bold mb-3"><i class="bi bi-link-45deg"></i> Assign Relationships</h6>
+                    <h6 class="text-dark fw-bold mb-3"><i class="bi bi-link-45deg"></i> Assign Relationships</h6>
 
                     <!-- Spouse -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-gold">Link Spouse to Existing Member</label>
+                            <label class="form-label text-dark">Link Spouse to Existing Member</label>
                             <select id="spouseSelect" class="search-select" data-manual-target="manualSpouseName">
                                 <option value="">-- Select Member --</option>
                                 <option th:each="p : ${allParishioners}"
@@ -754,7 +947,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-gold">OR Keep as Manual Entry</label>
+                            <label class="form-label text-dark">OR Keep as Manual Entry</label>
                             <input type="text" id="manualSpouseName" class="form-control manual-input"
                                    placeholder="Manual spouse name"
                                    data-select-target="spouseSelect">
@@ -764,7 +957,7 @@
                     <!-- Godfather -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-gold">Link Godfather to Member</label>
+                            <label class="form-label text-dark">Link Godfather to Member</label>
                             <select id="godfatherSelect" class="search-select" data-manual-target="manualGodfatherName">
                                 <option value="">-- Select Member --</option>
                                 <option th:each="p : ${allParishioners}"
@@ -774,7 +967,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-gold">OR Keep Manual</label>
+                            <label class="form-label text-dark">OR Keep Manual</label>
                             <input type="text" id="manualGodfatherName" class="form-control manual-input"
                                    placeholder="Manual godfather name"
                                    data-select-target="godfatherSelect">
@@ -784,7 +977,7 @@
                     <!-- Godmother -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-gold">Link Godmother to Member</label>
+                            <label class="form-label text-dark">Link Godmother to Member</label>
                             <select id="godmotherSelect" class="search-select" data-manual-target="manualGodmotherName">
                                 <option value="">-- Select Member --</option>
                                 <option th:each="p : ${allParishioners}"
@@ -794,7 +987,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-gold">OR Keep Manual</label>
+                            <label class="form-label text-dark">OR Keep Manual</label>
                             <input type="text" id="manualGodmotherName" class="form-control manual-input"
                                    placeholder="Manual godmother name"
                                    data-select-target="godmotherSelect">
@@ -804,7 +997,7 @@
                     <!-- Household -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-gold">Assign to Existing Household</label>
+                            <label class="form-label text-dark">Assign to Existing Household</label>
                             <select id="householdSelect" class="search-select">
                                 <option value="">-- None / Create New --</option>
                                 <option th:each="h : ${allHouseholds}"
@@ -814,7 +1007,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-gold">OR Create New Household</label>
+                            <label class="form-label text-dark">OR Create New Household</label>
                             <input type="text" id="newHouseholdName" class="form-control"
                                    placeholder="Enter family name for new household">
                         </div>
@@ -823,12 +1016,12 @@
 
                 <!-- CHILDREN LINKING/CREATION (EDIT MODE) -->
                 <div class="mb-4 edit-mode" style="display:none;" th:if="${submission.childrenList != null and submission.childrenList.size() > 0}">
-                    <h6 class="text-gold fw-bold mb-3"><i class="bi bi-people-fill"></i> Assign Children</h6>
+                    <h6 class="text-dark fw-bold mb-3"><i class="bi bi-people-fill"></i> Assign Children</h6>
                     <p class="text-muted">For each child, either link to an existing parishioner or mark for creation.</p>
 
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
-                            <thead style="background-color: var(--accent-gold); color: black;">
+                            <thead style="background-color: #f8f9fa; color: black; border-bottom: 2px solid #333;">
                                 <tr>
                                     <th>Child Name (from submission)</th>
                                     <th>Birthday</th>
@@ -865,6 +1058,36 @@
         <form id="approveFormUpdate" th:if="${isUpdate}" th:action="@{/submissions/review/{id}/approve(id=${submission.id})}" method="post" style="display: none;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <input type="hidden" id="approveUpdateTargetParishionerId" name="targetParishionerId" value="" />
+            <!-- Edited field parameters -->
+            <input type="hidden" id="editFirstName" name="firstName" value="" />
+            <input type="hidden" id="editLastName" name="lastName" value="" />
+            <input type="hidden" id="editNameSuffix" name="nameSuffix" value="" />
+            <input type="hidden" id="editBirthday" name="birthday" value="" />
+            <input type="hidden" id="editEmail" name="email" value="" />
+            <input type="hidden" id="editPhoneNumber" name="phoneNumber" value="" />
+            <input type="hidden" id="editAddress" name="address" value="" />
+            <input type="hidden" id="editCity" name="city" value="" />
+            <input type="hidden" id="editZipCode" name="zipCode" value="" />
+            <input type="hidden" id="editMaritalStatus" name="maritalStatus" value="" />
+            <input type="hidden" id="editMarriageDate" name="marriageDate" value="" />
+            <input type="hidden" id="editBaptismalName" name="baptismalName" value="" />
+            <input type="hidden" id="editPatronSaint" name="patronSaint" value="" />
+            <input type="hidden" id="editBaptismDate" name="baptismDate" value="" />
+            <input type="hidden" id="editChrismationDate" name="chrismationDate" value="" />
+            <input type="hidden" id="editMembershipStatus" name="membershipStatus" value="" />
+            <!-- Relationship parameters for UPDATE -->
+            <input type="hidden" id="editSelectedSpouseId" name="selectedSpouseId" value="" />
+            <input type="hidden" id="editManualSpouseName" name="manualSpouseName" value="" />
+            <input type="hidden" id="editSelectedGodfatherId" name="selectedGodfatherId" value="" />
+            <input type="hidden" id="editManualGodfatherName" name="manualGodfatherName" value="" />
+            <input type="hidden" id="editSelectedGodmotherId" name="selectedGodmotherId" value="" />
+            <input type="hidden" id="editManualGodmotherName" name="manualGodmotherName" value="" />
+            <input type="hidden" id="editSelectedSponsorId" name="selectedSponsorId" value="" />
+            <input type="hidden" id="editManualSponsorName" name="manualSponsorName" value="" />
+            <input type="hidden" id="editSelectedHouseholdId" name="selectedHouseholdId" value="" />
+            <input type="hidden" id="editSelectedNewHouseholdName" name="selectedNewHouseholdName" value="" />
+            <!-- Children linking parameters will be added by JavaScript -->
+            <div id="childrenParamsContainerUpdate"></div>
             <div id="fieldsToUpdateContainer"></div>
         </form>
 
@@ -927,6 +1150,49 @@
 
         <div class="mt-3">
             <a href="/submissions/review" class="btn btn-outline-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <!-- MEMBERSHIP STATUS MODAL FOR NEW SUBMISSIONS -->
+    <div class="modal fade" id="membershipStatusModal" tabindex="-1" th:if="${!isUpdate}">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header bg-light border-bottom border-dark">
+                    <h5 class="modal-title text-dark fw-bold">Select Membership Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark mb-3">As a priest, please select the membership status for this new parishioner:</p>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="membershipStatusModal" id="membershipMEMBER" value="MEMBER" checked>
+                        <label class="form-check-label text-dark" for="membershipMEMBER">
+                            <strong>Member</strong> - Fully baptized and chrismated Orthodox member
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="membershipStatusModal" id="membershipCATECHUMEN" value="CATECHUMEN">
+                        <label class="form-check-label text-dark" for="membershipCATECHUMEN">
+                            <strong>Catechumen</strong> - Preparing for Baptism and Chrismation
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="membershipStatusModal" id="membershipVISITOR" value="VISITOR">
+                        <label class="form-check-label text-dark" for="membershipVISITOR">
+                            <strong>Visitor</strong> - Visiting or exploring the Orthodox Church
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="membershipStatusModal" id="membershipINACTIVE" value="INACTIVE">
+                        <label class="form-check-label text-dark" for="membershipINACTIVE">
+                            <strong>Inactive</strong> - No longer active in the parish
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmMembershipStatus">Confirm & Create</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1076,10 +1342,32 @@
                 collectSelectedFields(approveForm);
             });
         } else if (approveForm) {
-            // No parishioner selector (NEW submission), but still collect fields if they exist
+            // NEW submission: show membership status modal before approval
             approveForm.addEventListener('submit', function(e) {
-                collectSelectedFields(approveForm);
+                e.preventDefault();
+                const membershipModal = new bootstrap.Modal(document.getElementById('membershipStatusModal'));
+                membershipModal.show();
             });
+
+            // Handle membership status modal confirmation
+            const confirmBtn = document.getElementById('confirmMembershipStatus');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    // Get selected membership status from modal
+                    const selectedStatus = document.querySelector('input[name="membershipStatusModal"]:checked').value;
+
+                    // Set the hidden field value
+                    document.getElementById('editMembershipStatus').value = selectedStatus;
+
+                    // Collect fields and close modal
+                    collectSelectedFields(approveForm);
+                    bootstrap.Modal.getInstance(document.getElementById('membershipStatusModal')).hide();
+
+                    // Submit the form without triggering the submit event again
+                    approveForm.removeEventListener('submit', arguments.callee);
+                    approveForm.submit();
+                });
+            }
         }
 
         // For UPDATE submissions: populate target parishioner ID and selected fields
@@ -1088,6 +1376,86 @@
             approveFormUpdate.addEventListener('submit', function(e) {
                 document.getElementById('approveUpdateTargetParishionerId').value = targetParishionerSelect.value;
                 collectSelectedFields(approveFormUpdate);
+
+                // Also collect edited field values for UPDATE submissions
+                const editableFields = {
+                    'firstName': document.querySelector('input[name="firstName"].edit-mode'),
+                    'lastName': document.querySelector('input[name="lastName"].edit-mode'),
+                    'nameSuffix': document.querySelector('input[name="nameSuffix"].edit-mode'),
+                    'birthday': document.querySelector('input[name="birthday"].edit-mode'),
+                    'email': document.querySelector('input[name="email"].edit-mode'),
+                    'phoneNumber': document.querySelector('input[name="phoneNumber"].edit-mode'),
+                    'address': document.querySelector('input[name="address"].edit-mode'),
+                    'city': document.querySelector('input[name="city"].edit-mode'),
+                    'zipCode': document.querySelector('input[name="zipCode"].edit-mode'),
+                    'maritalStatus': document.querySelector('select[name="maritalStatus"].edit-mode'),
+                    'marriageDate': document.querySelector('input[name="marriageDate"].edit-mode'),
+                    'baptismalName': document.querySelector('input[name="baptismalName"].edit-mode'),
+                    'patronSaint': document.querySelector('input[name="patronSaint"].edit-mode'),
+                    'baptismDate': document.querySelector('input[name="baptismDate"].edit-mode'),
+                    'chrismationDate': document.querySelector('input[name="chrismationDate"].edit-mode'),
+                    'membershipStatus': document.querySelector('select[name="membershipStatus"].edit-mode'),
+                };
+
+                // Populate hidden fields with edited values
+                for (const [fieldName, fieldElement] of Object.entries(editableFields)) {
+                    if (fieldElement) {
+                        const hiddenId = 'edit' + fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+                        const hiddenEl = document.getElementById(hiddenId);
+                        if (hiddenEl) {
+                            hiddenEl.value = fieldElement.value || '';
+                        }
+                    }
+                }
+
+                // Collect relationship data for UPDATE submission
+                const spouseSelectUpdate = document.getElementById('spouseSelectUpdate');
+                const manualSpouseNameUpdate = document.getElementById('manualSpouseNameUpdate');
+                const godfatherSelectUpdate = document.getElementById('godfatherSelectUpdate');
+                const manualGodfatherNameUpdate = document.getElementById('manualGodfatherNameUpdate');
+                const godmotherSelectUpdate = document.getElementById('godmotherSelectUpdate');
+                const manualGodmotherNameUpdate = document.getElementById('manualGodmotherNameUpdate');
+                const sponsorSelectUpdate = document.getElementById('sponsorSelectUpdate');
+                const manualSponsorNameUpdate = document.getElementById('manualSponsorNameUpdate');
+                const householdSelectUpdate = document.getElementById('householdSelectUpdate');
+                const newHouseholdNameUpdate = document.getElementById('newHouseholdNameUpdate');
+
+                if (spouseSelectUpdate) document.getElementById('editSelectedSpouseId').value = spouseSelectUpdate.value || '';
+                if (manualSpouseNameUpdate) document.getElementById('editManualSpouseName').value = manualSpouseNameUpdate.value || '';
+                if (godfatherSelectUpdate) document.getElementById('editSelectedGodfatherId').value = godfatherSelectUpdate.value || '';
+                if (manualGodfatherNameUpdate) document.getElementById('editManualGodfatherName').value = manualGodfatherNameUpdate.value || '';
+                if (godmotherSelectUpdate) document.getElementById('editSelectedGodmotherId').value = godmotherSelectUpdate.value || '';
+                if (manualGodmotherNameUpdate) document.getElementById('editManualGodmotherName').value = manualGodmotherNameUpdate.value || '';
+                if (sponsorSelectUpdate) document.getElementById('editSelectedSponsorId').value = sponsorSelectUpdate.value || '';
+                if (manualSponsorNameUpdate) document.getElementById('editManualSponsorName').value = manualSponsorNameUpdate.value || '';
+                if (householdSelectUpdate) document.getElementById('editSelectedHouseholdId').value = householdSelectUpdate.value || '';
+                if (newHouseholdNameUpdate) document.getElementById('editSelectedNewHouseholdName').value = newHouseholdNameUpdate.value || '';
+
+                // Collect children linking/creation parameters for UPDATE
+                const childrenContainerUpdate = document.getElementById('childrenParamsContainerUpdate');
+                if (childrenContainerUpdate) {
+                    childrenContainerUpdate.innerHTML = '';
+
+                    // Collect childLinkIds
+                    document.querySelectorAll('.search-select-child').forEach((select, idx) => {
+                        if (select.value) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'childLinkIds';
+                            input.value = select.value;
+                            childrenContainerUpdate.appendChild(input);
+                        }
+                    });
+
+                    // Collect childCreateIndexes
+                    document.querySelectorAll('.child-create-checkbox:checked').forEach((checkbox) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'childCreateIndexes';
+                        input.value = checkbox.value;
+                        childrenContainerUpdate.appendChild(input);
+                    });
+                }
             });
         }
 
@@ -1099,13 +1467,34 @@
 
         // ===== NEW: EDIT MODE & RELATIONSHIP ASSIGNMENT LOGIC =====
 
-        // Edit mode toggle
+        // Edit mode toggle for NEW submissions
         let editModeActive = false;
         const editModeBtn = document.getElementById('toggleEditMode');
         editModeBtn?.addEventListener('click', function() {
             editModeActive = !editModeActive;
 
             if (editModeActive) {
+                // Turn edit mode ON
+                document.querySelectorAll('.edit-mode').forEach(el => el.style.display = '');
+                document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
+                this.textContent = '✓ Edit Mode Active - Click to Disable';
+                this.classList.replace('btn-warning', 'btn-info');
+            } else {
+                // Turn edit mode OFF
+                document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.view-mode').forEach(el => el.style.display = '');
+                this.textContent = '<i class="bi bi-pencil-square"></i> Enable Edit Mode';
+                this.classList.replace('btn-info', 'btn-warning');
+            }
+        });
+
+        // Edit mode toggle for UPDATE submissions
+        let editModeActiveUpdate = false;
+        const editModeBtnUpdate = document.getElementById('toggleEditModeUpdate');
+        editModeBtnUpdate?.addEventListener('click', function() {
+            editModeActiveUpdate = !editModeActiveUpdate;
+
+            if (editModeActiveUpdate) {
                 // Turn edit mode ON
                 document.querySelectorAll('.edit-mode').forEach(el => el.style.display = '');
                 document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
@@ -1182,7 +1571,7 @@
             });
         });
 
-        // Household mutual exclusion
+        // Household mutual exclusion (NEW submissions)
         const householdSelect = document.getElementById('householdSelect');
         const newHouseholdInput = document.getElementById('newHouseholdName');
 
@@ -1195,6 +1584,106 @@
                 householdSelect.tomselect.clear();
             }
         });
+
+        // Household mutual exclusion (UPDATE submissions)
+        const householdSelectUpdate = document.getElementById('householdSelectUpdate');
+        const newHouseholdInputUpdate = document.getElementById('newHouseholdNameUpdate');
+
+        householdSelectUpdate?.addEventListener('change', function() {
+            if (this.value) newHouseholdInputUpdate.value = '';
+        });
+
+        newHouseholdInputUpdate?.addEventListener('input', function() {
+            if (this.value.trim() && householdSelectUpdate?.tomselect) {
+                householdSelectUpdate.tomselect.clear();
+            }
+        });
+
+        // Mutual exclusion for UPDATE submission relationships (spouse/godfather/godmother/sponsor)
+        const updateRelationshipPairs = [
+            { selectId: 'spouseSelectUpdate', manualId: 'manualSpouseNameUpdate' },
+            { selectId: 'godfatherSelectUpdate', manualId: 'manualGodfatherNameUpdate' },
+            { selectId: 'godmotherSelectUpdate', manualId: 'manualGodmotherNameUpdate' },
+            { selectId: 'sponsorSelectUpdate', manualId: 'manualSponsorNameUpdate' }
+        ];
+
+        updateRelationshipPairs.forEach(pair => {
+            const selectEl = document.getElementById(pair.selectId);
+            const manualEl = document.getElementById(pair.manualId);
+
+            selectEl?.addEventListener('change', function() {
+                if (this.value) manualEl.value = '';
+            });
+
+            manualEl?.addEventListener('input', function() {
+                if (this.value.trim() && selectEl?.tomselect) {
+                    selectEl.tomselect.clear();
+                }
+            });
+        });
+
+        // Update comparison table when editing fields in UPDATE submission
+        const editableFieldsForUpdate = {
+            'firstName': 'First Name',
+            'lastName': 'Last Name',
+            'nameSuffix': 'Name Suffix',
+            'birthday': 'Birthday',
+            'email': 'Email',
+            'phoneNumber': 'Phone',
+            'address': 'Street',
+            'city': 'City',
+            'zipCode': 'Zip Code',
+            'maritalStatus': 'Marital Status',
+            'marriageDate': 'Marriage Date',
+            'baptismalName': 'Baptismal Name',
+            'patronSaint': 'Patron Saint',
+            'baptismDate': 'Baptism Date',
+            'chrismationDate': 'Chrismation Date'
+        };
+
+        // Monitor edit-mode inputs and update comparison table in real-time
+        for (const [fieldName, displayName] of Object.entries(editableFieldsForUpdate)) {
+            const editInput = document.querySelector(`input[name="${fieldName}"].edit-mode, select[name="${fieldName}"].edit-mode`);
+            if (editInput) {
+                editInput.addEventListener('input', function() {
+                    updateComparisonTable(fieldName, this.value);
+                });
+                editInput.addEventListener('change', function() {
+                    updateComparisonTable(fieldName, this.value);
+                });
+            }
+        }
+
+        function updateComparisonTable(fieldName, newValue) {
+            // Find the row in the comparison table for this field
+            const rows = document.querySelectorAll('.comparison-table tbody tr');
+            for (const row of rows) {
+                const checkbox = row.querySelector('input[name="fieldsToUpdate"]');
+                if (checkbox && checkbox.value === fieldName) {
+                    // Found the right row - update the 4th column (submitted value)
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 4) {
+                        // Format the display value
+                        let displayValue = newValue;
+
+                        // Handle date fields
+                        if ((fieldName === 'birthday' || fieldName === 'marriageDate' || fieldName === 'baptismDate' || fieldName === 'chrismationDate') && newValue) {
+                            const dateObj = new Date(newValue + 'T00:00:00');
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            displayValue = dateObj.toLocaleDateString('en-US', options);
+                        }
+
+                        // Handle empty values
+                        if (!displayValue || displayValue.trim() === '') {
+                            displayValue = '(not set)';
+                        }
+
+                        cells[3].textContent = displayValue;
+                    }
+                    break;
+                }
+            }
+        }
 
         // Collect relationship and children data when approving
         const approveFormElement = document.getElementById('approveForm');

@@ -94,7 +94,8 @@ public class ParishionerController {
                          @RequestParam(required = false) Long householdId,
                          @RequestParam(required = false) String newHouseholdName,
                          @RequestParam(required = false) String address,
-                         @RequestParam(required = false) String city) {
+                         @RequestParam(required = false) String city,
+                         @RequestParam(required = false) String zipCode) {
 
         // 1. Fetch the existing state from DB to identify the current spouse before changes
         Parishioner existingRecord = parishionerRepository.findById(parishioner.getId())
@@ -102,7 +103,8 @@ public class ParishionerController {
 
         // Helper method to check if any household data is provided
         boolean hasHouseholdData = (address != null && !address.trim().isEmpty()) ||
-                (city != null && !city.trim().isEmpty());
+                (city != null && !city.trim().isEmpty()) ||
+                (zipCode != null && !zipCode.trim().isEmpty());
 
         // 1.5. HANDLE HOUSEHOLD MANAGEMENT
         if (newHouseholdName != null && !newHouseholdName.trim().isEmpty()) {
@@ -111,13 +113,26 @@ public class ParishionerController {
             newHousehold.setFamilyName(newHouseholdName);
             newHousehold.setAddress(address);
             newHousehold.setCity(city);
+            newHousehold.setZipCode(zipCode);
             Household savedHousehold = householdRepository.save(newHousehold);
             parishioner.setHousehold(savedHousehold);
         }
         else if (householdId != null) {
-            // Assign to existing household
+            // Assign to existing household and update its address fields if provided
             Household existingHousehold = householdRepository.findById(householdId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid household Id:" + householdId));
+
+            // Update address fields if provided
+            if (address != null && !address.trim().isEmpty()) {
+                existingHousehold.setAddress(address.trim());
+            }
+            if (city != null && !city.trim().isEmpty()) {
+                existingHousehold.setCity(city.trim());
+            }
+            if (zipCode != null && !zipCode.trim().isEmpty()) {
+                existingHousehold.setZipCode(zipCode.trim());
+            }
+            householdRepository.save(existingHousehold);
             parishioner.setHousehold(existingHousehold);
         }
         else {
@@ -132,6 +147,7 @@ public class ParishionerController {
                     // Update address fields only
                     currentHousehold.setAddress(address);
                     currentHousehold.setCity(city);
+                    currentHousehold.setZipCode(zipCode);
                     householdRepository.save(currentHousehold);
                     parishioner.setHousehold(currentHousehold);
                 }
@@ -141,6 +157,7 @@ public class ParishionerController {
                 newHousehold.setFamilyName(parishioner.getLastName() + " Family");
                 newHousehold.setAddress(address);
                 newHousehold.setCity(city);
+                newHousehold.setZipCode(zipCode);
                 Household savedHousehold = householdRepository.save(newHousehold);
                 parishioner.setHousehold(savedHousehold);
             }
@@ -337,6 +354,7 @@ public class ParishionerController {
             @RequestParam(required = false) LocalDate chrismationDate,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zipCode,
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String spouseFirstName,
@@ -368,6 +386,9 @@ public class ParishionerController {
         }
         if (city != null && !city.trim().isEmpty()) {
             household.setCity(city.trim());
+        }
+        if (zipCode != null && !zipCode.trim().isEmpty()) {
+            household.setZipCode(zipCode.trim());
         }
         Household savedHousehold = householdRepository.save(household);
 

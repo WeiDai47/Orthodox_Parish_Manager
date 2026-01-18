@@ -187,6 +187,13 @@
                                    th:value="${parishioner.household != null ? parishioner.household.city : ''}"
                                    class="form-control">
                         </div>
+                        <div class="col-md-6">
+                            <label>Zip Code</label>
+                            <input type="text" name="zipCode"
+                                   th:value="${parishioner.household != null ? parishioner.household.zipCode : ''}"
+                                   class="form-control"
+                                   placeholder="12345">
+                        </div>
 
                         <div class="col-12"><div class="section-header">Spiritual Parents (Godparents)</div></div>
                         <div class="col-md-6">

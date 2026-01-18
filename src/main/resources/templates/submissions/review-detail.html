@@ -55,6 +55,116 @@
             </div>
         </div>
 
+        <!-- UPDATE SUBMISSION: FULL SUBMITTED DATA DISPLAY -->
+        <div th:if="${isUpdate}" class="card bg-secondary border-gold mb-4">
+            <div class="card-header bg-gold text-dark fw-bold">
+                <i class="bi bi-file-earmark-text"></i> Submitted Information
+            </div>
+            <div class="card-body">
+                <!-- BASIC INFORMATION -->
+                <div class="mb-4">
+                    <h6 class="text-gold fw-bold mb-3">Basic Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p><span class="field-label">First Name:</span> <span th:text="${submission.firstName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p><span class="field-label">Last Name:</span> <span th:text="${submission.lastName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.nameSuffix != null}">
+                            <p><span class="field-label">Name Suffix:</span> <span th:text="${submission.nameSuffix}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.birthday != null}">
+                            <p><span class="field-label">Birthday:</span> <span th:text="${#temporals.format(submission.birthday, 'MMMM dd, yyyy')}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p><span class="field-label">Membership Status:</span> <span th:text="${submission.membershipStatus}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT INFORMATION -->
+                <div class="mb-4">
+                    <h6 class="text-gold fw-bold mb-3">Contact Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2" th:if="${submission.email != null}">
+                            <p><span class="field-label">Email:</span> <span th:text="${submission.email}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.phoneNumber != null}">
+                            <p><span class="field-label">Phone:</span> <span th:text="${submission.phoneNumber}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADDRESS -->
+                <div class="mb-4" th:if="${submission.address != null or submission.city != null or submission.zipCode != null}">
+                    <h6 class="text-gold fw-bold mb-3">Address</h6>
+                    <div class="row">
+                        <div class="col-md-12 mb-2" th:if="${submission.address != null}">
+                            <p><span class="field-label">Street:</span> <span th:text="${submission.address}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.city != null}">
+                            <p><span class="field-label">City:</span> <span th:text="${submission.city}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.zipCode != null}">
+                            <p><span class="field-label">Zip Code:</span> <span th:text="${submission.zipCode}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MARITAL STATUS -->
+                <div class="mb-4" th:if="${submission.maritalStatus != null}">
+                    <h6 class="text-gold fw-bold mb-3">Marital Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p><span class="field-label">Marital Status:</span> <span th:text="${submission.maritalStatus}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.marriageDate != null}">
+                            <p><span class="field-label">Marriage Date:</span> <span th:text="${#temporals.format(submission.marriageDate, 'MMMM dd, yyyy')}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RELATIONSHIPS -->
+                <div class="mb-4" th:if="${submission.manualSpouseName != null or submission.manualGodfatherName != null or submission.manualGodmotherName != null or submission.manualSponsorName != null}">
+                    <h6 class="text-gold fw-bold mb-3">Relationships (Manual Entry)</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2" th:if="${submission.manualSpouseName != null}">
+                            <p><span class="field-label">Spouse:</span> <span th:text="${submission.manualSpouseName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.manualGodfatherName != null}">
+                            <p><span class="field-label">Godfather:</span> <span th:text="${submission.manualGodfatherName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.manualGodmotherName != null}">
+                            <p><span class="field-label">Godmother:</span> <span th:text="${submission.manualGodmotherName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.manualSponsorName != null}">
+                            <p><span class="field-label">Sponsor:</span> <span th:text="${submission.manualSponsorName}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ORTHODOX INFORMATION -->
+                <div class="mb-4" th:if="${submission.isOrthodox}">
+                    <h6 class="text-gold fw-bold mb-3">Orthodox Church Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2" th:if="${submission.baptismalName != null}">
+                            <p><span class="field-label">Baptismal Name:</span> <span th:text="${submission.baptismalName}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.patronSaint != null}">
+                            <p><span class="field-label">Patron Saint:</span> <span th:text="${submission.patronSaint}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.baptismDate != null}">
+                            <p><span class="field-label">Baptism Date:</span> <span th:text="${#temporals.format(submission.baptismDate, 'MMMM dd, yyyy')}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.chrismationDate != null}">
+                            <p><span class="field-label">Chrismation Date:</span> <span th:text="${#temporals.format(submission.chrismationDate, 'MMMM dd, yyyy')}"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- UPDATE SUBMISSION: SELECT TARGET PARISHIONER -->
         <div th:if="${isUpdate}" class="card bg-secondary border-gold mb-4">
             <div class="card-header bg-gold text-dark fw-bold">
@@ -392,6 +502,11 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-3">
+                    <button type="submit" form="approveForm" class="btn btn-primary fw-bold">
+                        <i class="bi bi-pencil-square"></i> Apply Selected Changes
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -551,18 +666,20 @@
 
         <!-- APPROVAL/REJECTION ACTIONS -->
         <div th:if="${submission.status.name() == 'PENDING'}" class="row">
-            <div class="col-md-6">
+            <!-- APPROVE BUTTON: ONLY FOR NEW SUBMISSIONS -->
+            <div th:if="${!isUpdate}" class="col-md-6">
                 <form id="approveForm" th:action="@{/submissions/review/{id}/approve(id=${submission.id})}" method="post" class="card bg-success border-0">
                     <div class="card-body">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" id="approveTargetParishionerId" name="targetParishionerId" value="" />
                         <button type="submit" class="btn btn-success w-100 fw-bold">
-                            <i class="bi bi-check-circle"></i> Approve & Create/Update
+                            <i class="bi bi-check-circle"></i> Approve & Create
                         </button>
                     </div>
                 </form>
             </div>
-            <div class="col-md-6">
+            <!-- REJECT BUTTON: FOR ALL SUBMISSION TYPES -->
+            <div th:classappend="${!isUpdate ? 'col-md-6' : 'col-md-12'}">
                 <form id="rejectForm" th:action="@{/submissions/review/{id}/reject(id=${submission.id})}" method="post" class="card bg-danger border-0">
                     <div class="card-body">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

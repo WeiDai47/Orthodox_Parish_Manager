@@ -1,12 +1,16 @@
 package com.example.orthodox_prm.Controllers;
 
+import com.example.orthodox_prm.Enum.MaritalStatus;
+import com.example.orthodox_prm.Enum.MembershipStatus;
 import com.example.orthodox_prm.Enum.SubmissionStatus;
 import com.example.orthodox_prm.Enum.SubmissionType;
 import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.model.ParishionerSubmission;
+import com.example.orthodox_prm.repository.HouseholdRepository;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.SubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +31,9 @@ public class SubmissionReviewController {
 
     @Autowired
     private ParishionerRepository parishionerRepository;
+
+    @Autowired
+    private HouseholdRepository householdRepository;
 
     /**
      * Get the current user's email/username from authentication context
@@ -97,6 +105,7 @@ public class SubmissionReviewController {
         model.addAttribute("currentParishioner", currentParishioner);
         model.addAttribute("isUpdate", submission.getSubmissionType() == SubmissionType.UPDATE);
         model.addAttribute("allParishioners", parishionerRepository.findAll());
+        model.addAttribute("allHouseholds", householdRepository.findAll());
 
         return "submissions/review-detail";
     }
@@ -109,6 +118,35 @@ public class SubmissionReviewController {
             @PathVariable Long id,
             @RequestParam(required = false) Long targetParishionerId,
             @RequestParam(required = false) List<String> fieldsToUpdate,
+            // NEW: Add edited field parameters
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String nameSuffix,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthday,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zipCode,
+            @RequestParam(required = false) String maritalStatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate marriageDate,
+            @RequestParam(required = false) String baptismalName,
+            @RequestParam(required = false) String patronSaint,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baptismDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate chrismationDate,
+            @RequestParam(required = false) String membershipStatus,
+            // NEW: Relationship assignment parameters
+            @RequestParam(required = false) Long selectedSpouseId,
+            @RequestParam(required = false) String manualSpouseName,
+            @RequestParam(required = false) Long selectedGodfatherId,
+            @RequestParam(required = false) String manualGodfatherName,
+            @RequestParam(required = false) Long selectedGodmotherId,
+            @RequestParam(required = false) String manualGodmotherName,
+            @RequestParam(required = false) Long selectedHouseholdId,
+            @RequestParam(required = false) String selectedNewHouseholdName,
+            // NEW: Children linking parameters
+            @RequestParam(required = false) List<Long> childLinkIds,
+            @RequestParam(required = false) List<Integer> childCreateIndexes,
             Model model) {
         Optional<ParishionerSubmission> submissionOpt = submissionService.getSubmissionById(id);
 
@@ -117,21 +155,58 @@ public class SubmissionReviewController {
         }
 
         ParishionerSubmission submission = submissionOpt.get();
+
+        // Apply edited fields to submission before approval
+        if (firstName != null) submission.setFirstName(firstName);
+        if (lastName != null) submission.setLastName(lastName);
+        submission.setNameSuffix(nameSuffix);
+        submission.setBirthday(birthday);
+        if (email != null) submission.setEmail(email);
+        submission.setPhoneNumber(phoneNumber);
+        submission.setAddress(address);
+        submission.setCity(city);
+        submission.setZipCode(zipCode);
+        if (maritalStatus != null && !maritalStatus.isEmpty()) {
+            submission.setMaritalStatus(MaritalStatus.valueOf(maritalStatus));
+        }
+        submission.setMarriageDate(marriageDate);
+        submission.setBaptismalName(baptismalName);
+        submission.setPatronSaint(patronSaint);
+        submission.setBaptismDate(baptismDate);
+        submission.setChrismationDate(chrismationDate);
+        if (membershipStatus != null && !membershipStatus.isEmpty()) {
+            submission.setMembershipStatus(MembershipStatus.valueOf(membershipStatus));
+        }
+
+        // Update manual relationship names if provided
+        if (manualSpouseName != null) submission.setManualSpouseName(manualSpouseName);
+        if (manualGodfatherName != null) submission.setManualGodfatherName(manualGodfatherName);
+        if (manualGodmotherName != null) submission.setManualGodmotherName(manualGodmotherName);
+
         String currentUser = getCurrentUserEmail();
 
         try {
             if (submission.getSubmissionType() == SubmissionType.NEW) {
-                submissionService.approveNewSubmission(submission, currentUser);
+                // Pass relationship parameters to service
+                submissionService.approveNewSubmission(
+                    submission, currentUser,
+                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId,
+                    selectedHouseholdId, selectedNewHouseholdName,
+                    childLinkIds, childCreateIndexes
+                );
             } else if (submission.getSubmissionType() == SubmissionType.UPDATE) {
-                // For UPDATE, set the target parishioner if one was selected
                 if (targetParishionerId != null && targetParishionerId > 0) {
                     Optional<Parishioner> targetParish = parishionerRepository.findById(targetParishionerId);
                     if (targetParish.isPresent()) {
                         submission.setTargetParishioner(targetParish.get());
                     }
                 }
-                // Pass the list of fields to update (null means update all)
-                submissionService.approveUpdateSubmission(submission, currentUser, fieldsToUpdate);
+                submissionService.approveUpdateSubmission(
+                    submission, currentUser, fieldsToUpdate,
+                    selectedSpouseId, selectedGodfatherId, selectedGodmotherId,
+                    selectedHouseholdId, selectedNewHouseholdName,
+                    childLinkIds, childCreateIndexes
+                );
             }
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error approving submission: " + e.getMessage());

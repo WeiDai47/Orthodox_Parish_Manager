@@ -95,7 +95,16 @@ public class SubmissionService {
      * Approve a NEW submission - creates a new Parishioner record
      */
     @Transactional
-    public Parishioner approveNewSubmission(ParishionerSubmission submission, String reviewedBy) {
+    public Parishioner approveNewSubmission(
+            ParishionerSubmission submission,
+            String reviewedBy,
+            Long selectedSpouseId,
+            Long selectedGodfatherId,
+            Long selectedGodmotherId,
+            Long selectedHouseholdId,
+            String selectedNewHouseholdName,
+            List<Long> childLinkIds,
+            List<Integer> childCreateIndexes) {
         if (submission.getSubmissionType() != SubmissionType.NEW) {
             throw new IllegalArgumentException("Only NEW submissions can use approveNewSubmission");
         }
@@ -146,7 +155,54 @@ public class SubmissionService {
         // Save main parishioner
         parishioner = parishionerRepository.save(parishioner);
 
-        // Create spouse if spouse details provided
+        // Apply relationship assignments
+        if (selectedSpouseId != null && selectedSpouseId > 0) {
+            Optional<Parishioner> spouseOpt = parishionerRepository.findById(selectedSpouseId);
+            if (spouseOpt.isPresent()) {
+                parishioner.marry(spouseOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(spouseOpt.get());
+            }
+        }
+
+        if (selectedGodfatherId != null && selectedGodfatherId > 0) {
+            Optional<Parishioner> godfatherOpt = parishionerRepository.findById(selectedGodfatherId);
+            if (godfatherOpt.isPresent()) {
+                parishioner.assignGodfather(godfatherOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(godfatherOpt.get());
+            }
+        }
+
+        if (selectedGodmotherId != null && selectedGodmotherId > 0) {
+            Optional<Parishioner> godmotherOpt = parishionerRepository.findById(selectedGodmotherId);
+            if (godmotherOpt.isPresent()) {
+                parishioner.assignGodmother(godmotherOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(godmotherOpt.get());
+            }
+        }
+
+        // Handle household assignment
+        if (selectedHouseholdId != null && selectedHouseholdId > 0) {
+            Optional<Household> householdOpt = householdRepository.findById(selectedHouseholdId);
+            if (householdOpt.isPresent()) {
+                parishioner.setHousehold(householdOpt.get());
+                parishionerRepository.save(parishioner);
+                household = householdOpt.get();
+            }
+        } else if (selectedNewHouseholdName != null && !selectedNewHouseholdName.isEmpty()) {
+            Household newHousehold = new Household();
+            newHousehold.setFamilyName(selectedNewHouseholdName);
+            newHousehold.setAddress(submission.getAddress());
+            newHousehold.setCity(submission.getCity());
+            newHousehold.setZipCode(submission.getZipCode());
+            household = householdRepository.save(newHousehold);
+            parishioner.setHousehold(household);
+            parishionerRepository.save(parishioner);
+        }
+
+        // Create spouse if spouse details provided (from submission form data, not linked relationship)
         if ((submission.getSpouseFirstName() != null && !submission.getSpouseFirstName().isEmpty()) ||
             (submission.getSpouseLastName() != null && !submission.getSpouseLastName().isEmpty())) {
             Parishioner spouse = new Parishioner();
@@ -159,26 +215,41 @@ public class SubmissionService {
 
             spouse = parishionerRepository.save(spouse);
 
-            // Create bidirectional spouse relationship
-            parishioner.setSpouse(spouse);
-            spouse.setSpouse(parishioner);
-            parishionerRepository.save(parishioner);
-            parishionerRepository.save(spouse);
+            // Create bidirectional spouse relationship only if no spouse was already linked
+            if (selectedSpouseId == null || selectedSpouseId <= 0) {
+                parishioner.setSpouse(spouse);
+                spouse.setSpouse(parishioner);
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(spouse);
+            }
         }
 
-        // Create children if provided
+        // Handle children - REPLACE existing children creation logic
         List<ParishionerSubmission.ChildData> children = submission.getChildrenList();
-        if (!children.isEmpty()) {
-            for (ParishionerSubmission.ChildData childData : children) {
-                if (childData.getName() != null && !childData.getName().isEmpty()) {
-                    Parishioner child = new Parishioner();
-                    String[] names = childData.getName().split(" ", 2);
-                    child.setFirstName(names[0].trim());
-                    child.setLastName(names.length > 1 ? names[1].trim() : "");
-                    child.setBirthday(childData.getBirthday());
-                    child.setHousehold(household);
+        if (!children.isEmpty() && (childLinkIds != null || childCreateIndexes != null)) {
+            for (int i = 0; i < children.size(); i++) {
+                ParishionerSubmission.ChildData childData = children.get(i);
 
-                    parishionerRepository.save(child);
+                // Check if this child should be linked to existing parishioner
+                if (childLinkIds != null && i < childLinkIds.size() && childLinkIds.get(i) != null) {
+                    Optional<Parishioner> existingChild = parishionerRepository.findById(childLinkIds.get(i));
+                    if (existingChild.isPresent()) {
+                        Parishioner child = existingChild.get();
+                        child.setHousehold(household);
+                        parishionerRepository.save(child);
+                    }
+                }
+                // Check if this child should be created
+                else if (childCreateIndexes != null && childCreateIndexes.contains(i)) {
+                    if (childData.getName() != null && !childData.getName().isEmpty()) {
+                        Parishioner child = new Parishioner();
+                        String[] names = childData.getName().split(" ", 2);
+                        child.setFirstName(names[0].trim());
+                        child.setLastName(names.length > 1 ? names[1].trim() : parishioner.getLastName());
+                        child.setBirthday(childData.getBirthday());
+                        child.setHousehold(household);
+                        parishionerRepository.save(child);
+                    }
                 }
             }
         }
@@ -200,7 +271,17 @@ public class SubmissionService {
      * @param fieldsToUpdate List of field names to update, or null/empty to update all fields
      */
     @Transactional
-    public Parishioner approveUpdateSubmission(ParishionerSubmission submission, String reviewedBy, List<String> fieldsToUpdate) {
+    public Parishioner approveUpdateSubmission(
+            ParishionerSubmission submission,
+            String reviewedBy,
+            List<String> fieldsToUpdate,
+            Long selectedSpouseId,
+            Long selectedGodfatherId,
+            Long selectedGodmotherId,
+            Long selectedHouseholdId,
+            String selectedNewHouseholdName,
+            List<Long> childLinkIds,
+            List<Integer> childCreateIndexes) {
         if (submission.getSubmissionType() != SubmissionType.UPDATE) {
             throw new IllegalArgumentException("Only UPDATE submissions can use approveUpdateSubmission");
         }
@@ -307,6 +388,88 @@ public class SubmissionService {
 
         // Save updated parishioner
         parishioner = parishionerRepository.save(parishioner);
+
+        // Apply relationship assignments
+        if (selectedSpouseId != null && selectedSpouseId > 0) {
+            Optional<Parishioner> spouseOpt = parishionerRepository.findById(selectedSpouseId);
+            if (spouseOpt.isPresent()) {
+                parishioner.marry(spouseOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(spouseOpt.get());
+            }
+        }
+
+        if (selectedGodfatherId != null && selectedGodfatherId > 0) {
+            Optional<Parishioner> godfatherOpt = parishionerRepository.findById(selectedGodfatherId);
+            if (godfatherOpt.isPresent()) {
+                parishioner.assignGodfather(godfatherOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(godfatherOpt.get());
+            }
+        }
+
+        if (selectedGodmotherId != null && selectedGodmotherId > 0) {
+            Optional<Parishioner> godmotherOpt = parishionerRepository.findById(selectedGodmotherId);
+            if (godmotherOpt.isPresent()) {
+                parishioner.assignGodmother(godmotherOpt.get());
+                parishionerRepository.save(parishioner);
+                parishionerRepository.save(godmotherOpt.get());
+            }
+        }
+
+        // Handle household assignment
+        if (selectedHouseholdId != null && selectedHouseholdId > 0) {
+            Optional<Household> householdOpt = householdRepository.findById(selectedHouseholdId);
+            if (householdOpt.isPresent()) {
+                parishioner.setHousehold(householdOpt.get());
+                parishionerRepository.save(parishioner);
+            }
+        } else if (selectedNewHouseholdName != null && !selectedNewHouseholdName.isEmpty()) {
+            Household newHousehold = new Household();
+            newHousehold.setFamilyName(selectedNewHouseholdName);
+            newHousehold.setAddress(submission.getAddress());
+            newHousehold.setCity(submission.getCity());
+            newHousehold.setZipCode(submission.getZipCode());
+            Household household = householdRepository.save(newHousehold);
+            parishioner.setHousehold(household);
+            parishionerRepository.save(parishioner);
+        }
+
+        // Handle children linking/creation
+        List<ParishionerSubmission.ChildData> children = submission.getChildrenList();
+        if (!children.isEmpty() && (childLinkIds != null || childCreateIndexes != null)) {
+            for (int i = 0; i < children.size(); i++) {
+                ParishionerSubmission.ChildData childData = children.get(i);
+
+                // Check if this child should be linked to existing parishioner
+                if (childLinkIds != null && i < childLinkIds.size() && childLinkIds.get(i) != null) {
+                    Optional<Parishioner> existingChild = parishionerRepository.findById(childLinkIds.get(i));
+                    if (existingChild.isPresent()) {
+                        Parishioner child = existingChild.get();
+                        Household household = parishioner.getHousehold();
+                        if (household != null) {
+                            child.setHousehold(household);
+                            parishionerRepository.save(child);
+                        }
+                    }
+                }
+                // Check if this child should be created
+                else if (childCreateIndexes != null && childCreateIndexes.contains(i)) {
+                    if (childData.getName() != null && !childData.getName().isEmpty()) {
+                        Parishioner child = new Parishioner();
+                        String[] names = childData.getName().split(" ", 2);
+                        child.setFirstName(names[0].trim());
+                        child.setLastName(names.length > 1 ? names[1].trim() : parishioner.getLastName());
+                        child.setBirthday(childData.getBirthday());
+                        Household household = parishioner.getHousehold();
+                        if (household != null) {
+                            child.setHousehold(household);
+                        }
+                        parishionerRepository.save(child);
+                    }
+                }
+            }
+        }
 
         // Update submission status
         submission.setStatus(SubmissionStatus.APPROVED);

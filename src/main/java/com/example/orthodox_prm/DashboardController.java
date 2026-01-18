@@ -26,6 +26,13 @@ public class DashboardController {
         this.submissionService = submissionService;
     }
 
+    /**
+     * Root path redirects to dashboard (will redirect to login if not authenticated)
+     */
+    @GetMapping("/")
+    public String redirectRoot() {
+        return "redirect:/dashboard";
+    }
 
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {

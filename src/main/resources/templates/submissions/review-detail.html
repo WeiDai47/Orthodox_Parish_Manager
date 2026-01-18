@@ -77,97 +77,316 @@
 
         <!-- UPDATE SUBMISSION: SIDE-BY-SIDE COMPARISON (shown if target selected) -->
         <div th:if="${isUpdate && currentParishioner != null}" class="card bg-secondary border-gold mb-4">
-            <div class="card-header bg-gold text-dark fw-bold">
-                <i class="bi bi-arrow-left-right"></i> Current Data vs. Submitted Changes
+            <div class="card-header bg-gold text-dark fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-arrow-left-right"></i> Current Data vs. Submitted Changes</span>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="selectAllFields()">Select All</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="selectChangedFields()">Select Changed</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="deselectAllFields()">Deselect All</button>
+                </div>
             </div>
             <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle"></i> Check the fields you want to update. Changed fields are highlighted in gold.
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered comparison-table table-sm">
                         <thead>
                             <tr>
+                                <th style="width: 50px;">Apply</th>
                                 <th>Field</th>
-                                <th style="width: 35%;">Current Value</th>
-                                <th style="width: 35%;">Submitted Value</th>
+                                <th style="width: 30%;">Current Value</th>
+                                <th style="width: 30%;">Submitted Value</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- BASIC INFORMATION -->
-                            <tr>
+                            <!-- SECTION: BASIC INFORMATION -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-person"></i> Basic Information</td>
+                            </tr>
+                            <tr th:classappend="${currentParishioner.firstName != submission.firstName ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="firstName"
+                                           th:checked="${currentParishioner.firstName != submission.firstName and (submission.firstName != null and !submission.firstName.isEmpty())}"
+                                           th:data-changed="${currentParishioner.firstName != submission.firstName}"
+                                           th:data-would-clear="${(currentParishioner.firstName != null and !currentParishioner.firstName.isEmpty()) and (submission.firstName == null or submission.firstName.isEmpty())}"
+                                           th:data-field-name="'First Name'">
+                                </td>
                                 <td><strong>First Name</strong></td>
                                 <td th:text="${currentParishioner.firstName}"></td>
-                                <td th:classappend="${currentParishioner.firstName != submission.firstName ? 'changed' : ''}">
-                                    <span th:text="${submission.firstName}"></span>
-                                </td>
+                                <td th:text="${submission.firstName}"></td>
                             </tr>
-                            <tr>
+                            <tr th:classappend="${currentParishioner.lastName != submission.lastName ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="lastName"
+                                           th:checked="${currentParishioner.lastName != submission.lastName and (submission.lastName != null and !submission.lastName.isEmpty())}"
+                                           th:data-changed="${currentParishioner.lastName != submission.lastName}"
+                                           th:data-would-clear="${(currentParishioner.lastName != null and !currentParishioner.lastName.isEmpty()) and (submission.lastName == null or submission.lastName.isEmpty())}"
+                                           th:data-field-name="'Last Name'">
+                                </td>
                                 <td><strong>Last Name</strong></td>
                                 <td th:text="${currentParishioner.lastName}"></td>
-                                <td th:classappend="${currentParishioner.lastName != submission.lastName ? 'changed' : ''}">
-                                    <span th:text="${submission.lastName}"></span>
-                                </td>
+                                <td th:text="${submission.lastName}"></td>
                             </tr>
-                            <tr th:if="${submission.nameSuffix != null}">
+                            <tr th:classappend="${(currentParishioner.nameSuffix != null ? currentParishioner.nameSuffix : '') != (submission.nameSuffix != null ? submission.nameSuffix : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="nameSuffix"
+                                           th:checked="${(currentParishioner.nameSuffix != null ? currentParishioner.nameSuffix : '') != (submission.nameSuffix != null ? submission.nameSuffix : '') and (submission.nameSuffix != null and !submission.nameSuffix.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.nameSuffix != null ? currentParishioner.nameSuffix : '') != (submission.nameSuffix != null ? submission.nameSuffix : '')}"
+                                           th:data-would-clear="${(currentParishioner.nameSuffix != null and !currentParishioner.nameSuffix.isEmpty()) and (submission.nameSuffix == null or submission.nameSuffix.isEmpty())}"
+                                           th:data-field-name="'Name Suffix'">
+                                </td>
                                 <td>Name Suffix</td>
-                                <td th:text="${currentParishioner.nameSuffix}"></td>
-                                <td th:classappend="${(currentParishioner.nameSuffix != null ? currentParishioner.nameSuffix : '') != (submission.nameSuffix != null ? submission.nameSuffix : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.nameSuffix}"></span>
-                                </td>
+                                <td th:text="${currentParishioner.nameSuffix != null ? currentParishioner.nameSuffix : '(not set)'}"></td>
+                                <td th:text="${submission.nameSuffix != null ? submission.nameSuffix : '(not set)'}"></td>
                             </tr>
-                            <tr th:if="${submission.birthday != null}">
+                            <tr th:classappend="${currentParishioner.birthday != submission.birthday ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="birthday"
+                                           th:checked="${currentParishioner.birthday != submission.birthday and submission.birthday != null}"
+                                           th:data-changed="${currentParishioner.birthday != submission.birthday}"
+                                           th:data-would-clear="${currentParishioner.birthday != null and submission.birthday == null}"
+                                           th:data-field-name="'Birthday'">
+                                </td>
                                 <td>Birthday</td>
-                                <td th:text="${currentParishioner.birthday != null ? #temporals.format(currentParishioner.birthday, 'MMMM dd, yyyy') : 'Not provided'}"></td>
-                                <td th:classappend="${(currentParishioner.birthday != null ? currentParishioner.birthday : '') != (submission.birthday != null ? submission.birthday : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.birthday != null ? #temporals.format(submission.birthday, 'MMMM dd, yyyy') : 'Not provided'}"></span>
-                                </td>
+                                <td th:text="${currentParishioner.birthday != null ? #temporals.format(currentParishioner.birthday, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                                <td th:text="${submission.birthday != null ? #temporals.format(submission.birthday, 'MMMM dd, yyyy') : '(not set)'}"></td>
                             </tr>
-
-                            <!-- CONTACT INFORMATION -->
-                            <tr>
-                                <td>Email</td>
-                                <td th:text="${currentParishioner.email != null ? currentParishioner.email : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.email != null ? currentParishioner.email : '') != (submission.email != null ? submission.email : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.email != null ? submission.email : '(not set)'}"></span>
+                            <tr th:classappend="${(currentParishioner.status != null ? currentParishioner.status : '') != (submission.membershipStatus != null ? submission.membershipStatus : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="membershipStatus"
+                                           th:checked="${(currentParishioner.status != null ? currentParishioner.status : '') != (submission.membershipStatus != null ? submission.membershipStatus : '') and submission.membershipStatus != null}"
+                                           th:data-changed="${(currentParishioner.status != null ? currentParishioner.status : '') != (submission.membershipStatus != null ? submission.membershipStatus : '')}"
+                                           th:data-would-clear="${currentParishioner.status != null and submission.membershipStatus == null}"
+                                           th:data-field-name="'Membership Status'">
                                 </td>
-                            </tr>
-                            <tr>
-                                <td>Phone</td>
-                                <td th:text="${currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '') != (submission.phoneNumber != null ? submission.phoneNumber : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.phoneNumber != null ? submission.phoneNumber : '(not set)'}"></span>
-                                </td>
-                            </tr>
-
-                            <!-- MEMBERSHIP STATUS -->
-                            <tr>
                                 <td>Membership Status</td>
                                 <td th:text="${currentParishioner.status != null ? currentParishioner.status : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.status != null ? currentParishioner.status : '') != (submission.membershipStatus != null ? submission.membershipStatus : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.membershipStatus != null ? submission.membershipStatus : '(not set)'}"></span>
-                                </td>
+                                <td th:text="${submission.membershipStatus != null ? submission.membershipStatus : '(not set)'}"></td>
                             </tr>
 
-                            <!-- MARITAL STATUS -->
-                            <tr th:if="${submission.maritalStatus != null}">
+                            <!-- SECTION: CONTACT INFORMATION -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-telephone"></i> Contact Information</td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '') != (submission.phoneNumber != null ? submission.phoneNumber : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="phoneNumber"
+                                           th:checked="${(currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '') != (submission.phoneNumber != null ? submission.phoneNumber : '') and (submission.phoneNumber != null and !submission.phoneNumber.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '') != (submission.phoneNumber != null ? submission.phoneNumber : '')}"
+                                           th:data-would-clear="${(currentParishioner.phoneNumber != null and !currentParishioner.phoneNumber.isEmpty()) and (submission.phoneNumber == null or submission.phoneNumber.isEmpty())}"
+                                           th:data-field-name="'Phone'">
+                                </td>
+                                <td>Phone</td>
+                                <td th:text="${currentParishioner.phoneNumber != null ? currentParishioner.phoneNumber : '(not set)'}"></td>
+                                <td th:text="${submission.phoneNumber != null ? submission.phoneNumber : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.email != null ? currentParishioner.email : '') != (submission.email != null ? submission.email : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="email"
+                                           th:checked="${(currentParishioner.email != null ? currentParishioner.email : '') != (submission.email != null ? submission.email : '') and (submission.email != null and !submission.email.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.email != null ? currentParishioner.email : '') != (submission.email != null ? submission.email : '')}"
+                                           th:data-would-clear="${(currentParishioner.email != null and !currentParishioner.email.isEmpty()) and (submission.email == null or submission.email.isEmpty())}"
+                                           th:data-field-name="'Email'">
+                                </td>
+                                <td>Email</td>
+                                <td th:text="${currentParishioner.email != null ? currentParishioner.email : '(not set)'}"></td>
+                                <td th:text="${submission.email != null ? submission.email : '(not set)'}"></td>
+                            </tr>
+
+                            <!-- SECTION: MARRIAGE INFORMATION -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-heart"></i> Marriage Information</td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.maritalStatus != null ? currentParishioner.maritalStatus : '') != (submission.maritalStatus != null ? submission.maritalStatus : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="maritalStatus"
+                                           th:checked="${(currentParishioner.maritalStatus != null ? currentParishioner.maritalStatus : '') != (submission.maritalStatus != null ? submission.maritalStatus : '') and submission.maritalStatus != null}"
+                                           th:data-changed="${(currentParishioner.maritalStatus != null ? currentParishioner.maritalStatus : '') != (submission.maritalStatus != null ? submission.maritalStatus : '')}"
+                                           th:data-would-clear="${currentParishioner.maritalStatus != null and submission.maritalStatus == null}"
+                                           th:data-field-name="'Marital Status'">
+                                </td>
                                 <td>Marital Status</td>
                                 <td th:text="${currentParishioner.maritalStatus != null ? currentParishioner.maritalStatus : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.maritalStatus != null ? currentParishioner.maritalStatus : '') != (submission.maritalStatus != null ? submission.maritalStatus : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.maritalStatus != null ? submission.maritalStatus : '(not set)'}"></span>
+                                <td th:text="${submission.maritalStatus != null ? submission.maritalStatus : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${currentParishioner.marriageDate != submission.marriageDate ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="marriageDate"
+                                           th:checked="${currentParishioner.marriageDate != submission.marriageDate and submission.marriageDate != null}"
+                                           th:data-changed="${currentParishioner.marriageDate != submission.marriageDate}"
+                                           th:data-would-clear="${currentParishioner.marriageDate != null and submission.marriageDate == null}"
+                                           th:data-field-name="'Marriage Date'">
                                 </td>
+                                <td>Marriage Date</td>
+                                <td th:text="${currentParishioner.marriageDate != null ? #temporals.format(currentParishioner.marriageDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                                <td th:text="${submission.marriageDate != null ? #temporals.format(submission.marriageDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
                             </tr>
 
-                            <!-- ORTHODOX INFORMATION -->
-                            <tr th:if="${submission.isOrthodox}">
+                            <!-- SECTION: ORTHODOX INFORMATION -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-cross"></i> Orthodox Church Information</td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.baptismalName != null ? currentParishioner.baptismalName : '') != (submission.baptismalName != null ? submission.baptismalName : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="baptismalName"
+                                           th:checked="${(currentParishioner.baptismalName != null ? currentParishioner.baptismalName : '') != (submission.baptismalName != null ? submission.baptismalName : '') and (submission.baptismalName != null and !submission.baptismalName.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.baptismalName != null ? currentParishioner.baptismalName : '') != (submission.baptismalName != null ? submission.baptismalName : '')}"
+                                           th:data-would-clear="${(currentParishioner.baptismalName != null and !currentParishioner.baptismalName.isEmpty()) and (submission.baptismalName == null or submission.baptismalName.isEmpty())}"
+                                           th:data-field-name="'Baptismal Name'">
+                                </td>
                                 <td>Baptismal Name</td>
                                 <td th:text="${currentParishioner.baptismalName != null ? currentParishioner.baptismalName : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.baptismalName != null ? currentParishioner.baptismalName : '') != (submission.baptismalName != null ? submission.baptismalName : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.baptismalName != null ? submission.baptismalName : '(not set)'}"></span>
-                                </td>
+                                <td th:text="${submission.baptismalName != null ? submission.baptismalName : '(not set)'}"></td>
                             </tr>
-                            <tr th:if="${submission.isOrthodox}">
+                            <tr th:classappend="${(currentParishioner.patronSaint != null ? currentParishioner.patronSaint : '') != (submission.patronSaint != null ? submission.patronSaint : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="patronSaint"
+                                           th:checked="${(currentParishioner.patronSaint != null ? currentParishioner.patronSaint : '') != (submission.patronSaint != null ? submission.patronSaint : '') and (submission.patronSaint != null and !submission.patronSaint.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.patronSaint != null ? currentParishioner.patronSaint : '') != (submission.patronSaint != null ? submission.patronSaint : '')}"
+                                           th:data-would-clear="${(currentParishioner.patronSaint != null and !currentParishioner.patronSaint.isEmpty()) and (submission.patronSaint == null or submission.patronSaint.isEmpty())}"
+                                           th:data-field-name="'Patron Saint'">
+                                </td>
                                 <td>Patron Saint</td>
                                 <td th:text="${currentParishioner.patronSaint != null ? currentParishioner.patronSaint : '(not set)'}"></td>
-                                <td th:classappend="${(currentParishioner.patronSaint != null ? currentParishioner.patronSaint : '') != (submission.patronSaint != null ? submission.patronSaint : '') ? 'changed' : ''}">
-                                    <span th:text="${submission.patronSaint != null ? submission.patronSaint : '(not set)'}"></span>
+                                <td th:text="${submission.patronSaint != null ? submission.patronSaint : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${currentParishioner.baptismDate != submission.baptismDate ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="baptismDate"
+                                           th:checked="${currentParishioner.baptismDate != submission.baptismDate and submission.baptismDate != null}"
+                                           th:data-changed="${currentParishioner.baptismDate != submission.baptismDate}"
+                                           th:data-would-clear="${currentParishioner.baptismDate != null and submission.baptismDate == null}"
+                                           th:data-field-name="'Baptism Date'">
+                                </td>
+                                <td>Baptism Date</td>
+                                <td th:text="${currentParishioner.baptismDate != null ? #temporals.format(currentParishioner.baptismDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                                <td th:text="${submission.baptismDate != null ? #temporals.format(submission.baptismDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${currentParishioner.chrismationDate != submission.chrismationDate ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="chrismationDate"
+                                           th:checked="${currentParishioner.chrismationDate != submission.chrismationDate and submission.chrismationDate != null}"
+                                           th:data-changed="${currentParishioner.chrismationDate != submission.chrismationDate}"
+                                           th:data-would-clear="${currentParishioner.chrismationDate != null and submission.chrismationDate == null}"
+                                           th:data-field-name="'Chrismation Date'">
+                                </td>
+                                <td>Chrismation Date</td>
+                                <td th:text="${currentParishioner.chrismationDate != null ? #temporals.format(currentParishioner.chrismationDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                                <td th:text="${submission.chrismationDate != null ? #temporals.format(submission.chrismationDate, 'MMMM dd, yyyy') : '(not set)'}"></td>
+                            </tr>
+
+                            <!-- SECTION: RELATIONSHIPS -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-people"></i> Relationships (Manual Entry)</td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.manualGodfatherName != null ? currentParishioner.manualGodfatherName : '') != (submission.manualGodfatherName != null ? submission.manualGodfatherName : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="manualGodfatherName"
+                                           th:checked="${(currentParishioner.manualGodfatherName != null ? currentParishioner.manualGodfatherName : '') != (submission.manualGodfatherName != null ? submission.manualGodfatherName : '') and (submission.manualGodfatherName != null and !submission.manualGodfatherName.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.manualGodfatherName != null ? currentParishioner.manualGodfatherName : '') != (submission.manualGodfatherName != null ? submission.manualGodfatherName : '')}"
+                                           th:data-would-clear="${(currentParishioner.manualGodfatherName != null and !currentParishioner.manualGodfatherName.isEmpty()) and (submission.manualGodfatherName == null or submission.manualGodfatherName.isEmpty())}"
+                                           th:data-field-name="'Godfather'">
+                                </td>
+                                <td>Godfather (Koumparos)</td>
+                                <td th:text="${currentParishioner.manualGodfatherName != null ? currentParishioner.manualGodfatherName : '(not set)'}"></td>
+                                <td th:text="${submission.manualGodfatherName != null ? submission.manualGodfatherName : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.manualGodmotherName != null ? currentParishioner.manualGodmotherName : '') != (submission.manualGodmotherName != null ? submission.manualGodmotherName : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="manualGodmotherName"
+                                           th:checked="${(currentParishioner.manualGodmotherName != null ? currentParishioner.manualGodmotherName : '') != (submission.manualGodmotherName != null ? submission.manualGodmotherName : '') and (submission.manualGodmotherName != null and !submission.manualGodmotherName.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.manualGodmotherName != null ? currentParishioner.manualGodmotherName : '') != (submission.manualGodmotherName != null ? submission.manualGodmotherName : '')}"
+                                           th:data-would-clear="${(currentParishioner.manualGodmotherName != null and !currentParishioner.manualGodmotherName.isEmpty()) and (submission.manualGodmotherName == null or submission.manualGodmotherName.isEmpty())}"
+                                           th:data-field-name="'Godmother'">
+                                </td>
+                                <td>Godmother (Koumpara)</td>
+                                <td th:text="${currentParishioner.manualGodmotherName != null ? currentParishioner.manualGodmotherName : '(not set)'}"></td>
+                                <td th:text="${submission.manualGodmotherName != null ? submission.manualGodmotherName : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.manualSpouseName != null ? currentParishioner.manualSpouseName : '') != (submission.manualSpouseName != null ? submission.manualSpouseName : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="manualSpouseName"
+                                           th:checked="${(currentParishioner.manualSpouseName != null ? currentParishioner.manualSpouseName : '') != (submission.manualSpouseName != null ? submission.manualSpouseName : '') and (submission.manualSpouseName != null and !submission.manualSpouseName.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.manualSpouseName != null ? currentParishioner.manualSpouseName : '') != (submission.manualSpouseName != null ? submission.manualSpouseName : '')}"
+                                           th:data-would-clear="${(currentParishioner.manualSpouseName != null and !currentParishioner.manualSpouseName.isEmpty()) and (submission.manualSpouseName == null or submission.manualSpouseName.isEmpty())}"
+                                           th:data-field-name="'Spouse Name'">
+                                </td>
+                                <td>Spouse Name (Manual)</td>
+                                <td th:text="${currentParishioner.manualSpouseName != null ? currentParishioner.manualSpouseName : '(not set)'}"></td>
+                                <td th:text="${submission.manualSpouseName != null ? submission.manualSpouseName : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.manualSponsorName != null ? currentParishioner.manualSponsorName : '') != (submission.manualSponsorName != null ? submission.manualSponsorName : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="manualSponsorName"
+                                           th:checked="${(currentParishioner.manualSponsorName != null ? currentParishioner.manualSponsorName : '') != (submission.manualSponsorName != null ? submission.manualSponsorName : '') and (submission.manualSponsorName != null and !submission.manualSponsorName.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.manualSponsorName != null ? currentParishioner.manualSponsorName : '') != (submission.manualSponsorName != null ? submission.manualSponsorName : '')}"
+                                           th:data-would-clear="${(currentParishioner.manualSponsorName != null and !currentParishioner.manualSponsorName.isEmpty()) and (submission.manualSponsorName == null or submission.manualSponsorName.isEmpty())}"
+                                           th:data-field-name="'Sponsor Name'">
+                                </td>
+                                <td>Sponsor Name</td>
+                                <td th:text="${currentParishioner.manualSponsorName != null ? currentParishioner.manualSponsorName : '(not set)'}"></td>
+                                <td th:text="${submission.manualSponsorName != null ? submission.manualSponsorName : '(not set)'}"></td>
+                            </tr>
+
+                            <!-- SECTION: HOUSEHOLD ADDRESS -->
+                            <tr class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-house"></i> Household Address</td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.household != null and currentParishioner.household.address != null ? currentParishioner.household.address : '') != (submission.address != null ? submission.address : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="address"
+                                           th:checked="${(currentParishioner.household != null and currentParishioner.household.address != null ? currentParishioner.household.address : '') != (submission.address != null ? submission.address : '') and (submission.address != null and !submission.address.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.household != null and currentParishioner.household.address != null ? currentParishioner.household.address : '') != (submission.address != null ? submission.address : '')}"
+                                           th:data-would-clear="${(currentParishioner.household != null and currentParishioner.household.address != null and !currentParishioner.household.address.isEmpty()) and (submission.address == null or submission.address.isEmpty())}"
+                                           th:data-field-name="'Street Address'">
+                                </td>
+                                <td>Street Address</td>
+                                <td th:text="${currentParishioner.household != null and currentParishioner.household.address != null ? currentParishioner.household.address : '(not set)'}"></td>
+                                <td th:text="${submission.address != null ? submission.address : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.household != null and currentParishioner.household.city != null ? currentParishioner.household.city : '') != (submission.city != null ? submission.city : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="city"
+                                           th:checked="${(currentParishioner.household != null and currentParishioner.household.city != null ? currentParishioner.household.city : '') != (submission.city != null ? submission.city : '') and (submission.city != null and !submission.city.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.household != null and currentParishioner.household.city != null ? currentParishioner.household.city : '') != (submission.city != null ? submission.city : '')}"
+                                           th:data-would-clear="${(currentParishioner.household != null and currentParishioner.household.city != null and !currentParishioner.household.city.isEmpty()) and (submission.city == null or submission.city.isEmpty())}"
+                                           th:data-field-name="'City'">
+                                </td>
+                                <td>City</td>
+                                <td th:text="${currentParishioner.household != null and currentParishioner.household.city != null ? currentParishioner.household.city : '(not set)'}"></td>
+                                <td th:text="${submission.city != null ? submission.city : '(not set)'}"></td>
+                            </tr>
+                            <tr th:classappend="${(currentParishioner.household != null and currentParishioner.household.zipCode != null ? currentParishioner.household.zipCode : '') != (submission.zipCode != null ? submission.zipCode : '') ? 'table-warning' : ''}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input field-checkbox" name="fieldsToUpdate" value="zipCode"
+                                           th:checked="${(currentParishioner.household != null and currentParishioner.household.zipCode != null ? currentParishioner.household.zipCode : '') != (submission.zipCode != null ? submission.zipCode : '') and (submission.zipCode != null and !submission.zipCode.isEmpty())}"
+                                           th:data-changed="${(currentParishioner.household != null and currentParishioner.household.zipCode != null ? currentParishioner.household.zipCode : '') != (submission.zipCode != null ? submission.zipCode : '')}"
+                                           th:data-would-clear="${(currentParishioner.household != null and currentParishioner.household.zipCode != null and !currentParishioner.household.zipCode.isEmpty()) and (submission.zipCode == null or submission.zipCode.isEmpty())}"
+                                           th:data-field-name="'Zip Code'">
+                                </td>
+                                <td>Zip Code</td>
+                                <td th:text="${currentParishioner.household != null and currentParishioner.household.zipCode != null ? currentParishioner.household.zipCode : '(not set)'}"></td>
+                                <td th:text="${submission.zipCode != null ? submission.zipCode : '(not set)'}"></td>
+                            </tr>
+
+                            <!-- SECTION: CHILDREN (Display Only) -->
+                            <tr th:if="${submission.childrenList != null and submission.childrenList.size() > 0}" class="table-dark">
+                                <td colspan="4" class="fw-bold"><i class="bi bi-person-badge"></i> Children (Display Only)</td>
+                            </tr>
+                            <tr th:if="${submission.childrenList != null and submission.childrenList.size() > 0}">
+                                <td class="text-center text-muted">-</td>
+                                <td>Children</td>
+                                <td>-</td>
+                                <td>
+                                    <ul class="mb-0 ps-3">
+                                        <li th:each="child : ${submission.childrenList}">
+                                            <span th:text="${child.name}"></span>
+                                            <span th:if="${child.birthday != null}" class="text-muted">
+                                                (Born: <span th:text="${#temporals.format(child.birthday, 'MMM dd, yyyy')}"></span>)
+                                            </span>
+                                        </li>
+                                    </ul>
                                 </td>
                             </tr>
                         </tbody>
@@ -218,14 +437,17 @@
                 </div>
 
                 <!-- ADDRESS -->
-                <div class="mb-4" th:if="${submission.address != null or submission.city != null}">
+                <div class="mb-4" th:if="${submission.address != null or submission.city != null or submission.zipCode != null}">
                     <h6 class="text-gold fw-bold mb-3">Address</h6>
                     <div class="row">
                         <div class="col-md-12 mb-2" th:if="${submission.address != null}">
                             <p><span class="field-label">Street:</span> <span th:text="${submission.address}"></span></p>
                         </div>
-                        <div class="col-md-12 mb-2" th:if="${submission.city != null}">
+                        <div class="col-md-6 mb-2" th:if="${submission.city != null}">
                             <p><span class="field-label">City:</span> <span th:text="${submission.city}"></span></p>
+                        </div>
+                        <div class="col-md-6 mb-2" th:if="${submission.zipCode != null}">
+                            <p><span class="field-label">Zip Code:</span> <span th:text="${submission.zipCode}"></span></p>
                         </div>
                     </div>
                 </div>
@@ -418,10 +640,96 @@
             });
         }
 
-        // Populate target parishioner ID when forms are submitted
+        // Field selection helper functions
+        function selectAllFields() {
+            document.querySelectorAll('.field-checkbox').forEach(cb => {
+                cb.checked = true;
+                // Show warning for fields that would clear data
+                if (cb.getAttribute('data-would-clear') === 'true') {
+                    showClearWarning(cb);
+                }
+            });
+        }
+
+        function selectChangedFields() {
+            document.querySelectorAll('.field-checkbox').forEach(cb => {
+                // Only check if changed AND submitted value is not empty (won't clear)
+                const isChanged = cb.getAttribute('data-changed') === 'true';
+                const wouldClear = cb.getAttribute('data-would-clear') === 'true';
+                cb.checked = isChanged && !wouldClear;
+            });
+        }
+
+        function deselectAllFields() {
+            document.querySelectorAll('.field-checkbox').forEach(cb => {
+                cb.checked = false;
+                hideClearWarning(cb);
+            });
+        }
+
+        // Show warning when checking a field that would clear existing data
+        function showClearWarning(checkbox) {
+            const row = checkbox.closest('tr');
+            const fieldName = checkbox.getAttribute('data-field-name') || 'this field';
+
+            // Check if warning already exists
+            if (row.querySelector('.clear-warning')) return;
+
+            const warningSpan = document.createElement('span');
+            warningSpan.className = 'clear-warning badge bg-danger ms-2';
+            warningSpan.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Will clear existing value!';
+            warningSpan.title = 'The submitted value is empty. Applying this will remove the current value.';
+
+            const fieldCell = row.querySelectorAll('td')[1];
+            if (fieldCell) {
+                fieldCell.appendChild(warningSpan);
+            }
+        }
+
+        function hideClearWarning(checkbox) {
+            const row = checkbox.closest('tr');
+            const warning = row.querySelector('.clear-warning');
+            if (warning) {
+                warning.remove();
+            }
+        }
+
+        // Add change listeners to all checkboxes for clear warning
+        document.querySelectorAll('.field-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked && this.getAttribute('data-would-clear') === 'true') {
+                    showClearWarning(this);
+                } else {
+                    hideClearWarning(this);
+                }
+            });
+        });
+
+        // Collect selected fields and add to form before submission
+        function collectSelectedFields(form) {
+            // Remove any existing fieldsToUpdate inputs
+            form.querySelectorAll('input[name="fieldsToUpdate"]').forEach(el => el.remove());
+
+            // Add checked fields
+            document.querySelectorAll('.field-checkbox:checked').forEach(cb => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'fieldsToUpdate';
+                input.value = cb.value;
+                form.appendChild(input);
+            });
+        }
+
+        // Populate target parishioner ID and selected fields when forms are submitted
         if (approveForm && targetParishionerSelect) {
-            approveForm.addEventListener('submit', function() {
+            approveForm.addEventListener('submit', function(e) {
                 document.getElementById('approveTargetParishionerId').value = targetParishionerSelect.value;
+                collectSelectedFields(approveForm);
+            });
+        } else if (approveForm) {
+            // No parishioner selector (NEW submission), but still collect fields if they exist
+            approveForm.addEventListener('submit', function(e) {
+                collectSelectedFields(approveForm);
             });
         }
 

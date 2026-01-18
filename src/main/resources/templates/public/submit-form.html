@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add New Member</title>
+    <title>Submit Parish Information</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
@@ -22,6 +22,7 @@
         .btn-outline-warning { color: var(--accent-gold); border-color: var(--accent-gold); }
         .btn-outline-warning:hover { background-color: var(--accent-gold); color: black; }
         .form-check-label { color: var(--accent-gold); }
+        .submission-type-section { background: var(--bg-tertiary); border: 1px solid var(--accent-gold); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
     </style>
 </head>
 <body class="p-5">
@@ -36,20 +37,62 @@
 <div class="container" style="max-width: 900px;">
     <div class="card p-4 shadow-lg border-0">
 
-        <h2 class="text-gold mb-4">Add New Member</h2>
+        <h2 class="text-gold mb-4">Submit Parish Information</h2>
 
-        <form th:action="@{/parishioners/add}" method="post" id="addForm">
+        <form th:action="@{/public/submit/{token}(token=${token})}" method="post" id="submitForm">
 
-            <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
-            <div class="mb-4 p-3 border border-warning rounded">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
-                    <label class="form-check-label" for="isOrthodox">
-                        Orthodox Member (uncheck for Non-Orthodox)
-                    </label>
+            <!-- SUBMISSION TYPE SELECTION -->
+            <div class="submission-type-section">
+                <div class="section-header mb-3">Submission Type</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="submissionType" id="submissionNew" value="NEW" checked>
+                            <label class="form-check-label" for="submissionNew">
+                                <i class="bi bi-plus-circle"></i> New Information
+                            </label>
+                        </div>
+                        <small class="text-muted d-block ms-4">Submit information about a new member</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="submissionType" id="submissionUpdate" value="UPDATE">
+                            <label class="form-check-label" for="submissionUpdate">
+                                <i class="bi bi-pencil-square"></i> Update Existing
+                            </label>
+                        </div>
+                        <small class="text-muted d-block ms-4">Update information for someone already in our system</small>
+                    </div>
                 </div>
             </div>
 
+            <!-- ORTHODOX/NON-ORTHODOX SELECTION -->
+            <div class="mb-4 p-3 border border-warning rounded">
+                <div class="section-header mb-3">Church Affiliation *</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="isOrthodox" id="orthodoxYes" value="true">
+                            <label class="form-check-label" for="orthodoxYes">
+                                <i class="bi bi-check-circle"></i> Orthodox Member
+                            </label>
+                            <small class="text-muted d-block ms-4">I have been Baptized and Chrismated in the Orthodox Church</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="isOrthodox" id="orthodoxNo" value="false">
+                            <label class="form-check-label" for="orthodoxNo">
+                                <i class="bi bi-circle"></i> Not Orthodox (yet)
+                            </label>
+                            <small class="text-muted d-block ms-4">I am exploring or preparing for the Orthodox Church</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM CONTENT - HIDDEN UNTIL SELECTION IS MADE -->
+            <div id="formContent" style="display: none;">
             <div class="row g-3">
 
                 <!-- REQUIRED FIELDS -->
@@ -128,7 +171,10 @@
                     <label>Marital Status</label>
                     <select name="maritalStatusStr" class="form-select">
                         <option value="">-- Select --</option>
-                        <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
+                        <option value="SINGLE">Single</option>
+                        <option value="MARRIED">Married</option>
+                        <option value="WIDOW">Widow</option>
+                        <option value="DIVORCED">Divorced</option>
                     </select>
                 </div>
 
@@ -136,7 +182,7 @@
                 <div id="spouseFields" style="display: none;">
                     <div class="col-12">
                         <div class="alert alert-warning" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> This will create a new parishioner record for the spouse with the same household and address. If your spouse is already in the system, use the Edit page to link them instead.
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> If your spouse is already in the system, please reference their information below. Otherwise, provide their details here.
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -157,10 +203,23 @@
                     </div>
                 </div>
 
-                <!-- ORTHODOX-ONLY: WEDDING SPONSOR -->
+                <!-- MANUAL RELATIONSHIP FIELDS (FALLBACK FOR NON-MATCHED RECORDS) -->
+                <div class="col-12"><div class="section-header">Relationships (Optional)</div></div>
+                <div class="col-md-6">
+                    <label>Godfather (Koumparos)</label>
+                    <input type="text" name="manualGodfatherName" class="form-control" placeholder="Godfather name">
+                </div>
+                <div class="col-md-6">
+                    <label>Godmother (Koumpara)</label>
+                    <input type="text" name="manualGodmotherName" class="form-control" placeholder="Godmother name">
+                </div>
                 <div class="col-md-6 orthodox-only">
                     <label>Wedding Sponsor (Koumbaro)</label>
                     <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
+                </div>
+                <div class="col-md-6">
+                    <label>Spouse Name (if not in system)</label>
+                    <input type="text" name="manualSpouseName" class="form-control" placeholder="Spouse name">
                 </div>
 
                 <!-- ADDRESS SECTION (BOTH TYPES) -->
@@ -190,11 +249,12 @@
                 </div>
 
             </div>
+            </div><!-- END formContent -->
 
             <!-- SUBMIT BUTTONS -->
-            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
-                <button type="submit" class="btn btn-warning px-5 fw-bold">Create Member</button>
-                <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+            <div id="submitSection" style="display: none;" class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+                <button type="submit" class="btn btn-warning px-5 fw-bold">Submit Information</button>
+                <a href="/" class="btn btn-outline-secondary">Cancel</a>
             </div>
 
         </form>
@@ -202,17 +262,33 @@
 </div>
 
 <script>
-    // 1. ORTHODOX/NON-ORTHODOX TOGGLE LOGIC
-    const orthodoxCheckbox = document.getElementById('isOrthodox');
+
+    // 1. ORTHODOX AFFILIATION SELECTION LOGIC
+    const orthodoxYesRadio = document.getElementById('orthodoxYes');
+    const orthodoxNoRadio = document.getElementById('orthodoxNo');
+    const formContent = document.getElementById('formContent');
+    const submitSection = document.getElementById('submitSection');
     const orthodoxFields = document.getElementById('orthodoxFields');
     const orthodoxOnlyElements = document.querySelectorAll('.orthodox-only');
 
-    function updateOrthodoxVisibility() {
-        if (orthodoxCheckbox.checked) {
+    function updateOrthodoxSelection() {
+        const hasSelection = orthodoxYesRadio.checked || orthodoxNoRadio.checked;
+
+        // Show/hide form content and submit section based on selection
+        if (hasSelection) {
+            formContent.style.display = 'block';
+            submitSection.style.display = 'flex';
+        } else {
+            formContent.style.display = 'none';
+            submitSection.style.display = 'none';
+        }
+
+        // Show/hide Orthodox-specific fields based on selection
+        if (orthodoxYesRadio.checked) {
             // Show Orthodox fields
             orthodoxFields.style.display = 'block';
             orthodoxOnlyElements.forEach(el => el.style.display = 'block');
-        } else {
+        } else if (orthodoxNoRadio.checked) {
             // Hide Orthodox fields and clear values
             orthodoxFields.style.display = 'none';
             orthodoxOnlyElements.forEach(el => el.style.display = 'none');
@@ -221,9 +297,10 @@
         }
     }
 
-    orthodoxCheckbox.addEventListener('change', updateOrthodoxVisibility);
+    orthodoxYesRadio.addEventListener('change', updateOrthodoxSelection);
+    orthodoxNoRadio.addEventListener('change', updateOrthodoxSelection);
     // Initialize on page load
-    updateOrthodoxVisibility();
+    updateOrthodoxSelection();
 
     // 2. DYNAMIC CHILDREN MANAGEMENT
     let childCount = 0;

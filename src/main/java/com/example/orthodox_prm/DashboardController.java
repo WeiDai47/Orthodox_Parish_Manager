@@ -3,6 +3,7 @@ package com.example.orthodox_prm;
 import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.DashboardService;
+import com.example.orthodox_prm.service.SubmissionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,16 +18,19 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
     private final ParishionerRepository parishionerRepository;
+    private final SubmissionService submissionService;
 
-    public DashboardController(DashboardService dashboardService, ParishionerRepository parishionerRepository) {
+    public DashboardController(DashboardService dashboardService, ParishionerRepository parishionerRepository, SubmissionService submissionService) {
         this.dashboardService = dashboardService;
         this.parishionerRepository = parishionerRepository;
+        this.submissionService = submissionService;
     }
 
 
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         model.addAttribute("stats", dashboardService.getPriestStats());
+        model.addAttribute("pendingSubmissionCount", submissionService.getPendingSubmissionCount());
         return "dashboard"; // This looks for src/main/resources/templates/dashboard.html
     }
 

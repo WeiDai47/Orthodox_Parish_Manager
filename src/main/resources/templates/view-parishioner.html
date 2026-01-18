@@ -248,6 +248,10 @@
                 <div class="info-label">City</div>
                 <div class="info-value" th:text="${parishioner.household.city}"></div>
             </div>
+            <div class="info-item" th:if="${parishioner.household != null && parishioner.household.zipCode != null}">
+                <div class="info-label">Zip Code</div>
+                <div class="info-value" th:text="${parishioner.household.zipCode}"></div>
+            </div>
             <div class="info-item" th:if="${parishioner.household != null && !parishioner.household.members.isEmpty()}">
                 <div class="info-label">Household Members</div>
                 <div class="info-value">

@@ -57,6 +57,6 @@ public interface ParishionerRepository extends JpaRepository<Parishioner, Long>,
             "LOWER(p.baptismalName) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Parishioner> searchByBaptismalName(@Param("name") String name, Sort sort);
 
-
-
+    // Search for parishioner by first and last name (for UPDATE submissions)
+    List<Parishioner> findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCase(String firstName, String lastName);
 }

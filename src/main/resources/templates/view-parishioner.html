@@ -91,16 +91,59 @@
             color: var(--text-primary);
             margin-top: 5px;
         }
+        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
+        .nav-link:hover { color: var(--text-primary) !important; }
+        .navbar { background-color: var(--bg-secondary); }
+        .btn-logout {
+            background-color: #dc3545;
+            border: 2px solid #dc3545;
+            color: white;
+            font-weight: bold;
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
     </style>
 </head>
-<body class="p-4">
+<body class="py-3">
 
-<button id="themeToggle" class="theme-toggle"
-        style="position: fixed; top: 20px; right: 20px; z-index: 1000;"
-        title="Toggle theme">
-    <i class="bi bi-sun-fill sun-icon"></i>
-    <i class="bi bi-moon-stars-fill moon-icon"></i>
-</button>
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container">
+        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
+            <a class="nav-link" href="/parishioners/add">Add Member</a>
+            <a class="nav-link" href="/links">
+                <i class="bi bi-link-45deg"></i> Submission Links
+            </a>
+            <a class="nav-link" href="/submissions/review">
+                <i class="bi bi-inbox"></i> Review Submissions
+            </a>
+            <a class="nav-link" href="/gmail">
+                <i class="bi bi-envelope"></i> Email
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+            <form action="/logout" method="POST" style="display: inline;">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <i class="bi bi-sun-fill sun-icon"></i>
+                <i class="bi bi-moon-stars-fill moon-icon"></i>
+            </button>
+        </div>
+    </div>
+</nav>
 
 <div class="container" style="max-width: 1200px;" th:attr="data-parishioner-id=${parishioner.id}">
     <div class="card p-4 shadow-lg">

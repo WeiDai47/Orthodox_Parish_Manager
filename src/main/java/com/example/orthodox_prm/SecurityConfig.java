@@ -44,7 +44,7 @@ public class SecurityConfig {
                 )
                 .headers(headers -> headers
                         .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000))
-                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' apis.google.com www.googleapis.com tenor.com"))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net www.google.com www.gstatic.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net www.gstatic.com; img-src 'self' data: https:; frame-src 'self' www.google.com; connect-src 'self' apis.google.com www.googleapis.com www.google.com tenor.com"))
                 );
 
         return http.build();

@@ -88,6 +88,7 @@
                                 <th class="text-gold">Created</th>
                                 <th class="text-gold">Expires</th>
                                 <th class="text-gold">Status</th>
+                                <th class="text-gold">Submissions</th>
                                 <th class="text-gold">Access Count</th>
                                 <th class="text-gold text-center">Actions</th>
                             </tr>
@@ -106,6 +107,14 @@
                                 <td>
                                     <span th:if="${link.isActive}" class="badge bg-success">Active</span>
                                     <span th:unless="${link.isActive}" class="badge bg-danger">Inactive</span>
+                                </td>
+                                <td>
+                                    <span th:text="${link.submissionCount}"></span>
+                                    <span th:if="${link.maxSubmissions != null}">
+                                        / <span th:text="${link.maxSubmissions}"></span>
+                                        <span th:if="${link.submissionCount >= link.maxSubmissions}" class="badge bg-warning text-dark ms-1">Full</span>
+                                    </span>
+                                    <span th:unless="${link.maxSubmissions != null}" class="text-muted">/ ∞</span>
                                 </td>
                                 <td th:text="${link.accessCount}"></td>
                                 <td class="text-center">

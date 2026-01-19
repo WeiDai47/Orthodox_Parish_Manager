@@ -23,7 +23,10 @@
         .btn-outline-warning:hover { background-color: var(--accent-gold); color: black; }
         .form-check-label { color: var(--accent-gold); }
         .submission-type-section { background: var(--bg-tertiary); border: 1px solid var(--accent-gold); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        #submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
+    <!-- reCAPTCHA v3 (conditionally loaded) -->
+    <script th:if="${recaptchaSiteKey != null}" th:src="'https://www.google.com/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
 </head>
 <body class="p-5">
 
@@ -40,6 +43,15 @@
         <h2 class="text-gold mb-4">Submit Parish Information</h2>
 
         <form th:action="@{/public/submit/{token}(token=${token})}" method="post" id="submitForm">
+
+            <!-- SECURITY: Hidden timestamp for time-based validation -->
+            <input type="hidden" name="formLoadTime" th:value="${formLoadTime}" />
+
+            <!-- SECURITY: Honeypot field - hidden from humans, bots will fill it -->
+            <div style="position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
+                <label for="website">Website (leave blank)</label>
+                <input type="text" name="website" id="website" tabindex="-1" autocomplete="off" />
+            </div>
 
             <!-- SUBMISSION TYPE SELECTION -->
             <div class="submission-type-section">
@@ -214,15 +226,21 @@
 
             <!-- SUBMIT BUTTONS -->
             <div id="submitSection" style="display: none;" class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
-                <button type="submit" class="btn btn-warning px-5 fw-bold">Submit Information</button>
+                <button type="submit" id="submitBtn" class="btn btn-warning px-5 fw-bold" disabled>
+                    <span id="submitBtnText">Please wait...</span>
+                    <span id="submitCountdown" class="ms-2"></span>
+                </button>
                 <a href="/" class="btn btn-outline-secondary">Cancel</a>
             </div>
+
+            <!-- reCAPTCHA v3 hidden input (if enabled) -->
+            <input type="hidden" name="g-recaptcha-response" id="recaptchaToken" />
 
         </form>
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
 
     // 1. ORTHODOX AFFILIATION SELECTION LOGIC
     const orthodoxYesRadio = document.getElementById('orthodoxYes');
@@ -302,6 +320,56 @@
             childRow.remove();
         }
     }
+
+    // 3. SUBMISSION COOLDOWN TIMER
+    const submitBtn = document.getElementById('submitBtn');
+    const submitBtnText = document.getElementById('submitBtnText');
+    const submitCountdown = document.getElementById('submitCountdown');
+    let cooldownSeconds = 8; // 8 second cooldown
+
+    function updateCooldown() {
+        if (cooldownSeconds > 0) {
+            submitCountdown.textContent = `(${cooldownSeconds}s)`;
+            cooldownSeconds--;
+            setTimeout(updateCooldown, 1000);
+        } else {
+            submitBtn.disabled = false;
+            submitBtnText.textContent = 'Submit Information';
+            submitCountdown.textContent = '';
+        }
+    }
+
+    // Start cooldown when page loads
+    updateCooldown();
+
+    // 4. reCAPTCHA v3 TOKEN RETRIEVAL (if enabled)
+    const recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ null;
+    const submitForm = document.getElementById('submitForm');
+
+    if (recaptchaSiteKey && typeof grecaptcha !== 'undefined') {
+        submitForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
+                    document.getElementById('recaptchaToken').value = token;
+                    submitForm.submit();
+                });
+            });
+        });
+    }
+
+    // 5. PREVENT DOUBLE SUBMISSION
+    let formSubmitted = false;
+    submitForm.addEventListener('submit', function(e) {
+        if (formSubmitted) {
+            e.preventDefault();
+            return false;
+        }
+        formSubmitted = true;
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'Submitting...';
+    });
 
 </script>
 </body>

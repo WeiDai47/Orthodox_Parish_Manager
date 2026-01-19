@@ -26,6 +26,23 @@ public class SubmissionLinkService {
     }
 
     /**
+     * Create a new submission link with max submissions limit
+     */
+    @Transactional
+    public SubmissionLink createLink(String createdBy, LocalDateTime expiresAt, String description, Integer maxSubmissions) {
+        SubmissionLink link = new SubmissionLink(createdBy, expiresAt, description, maxSubmissions);
+        return submissionLinkRepository.save(link);
+    }
+
+    /**
+     * Save an existing link (for updating submission count, etc.)
+     */
+    @Transactional
+    public SubmissionLink saveLink(SubmissionLink link) {
+        return submissionLinkRepository.save(link);
+    }
+
+    /**
      * Find a link by token
      */
     public Optional<SubmissionLink> findByToken(String token) {

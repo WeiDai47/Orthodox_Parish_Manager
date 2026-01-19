@@ -35,6 +35,14 @@ public class SubmissionLink {
     @Column(length = 500)
     private String description;
 
+    // Maximum number of submissions allowed (null = unlimited)
+    @Column(nullable = true)
+    private Integer maxSubmissions;
+
+    // Count of successful submissions made through this link
+    @Column(nullable = false)
+    private Integer submissionCount;
+
     // Constructors
     public SubmissionLink() {
     }
@@ -46,7 +54,14 @@ public class SubmissionLink {
         this.expiresAt = expiresAt;
         this.isActive = true;
         this.accessCount = 0;
+        this.submissionCount = 0;
+        this.maxSubmissions = null; // Unlimited by default
         this.description = description;
+    }
+
+    public SubmissionLink(String createdBy, LocalDateTime expiresAt, String description, Integer maxSubmissions) {
+        this(createdBy, expiresAt, description);
+        this.maxSubmissions = maxSubmissions;
     }
 
     // Static helper method for token generation
@@ -62,9 +77,30 @@ public class SubmissionLink {
         return LocalDateTime.now().isAfter(expiresAt);
     }
 
-    // Check if link is valid (active and not expired)
+    // Check if link has reached its submission limit
+    public boolean hasReachedLimit() {
+        if (maxSubmissions == null) {
+            return false; // No limit set
+        }
+        return submissionCount >= maxSubmissions;
+    }
+
+    // Check if link is valid (active, not expired, and not at limit)
     public boolean isValid() {
-        return isActive && !isExpired();
+        return isActive && !isExpired() && !hasReachedLimit();
+    }
+
+    // Increment submission count
+    public void incrementSubmissionCount() {
+        this.submissionCount = (this.submissionCount == null ? 0 : this.submissionCount) + 1;
+    }
+
+    // Get remaining submissions (null if unlimited)
+    public Integer getRemainingSubmissions() {
+        if (maxSubmissions == null) {
+            return null; // Unlimited
+        }
+        return Math.max(0, maxSubmissions - (submissionCount == null ? 0 : submissionCount));
     }
 
     // Getters and Setters
@@ -130,5 +166,21 @@ public class SubmissionLink {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getMaxSubmissions() {
+        return maxSubmissions;
+    }
+
+    public void setMaxSubmissions(Integer maxSubmissions) {
+        this.maxSubmissions = maxSubmissions;
+    }
+
+    public Integer getSubmissionCount() {
+        return submissionCount;
+    }
+
+    public void setSubmissionCount(Integer submissionCount) {
+        this.submissionCount = submissionCount;
     }
 }

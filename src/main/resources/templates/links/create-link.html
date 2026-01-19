@@ -96,6 +96,22 @@
                             <input type="date" class="form-control" id="expirationDate" name="expirationDate">
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label text-gold">Submission Limit</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="unlimitedSubmissions" name="unlimitedSubmissions" value="true" checked>
+                                <label class="form-check-label" for="unlimitedSubmissions">
+                                    Unlimited submissions
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="maxSubmissionsDiv" style="display: none;">
+                            <label for="maxSubmissions" class="form-label text-gold">Maximum Submissions</label>
+                            <input type="number" class="form-control" id="maxSubmissions" name="maxSubmissions" min="1" max="1000" placeholder="e.g., 1 for single-use link">
+                            <small class="text-muted">Set to 1 for a single-use link (e.g., for one person/family)</small>
+                        </div>
+
                         <button type="submit" class="btn btn-warning w-100 fw-bold">
                             <i class="bi bi-plus-circle"></i> Create Link
                         </button>
@@ -150,6 +166,18 @@
         // Initialize expiration date div visibility
         document.getElementById('expirationDateDiv').style.display =
             document.getElementById('neverExpires').checked ? 'none' : 'block';
+
+        // Max submissions toggle
+        document.getElementById('unlimitedSubmissions').addEventListener('change', function() {
+            document.getElementById('maxSubmissionsDiv').style.display = this.checked ? 'none' : 'block';
+            if (this.checked) {
+                document.getElementById('maxSubmissions').value = '';
+            }
+        });
+
+        // Initialize max submissions div visibility
+        document.getElementById('maxSubmissionsDiv').style.display =
+            document.getElementById('unlimitedSubmissions').checked ? 'none' : 'block';
     </script>
 </body>
 </html>

@@ -88,6 +88,8 @@ public class LinkManagementController {
             @RequestParam(required = false) String description,
             @RequestParam(required = false) String expirationDate,
             @RequestParam(defaultValue = "false") boolean neverExpires,
+            @RequestParam(defaultValue = "true") boolean unlimitedSubmissions,
+            @RequestParam(required = false) Integer maxSubmissions,
             Model model) {
 
         String currentUser = getCurrentUserEmail();
@@ -104,8 +106,11 @@ public class LinkManagementController {
             }
         }
 
+        // Determine max submissions (null = unlimited)
+        Integer effectiveMaxSubmissions = unlimitedSubmissions ? null : maxSubmissions;
+
         // Create the link
-        SubmissionLink link = submissionLinkService.createLink(currentUser, expiresAt, description);
+        SubmissionLink link = submissionLinkService.createLink(currentUser, expiresAt, description, effectiveMaxSubmissions);
 
         // Generate the full URL for the submission form
         String submissionUrl = appUrl + "/public/submit/" + link.getToken();

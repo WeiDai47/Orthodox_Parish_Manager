@@ -14,4 +14,11 @@ public interface ParishionerSubmissionRepository extends JpaRepository<Parishion
     List<ParishionerSubmission> findBySubmissionLink_IdOrderBySubmittedAtDesc(Long linkId);
 
     long countByStatus(SubmissionStatus status);
+
+    /**
+     * Find approved submissions that reference a given submission ID as their pending spouse.
+     * Used when approving a submission to check if any previously approved submission
+     * is waiting to be linked to this one as spouse.
+     */
+    List<ParishionerSubmission> findByPendingSpouseSubmissionIdAndStatus(Long pendingSpouseSubmissionId, SubmissionStatus status);
 }

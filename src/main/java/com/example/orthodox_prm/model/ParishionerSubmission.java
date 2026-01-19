@@ -7,6 +7,9 @@ import com.example.orthodox_prm.Enum.SubmissionType;
 import com.example.orthodox_prm.model.Parishioner;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,9 +21,14 @@ import java.util.List;
 })
 public class ParishionerSubmission {
 
+    private static final Logger logger = LoggerFactory.getLogger(ParishionerSubmission.class);
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -130,6 +138,11 @@ public class ParishionerSubmission {
     // --- ORTHODOX FLAG ---
     private Boolean isOrthodox;
 
+    // --- PENDING SPOUSE LINKING ---
+    // Stores the ID of another pending submission to link as spouse when both are approved
+    @Column(name = "pending_spouse_submission_id")
+    private Long pendingSpouseSubmissionId;
+
     // Constructors
     public ParishionerSubmission() {
     }
@@ -178,8 +191,10 @@ public class ParishionerSubmission {
         }
         try {
             ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
             return List.of(mapper.readValue(childrenJson, ChildData[].class));
         } catch (Exception e) {
+            logger.error("Failed to parse children JSON for submission id={}: {}", this.id, e.getMessage());
             return List.of();
         }
     }
@@ -190,8 +205,10 @@ public class ParishionerSubmission {
         } else {
             try {
                 ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
                 this.childrenJson = mapper.writeValueAsString(children);
             } catch (Exception e) {
+                logger.error("Failed to serialize children list: {}", e.getMessage());
                 this.childrenJson = null;
             }
         }
@@ -204,6 +221,14 @@ public class ParishionerSubmission {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public SubmissionType getSubmissionType() {
@@ -476,5 +501,13 @@ public class ParishionerSubmission {
 
     public void setIsOrthodox(Boolean isOrthodox) {
         this.isOrthodox = isOrthodox;
+    }
+
+    public Long getPendingSpouseSubmissionId() {
+        return pendingSpouseSubmissionId;
+    }
+
+    public void setPendingSpouseSubmissionId(Long pendingSpouseSubmissionId) {
+        this.pendingSpouseSubmissionId = pendingSpouseSubmissionId;
     }
 }

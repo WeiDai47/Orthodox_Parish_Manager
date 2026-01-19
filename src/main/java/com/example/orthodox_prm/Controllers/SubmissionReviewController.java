@@ -107,6 +107,11 @@ public class SubmissionReviewController {
         model.addAttribute("allParishioners", parishionerRepository.findAll());
         model.addAttribute("allHouseholds", householdRepository.findAll());
 
+        // Get other pending submissions for spouse linking (exclude current submission)
+        List<ParishionerSubmission> pendingSubmissions = submissionService.getPendingSubmissions();
+        pendingSubmissions.removeIf(s -> s.getId().equals(submission.getId()));
+        model.addAttribute("pendingSubmissions", pendingSubmissions);
+
         return "submissions/review-detail";
     }
 
@@ -149,6 +154,8 @@ public class SubmissionReviewController {
             // NEW: Children linking parameters
             @RequestParam(required = false) List<Long> childLinkIds,
             @RequestParam(required = false) List<Integer> childCreateIndexes,
+            // NEW: Pending spouse submission linking
+            @RequestParam(required = false) Long pendingSpouseSubmissionId,
             Model model) {
         Optional<ParishionerSubmission> submissionOpt = submissionService.getSubmissionById(id);
 
@@ -159,17 +166,28 @@ public class SubmissionReviewController {
         ParishionerSubmission submission = submissionOpt.get();
 
         // Apply edited fields to submission before approval
-        if (firstName != null) submission.setFirstName(firstName);
-        if (lastName != null) submission.setLastName(lastName);
-        submission.setNameSuffix(nameSuffix);
+        if (firstName != null && !firstName.trim().isEmpty()) {
+            submission.setFirstName(firstName.trim());
+        }
+        if (lastName != null && !lastName.trim().isEmpty()) {
+            submission.setLastName(lastName.trim());
+        }
+        submission.setNameSuffix(nameSuffix != null ? nameSuffix.trim() : null);
         submission.setBirthday(birthday);
-        if (email != null) submission.setEmail(email);
+        if (email != null) {
+            submission.setEmail(email.trim().isEmpty() ? null : email.trim());
+        }
         submission.setPhoneNumber(phoneNumber);
         submission.setAddress(address);
         submission.setCity(city);
         submission.setZipCode(zipCode);
         if (maritalStatus != null && !maritalStatus.isEmpty()) {
-            submission.setMaritalStatus(MaritalStatus.valueOf(maritalStatus));
+            try {
+                submission.setMaritalStatus(MaritalStatus.valueOf(maritalStatus.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("errorMessage", "Invalid marital status: " + maritalStatus);
+                return "redirect:/submissions/review/" + id;
+            }
         }
         submission.setMarriageDate(marriageDate);
         submission.setBaptismalName(baptismalName);
@@ -177,7 +195,12 @@ public class SubmissionReviewController {
         submission.setBaptismDate(baptismDate);
         submission.setChrismationDate(chrismationDate);
         if (membershipStatus != null && !membershipStatus.isEmpty()) {
-            submission.setMembershipStatus(MembershipStatus.valueOf(membershipStatus));
+            try {
+                submission.setMembershipStatus(MembershipStatus.valueOf(membershipStatus.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("errorMessage", "Invalid membership status: " + membershipStatus);
+                return "redirect:/submissions/review/" + id;
+            }
         }
 
         // Update manual relationship names if provided
@@ -195,7 +218,8 @@ public class SubmissionReviewController {
                     submission, currentUser,
                     selectedSpouseId, selectedGodfatherId, selectedGodmotherId, selectedSponsorId,
                     selectedHouseholdId, selectedNewHouseholdName,
-                    childLinkIds, childCreateIndexes
+                    childLinkIds, childCreateIndexes,
+                    pendingSpouseSubmissionId
                 );
             } else if (submission.getSubmissionType() == SubmissionType.UPDATE) {
                 if (targetParishionerId != null && targetParishionerId > 0) {

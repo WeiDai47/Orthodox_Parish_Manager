@@ -9,15 +9,68 @@
     <link rel="stylesheet" th:href="@{/css/theme.css}">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="/js/theme-toggle.js"></script>
     <style>
         .comparison-table { margin-top: 20px; }
         .comparison-table th { background-color: #f8f9fa; color: black; border-bottom: 2px solid #333; }
         .changed { background-color: #e9ecef; }
         .field-label { font-weight: bold; color: black; }
+        body { background-color: var(--bg-primary); color: var(--text-primary); }
+        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
+        .nav-link:hover { color: var(--text-primary) !important; }
+        .navbar { background-color: var(--bg-secondary); }
+        .btn-logout {
+            background-color: #dc3545;
+            border: 2px solid #dc3545;
+            color: white;
+            font-weight: bold;
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .btn-logout:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
     </style>
 </head>
-<body>
-    <div class="container mt-5">
+<body class="py-3">
+
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container">
+        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
+            <a class="nav-link" href="/parishioners/add">Add Member</a>
+            <a class="nav-link" href="/links">
+                <i class="bi bi-link-45deg"></i> Submission Links
+            </a>
+            <a class="nav-link" href="/submissions/review">
+                <i class="bi bi-inbox"></i> Review Submissions
+            </a>
+            <a class="nav-link" href="/gmail">
+                <i class="bi bi-envelope"></i> Email
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+            <form action="/logout" method="POST" style="display: inline;">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                <i class="bi bi-sun-fill sun-icon"></i>
+                <i class="bi bi-moon-stars-fill moon-icon"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+    <div class="container mt-3">
         <div class="row mb-4">
             <div class="col-md-8">
                 <h1 class="text-dark fw-bold">Review Submission</h1>
@@ -169,7 +222,7 @@
                 </div>
 
                 <!-- WARNING: MARRIED STATUS WITHOUT SPOUSE ASSIGNMENT (UPDATE ONLY) -->
-                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
+                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus.name() == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
                     <div class="d-flex align-items-start">
                         <i class="bi bi-exclamation-triangle-fill text-warning me-3" style="font-size: 1.25rem; margin-top: 2px;"></i>
                         <div>
@@ -806,7 +859,7 @@
                 </div>
 
                 <!-- WARNING: MARRIED STATUS WITHOUT SPOUSE ASSIGNMENT (UPDATE ONLY) -->
-                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
+                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus.name() == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
                     <div class="d-flex align-items-start">
                         <i class="bi bi-exclamation-triangle-fill text-warning me-3" style="font-size: 1.25rem; margin-top: 2px;"></i>
                         <div>
@@ -916,6 +969,27 @@
                         </div>
                     </div>
 
+                    <!-- Pending Spouse Submission (for when both spouses submit as new) -->
+                    <div class="row mb-3" th:if="${pendingSubmissions != null and !pendingSubmissions.isEmpty()}">
+                        <div class="col-md-12">
+                            <div class="alert alert-info py-2 mb-2">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Spouse Also Submitted?</strong> If your spouse also submitted as a new member, select their pending submission below. They will be automatically linked when both are approved.
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-dark">Link to Pending Spouse Submission</label>
+                            <select id="pendingSpouseSelect" class="search-select-pending">
+                                <option value="">-- No Pending Spouse Submission --</option>
+                                <option th:each="ps : ${pendingSubmissions}"
+                                        th:value="${ps.id}"
+                                        th:text="${'[PENDING #' + ps.id + '] ' + ps.firstName + ' ' + ps.lastName + ' (submitted ' + #temporals.format(ps.submittedAt, 'MMM dd, yyyy') + ')'}">
+                                </option>
+                            </select>
+                            <small class="text-muted">When you approve this submission, the selected pending submission will be marked for automatic spouse linking.</small>
+                        </div>
+                    </div>
+
                     <!-- Godfather -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -953,6 +1027,26 @@
                             <input type="text" id="manualGodmotherName" class="form-control manual-input"
                                    placeholder="Manual godmother name"
                                    data-select-target="godmotherSelect">
+                        </div>
+                    </div>
+
+                    <!-- Sponsor -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">Link Sponsor to Member</label>
+                            <select id="sponsorSelect" class="search-select" data-manual-target="manualSponsorName">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="p : ${allParishioners}"
+                                        th:value="${p.id}"
+                                        th:text="${p.firstName + ' ' + p.lastName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark">OR Keep Manual</label>
+                            <input type="text" id="manualSponsorName" class="form-control manual-input"
+                                   placeholder="Manual sponsor name"
+                                   data-select-target="sponsorSelect">
                         </div>
                     </div>
 
@@ -1060,35 +1154,39 @@
                 <form id="approveForm" th:action="@{/submissions/review/{id}/approve(id=${submission.id})}" method="post" class="card bg-success border-0">
                     <div class="card-body">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <input type="hidden" id="approveTargetParishionerId" name="targetParishionerId" value="" />
+                        <input type="hidden" id="approveTargetParishionerIdNew" name="targetParishionerId" value="" />
                         <!-- Edited field parameters -->
-                        <input type="hidden" id="editFirstName" name="firstName" value="" />
-                        <input type="hidden" id="editLastName" name="lastName" value="" />
-                        <input type="hidden" id="editNameSuffix" name="nameSuffix" value="" />
-                        <input type="hidden" id="editBirthday" name="birthday" value="" />
-                        <input type="hidden" id="editEmail" name="email" value="" />
-                        <input type="hidden" id="editPhoneNumber" name="phoneNumber" value="" />
-                        <input type="hidden" id="editAddress" name="address" value="" />
-                        <input type="hidden" id="editCity" name="city" value="" />
-                        <input type="hidden" id="editZipCode" name="zipCode" value="" />
-                        <input type="hidden" id="editMaritalStatus" name="maritalStatus" value="" />
-                        <input type="hidden" id="editMarriageDate" name="marriageDate" value="" />
-                        <input type="hidden" id="editBaptismalName" name="baptismalName" value="" />
-                        <input type="hidden" id="editPatronSaint" name="patronSaint" value="" />
-                        <input type="hidden" id="editBaptismDate" name="baptismDate" value="" />
-                        <input type="hidden" id="editChrismationDate" name="chrismationDate" value="" />
-                        <input type="hidden" id="editMembershipStatus" name="membershipStatus" value="" />
+                        <input type="hidden" id="editFirstNameNew" name="firstName" value="" />
+                        <input type="hidden" id="editLastNameNew" name="lastName" value="" />
+                        <input type="hidden" id="editNameSuffixNew" name="nameSuffix" value="" />
+                        <input type="hidden" id="editBirthdayNew" name="birthday" value="" />
+                        <input type="hidden" id="editEmailNew" name="email" value="" />
+                        <input type="hidden" id="editPhoneNumberNew" name="phoneNumber" value="" />
+                        <input type="hidden" id="editAddressNew" name="address" value="" />
+                        <input type="hidden" id="editCityNew" name="city" value="" />
+                        <input type="hidden" id="editZipCodeNew" name="zipCode" value="" />
+                        <input type="hidden" id="editMaritalStatusNew" name="maritalStatus" value="" />
+                        <input type="hidden" id="editMarriageDateNew" name="marriageDate" value="" />
+                        <input type="hidden" id="editBaptismalNameNew" name="baptismalName" value="" />
+                        <input type="hidden" id="editPatronSaintNew" name="patronSaint" value="" />
+                        <input type="hidden" id="editBaptismDateNew" name="baptismDate" value="" />
+                        <input type="hidden" id="editChrismationDateNew" name="chrismationDate" value="" />
+                        <input type="hidden" id="editMembershipStatusNew" name="membershipStatus" value="" />
                         <!-- Relationship parameters -->
-                        <input type="hidden" id="editSelectedSpouseId" name="selectedSpouseId" value="" />
-                        <input type="hidden" id="editManualSpouseName" name="manualSpouseName" value="" />
-                        <input type="hidden" id="editSelectedGodfatherId" name="selectedGodfatherId" value="" />
-                        <input type="hidden" id="editManualGodfatherName" name="manualGodfatherName" value="" />
-                        <input type="hidden" id="editSelectedGodmotherId" name="selectedGodmotherId" value="" />
-                        <input type="hidden" id="editManualGodmotherName" name="manualGodmotherName" value="" />
-                        <input type="hidden" id="editSelectedHouseholdId" name="selectedHouseholdId" value="" />
-                        <input type="hidden" id="editSelectedNewHouseholdName" name="selectedNewHouseholdName" value="" />
+                        <input type="hidden" id="editSelectedSpouseIdNew" name="selectedSpouseId" value="" />
+                        <input type="hidden" id="editManualSpouseNameNew" name="manualSpouseName" value="" />
+                        <input type="hidden" id="editSelectedGodfatherIdNew" name="selectedGodfatherId" value="" />
+                        <input type="hidden" id="editManualGodfatherNameNew" name="manualGodfatherName" value="" />
+                        <input type="hidden" id="editSelectedGodmotherIdNew" name="selectedGodmotherId" value="" />
+                        <input type="hidden" id="editManualGodmotherNameNew" name="manualGodmotherName" value="" />
+                        <input type="hidden" id="editSelectedSponsorIdNew" name="selectedSponsorId" value="" />
+                        <input type="hidden" id="editManualSponsorNameNew" name="manualSponsorName" value="" />
+                        <input type="hidden" id="editSelectedHouseholdIdNew" name="selectedHouseholdId" value="" />
+                        <input type="hidden" id="editSelectedNewHouseholdNameNew" name="selectedNewHouseholdName" value="" />
+                        <!-- Pending spouse submission linking -->
+                        <input type="hidden" id="editPendingSpouseSubmissionId" name="pendingSpouseSubmissionId" value="" />
                         <!-- Children linking parameters will be added by JavaScript -->
-                        <div id="childrenParamsContainer"></div>
+                        <div id="childrenParamsContainerNew"></div>
                         <button type="submit" class="btn btn-success w-100 fw-bold">
                             <i class="bi bi-check-circle"></i> Approve & Create
                         </button>
@@ -1365,11 +1463,12 @@
             const confirmBtn = document.getElementById('confirmMembershipStatus');
             if (confirmBtn) {
                 confirmBtn.addEventListener('click', function() {
-                    // Get selected membership status from modal
-                    const selectedStatus = document.querySelector('input[name="membershipStatusModal"]:checked').value;
+                    // Get selected membership status from modal (with null check)
+                    const selectedStatusRadio = document.querySelector('input[name="membershipStatusModal"]:checked');
+                    const selectedStatus = selectedStatusRadio ? selectedStatusRadio.value : 'MEMBER';
 
-                    // Set the hidden field value
-                    document.getElementById('editMembershipStatus').value = selectedStatus;
+                    // Set the hidden field value (use NEW suffix for NEW submissions)
+                    document.getElementById('editMembershipStatusNew').value = selectedStatus;
 
                     // Check if submitted marital status is MARRIED
                     let isMarried = false;
@@ -1378,7 +1477,7 @@
                     // Find the marital status field in the NEW submission form
                     const maritalStatusSpans = document.querySelectorAll('.view-mode');
                     for (let span of maritalStatusSpans) {
-                        const fieldLabel = span.parentElement.querySelector('.field-label');
+                        const fieldLabel = span.parentElement?.querySelector('.field-label');
                         if (fieldLabel && fieldLabel.textContent.includes('Marital Status')) {
                             if (span.textContent.trim() === 'MARRIED') {
                                 isMarried = true;
@@ -1391,8 +1490,11 @@
                     if (isMarried) {
                         const spouseSelect = document.getElementById('spouseSelect');
                         const manualSpouseName = document.getElementById('manualSpouseName');
+                        const pendingSpouseSelectModal = document.getElementById('pendingSpouseSelect');
 
-                        if ((spouseSelect && spouseSelect.value) || (manualSpouseName && manualSpouseName.value.trim())) {
+                        if ((spouseSelect && spouseSelect.value) ||
+                            (manualSpouseName && manualSpouseName.value.trim()) ||
+                            (pendingSpouseSelectModal && pendingSpouseSelectModal.value)) {
                             hasSpouseInfo = true;
                         }
                     }
@@ -1407,9 +1509,8 @@
                         const spouseModal = new bootstrap.Modal(document.getElementById('spouseAssignmentModal'));
                         spouseModal.show();
                     } else {
-                        // Submit the form without triggering the submit event again
-                        approveForm.removeEventListener('submit', arguments.callee);
-                        approveForm.submit();
+                        // Submit the form directly (use HTMLFormElement.submit to bypass event handlers)
+                        HTMLFormElement.prototype.submit.call(approveForm);
                     }
                 });
             }
@@ -1421,14 +1522,22 @@
                     // Hide spouse modal and scroll to relationships section
                     bootstrap.Modal.getInstance(document.getElementById('spouseAssignmentModal')).hide();
 
-                    // Scroll to the relationship assignment section
-                    const relationshipSection = document.querySelector('h6');
-                    const sections = Array.from(document.querySelectorAll('h6')).find(h =>
-                        h.textContent.includes('Assign Relationships') && h.parentElement.classList.contains('edit-mode')
-                    );
+                    // Scroll to the relationship assignment section (find the one in the NEW submission card)
+                    const relationshipSections = document.querySelectorAll('h6');
+                    let targetSection = null;
+                    for (const h6 of relationshipSections) {
+                        if (h6.textContent.includes('Assign Relationships')) {
+                            // Check if this is inside the NEW submission section (not UPDATE)
+                            const parentCard = h6.closest('.card');
+                            if (parentCard && !parentCard.querySelector('#toggleEditModeUpdate')) {
+                                targetSection = h6;
+                                break;
+                            }
+                        }
+                    }
 
-                    if (sections) {
-                        sections.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
             }
@@ -1626,6 +1735,49 @@
             });
         });
 
+        // Initialize TomSelect for pending spouse dropdown
+        document.querySelectorAll('.search-select-pending').forEach(el => {
+            new TomSelect(el, {
+                create: false,
+                sortField: {field: "text", direction: "asc"},
+                placeholder: "Search pending submissions..."
+            });
+        });
+
+        // Mutual exclusion for pending spouse: clear existing spouse/manual when selecting pending
+        const pendingSpouseSelect = document.getElementById('pendingSpouseSelect');
+        const spouseSelectNew = document.getElementById('spouseSelect');
+        const manualSpouseNameNew = document.getElementById('manualSpouseName');
+
+        if (pendingSpouseSelect) {
+            pendingSpouseSelect.addEventListener('change', function() {
+                if (this.value) {
+                    // Clear existing member selection
+                    if (spouseSelectNew?.tomselect) spouseSelectNew.tomselect.clear();
+                    // Clear manual entry
+                    if (manualSpouseNameNew) manualSpouseNameNew.value = '';
+                }
+            });
+        }
+
+        // Clear pending spouse when selecting existing member
+        if (spouseSelectNew) {
+            spouseSelectNew.addEventListener('change', function() {
+                if (this.value && pendingSpouseSelect?.tomselect) {
+                    pendingSpouseSelect.tomselect.clear();
+                }
+            });
+        }
+
+        // Clear pending spouse when typing manual entry
+        if (manualSpouseNameNew) {
+            manualSpouseNameNew.addEventListener('input', function() {
+                if (this.value.trim() && pendingSpouseSelect?.tomselect) {
+                    pendingSpouseSelect.tomselect.clear();
+                }
+            });
+        }
+
         // Initialize TomSelect for children (needs different handling due to dynamic naming)
         document.querySelectorAll('.search-select-child').forEach(el => {
             new TomSelect(el, {
@@ -1793,34 +1945,35 @@
             }
         }
 
-        // Collect relationship and children data when approving
+        // Collect relationship and children data when approving (NEW submissions)
         const approveFormElement = document.getElementById('approveForm');
         if (approveFormElement) {
             approveFormElement.addEventListener('submit', function(e) {
-                // Collect edited field values from input elements
+                // Collect edited field values from input elements (use selectors that target NEW submission form)
+                const newSubmissionCard = document.querySelector('.card:not(:has(#toggleEditModeUpdate))');
+
                 const editableFields = {
-                    'firstName': document.querySelector('input[name="firstName"].edit-mode'),
-                    'lastName': document.querySelector('input[name="lastName"].edit-mode'),
-                    'nameSuffix': document.querySelector('input[name="nameSuffix"].edit-mode'),
-                    'birthday': document.querySelector('input[name="birthday"].edit-mode'),
-                    'email': document.querySelector('input[name="email"].edit-mode'),
-                    'phoneNumber': document.querySelector('input[name="phoneNumber"].edit-mode'),
-                    'address': document.querySelector('input[name="address"].edit-mode'),
-                    'city': document.querySelector('input[name="city"].edit-mode'),
-                    'zipCode': document.querySelector('input[name="zipCode"].edit-mode'),
-                    'maritalStatus': document.querySelector('select[name="maritalStatus"].edit-mode'),
-                    'marriageDate': document.querySelector('input[name="marriageDate"].edit-mode'),
-                    'baptismalName': document.querySelector('input[name="baptismalName"].edit-mode'),
-                    'patronSaint': document.querySelector('input[name="patronSaint"].edit-mode'),
-                    'baptismDate': document.querySelector('input[name="baptismDate"].edit-mode'),
-                    'chrismationDate': document.querySelector('input[name="chrismationDate"].edit-mode'),
-                    'membershipStatus': document.querySelector('select[name="membershipStatus"].edit-mode'),
+                    'firstName': newSubmissionCard?.querySelector('input[name="firstName"].edit-mode'),
+                    'lastName': newSubmissionCard?.querySelector('input[name="lastName"].edit-mode'),
+                    'nameSuffix': newSubmissionCard?.querySelector('input[name="nameSuffix"].edit-mode'),
+                    'birthday': newSubmissionCard?.querySelector('input[name="birthday"].edit-mode'),
+                    'email': newSubmissionCard?.querySelector('input[name="email"].edit-mode'),
+                    'phoneNumber': newSubmissionCard?.querySelector('input[name="phoneNumber"].edit-mode'),
+                    'address': newSubmissionCard?.querySelector('input[name="address"].edit-mode'),
+                    'city': newSubmissionCard?.querySelector('input[name="city"].edit-mode'),
+                    'zipCode': newSubmissionCard?.querySelector('input[name="zipCode"].edit-mode'),
+                    'maritalStatus': newSubmissionCard?.querySelector('select[name="maritalStatus"].edit-mode'),
+                    'marriageDate': newSubmissionCard?.querySelector('input[name="marriageDate"].edit-mode'),
+                    'baptismalName': newSubmissionCard?.querySelector('input[name="baptismalName"].edit-mode'),
+                    'patronSaint': newSubmissionCard?.querySelector('input[name="patronSaint"].edit-mode'),
+                    'baptismDate': newSubmissionCard?.querySelector('input[name="baptismDate"].edit-mode'),
+                    'chrismationDate': newSubmissionCard?.querySelector('input[name="chrismationDate"].edit-mode'),
                 };
 
-                // Populate hidden fields with edited values
+                // Populate hidden fields with edited values (use NEW suffix for NEW submissions)
                 for (const [fieldName, fieldElement] of Object.entries(editableFields)) {
                     if (fieldElement) {
-                        const hiddenId = 'edit' + fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+                        const hiddenId = 'edit' + fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + 'New';
                         const hiddenEl = document.getElementById(hiddenId);
                         if (hiddenEl) {
                             hiddenEl.value = fieldElement.value || '';
@@ -1828,48 +1981,63 @@
                     }
                 }
 
-                // Collect relationship data
+                // Collect relationship data (use NEW suffix)
                 const spouseSelect = document.getElementById('spouseSelect');
                 const manualSpouseName = document.getElementById('manualSpouseName');
                 const godfatherSelect = document.getElementById('godfatherSelect');
                 const manualGodfatherName = document.getElementById('manualGodfatherName');
                 const godmotherSelect = document.getElementById('godmotherSelect');
                 const manualGodmotherName = document.getElementById('manualGodmotherName');
+                const sponsorSelect = document.getElementById('sponsorSelect');
+                const manualSponsorName = document.getElementById('manualSponsorName');
                 const householdSelect = document.getElementById('householdSelect');
                 const newHouseholdName = document.getElementById('newHouseholdName');
 
-                if (spouseSelect) document.getElementById('editSelectedSpouseId').value = spouseSelect.value || '';
-                if (manualSpouseName) document.getElementById('editManualSpouseName').value = manualSpouseName.value || '';
-                if (godfatherSelect) document.getElementById('editSelectedGodfatherId').value = godfatherSelect.value || '';
-                if (manualGodfatherName) document.getElementById('editManualGodfatherName').value = manualGodfatherName.value || '';
-                if (godmotherSelect) document.getElementById('editSelectedGodmotherId').value = godmotherSelect.value || '';
-                if (manualGodmotherName) document.getElementById('editManualGodmotherName').value = manualGodmotherName.value || '';
-                if (householdSelect) document.getElementById('editSelectedHouseholdId').value = householdSelect.value || '';
-                if (newHouseholdName) document.getElementById('editSelectedNewHouseholdName').value = newHouseholdName.value || '';
+                if (spouseSelect) document.getElementById('editSelectedSpouseIdNew').value = spouseSelect.value || '';
+                if (manualSpouseName) document.getElementById('editManualSpouseNameNew').value = manualSpouseName.value || '';
+                if (godfatherSelect) document.getElementById('editSelectedGodfatherIdNew').value = godfatherSelect.value || '';
+                if (manualGodfatherName) document.getElementById('editManualGodfatherNameNew').value = manualGodfatherName.value || '';
+                if (godmotherSelect) document.getElementById('editSelectedGodmotherIdNew').value = godmotherSelect.value || '';
+                if (manualGodmotherName) document.getElementById('editManualGodmotherNameNew').value = manualGodmotherName.value || '';
+                if (sponsorSelect) document.getElementById('editSelectedSponsorIdNew').value = sponsorSelect.value || '';
+                if (manualSponsorName) document.getElementById('editManualSponsorNameNew').value = manualSponsorName.value || '';
+                if (householdSelect) document.getElementById('editSelectedHouseholdIdNew').value = householdSelect.value || '';
+                if (newHouseholdName) document.getElementById('editSelectedNewHouseholdNameNew').value = newHouseholdName.value || '';
 
-                // Collect children linking/creation parameters
-                const childrenContainer = document.getElementById('childrenParamsContainer');
-                childrenContainer.innerHTML = '';
+                // Collect pending spouse submission ID
+                const pendingSpouseSelectEl = document.getElementById('pendingSpouseSelect');
+                if (pendingSpouseSelectEl) {
+                    document.getElementById('editPendingSpouseSubmissionId').value = pendingSpouseSelectEl.value || '';
+                }
 
-                // Collect childLinkIds
-                document.querySelectorAll('.search-select-child').forEach((select, idx) => {
-                    if (select.value) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'childLinkIds';
-                        input.value = select.value;
-                        childrenContainer.appendChild(input);
+                // Collect children linking/creation parameters (use NEW suffix container)
+                const childrenContainer = document.getElementById('childrenParamsContainerNew');
+                if (childrenContainer) {
+                    childrenContainer.innerHTML = '';
+
+                    // Collect childLinkIds (only from NEW submission section)
+                    const newCard = document.querySelector('.card:has(#toggleEditMode)');
+                    if (newCard) {
+                        newCard.querySelectorAll('.search-select-child').forEach((select, idx) => {
+                            if (select.value) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'childLinkIds';
+                                input.value = select.value;
+                                childrenContainer.appendChild(input);
+                            }
+                        });
+
+                        // Collect childCreateIndexes
+                        newCard.querySelectorAll('.child-create-checkbox:checked').forEach((checkbox) => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'childCreateIndexes';
+                            input.value = checkbox.value;
+                            childrenContainer.appendChild(input);
+                        });
                     }
-                });
-
-                // Collect childCreateIndexes
-                document.querySelectorAll('.child-create-checkbox:checked').forEach((checkbox) => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'childCreateIndexes';
-                    input.value = checkbox.value;
-                    childrenContainer.appendChild(input);
-                });
+                }
             });
         }
     </script>

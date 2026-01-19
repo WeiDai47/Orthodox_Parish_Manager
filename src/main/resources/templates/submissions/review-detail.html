@@ -168,33 +168,14 @@
                     </div>
                 </div>
 
-                <!-- RELATIONSHIPS (MANUAL ENTRY) -->
-                <div class="mb-4">
-                    <h6 class="text-dark fw-bold mb-3">Relationships (Manual Entry)</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Spouse:</span>
-                            <span class="view-mode" th:text="${submission.manualSpouseName != null ? submission.manualSpouseName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSpouseName"
-                                   th:value="${submission.manualSpouseName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Godfather:</span>
-                            <span class="view-mode" th:text="${submission.manualGodfatherName != null ? submission.manualGodfatherName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodfatherName"
-                                   th:value="${submission.manualGodfatherName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Godmother:</span>
-                            <span class="view-mode" th:text="${submission.manualGodmotherName != null ? submission.manualGodmotherName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodmotherName"
-                                   th:value="${submission.manualGodmotherName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Sponsor:</span>
-                            <span class="view-mode" th:text="${submission.manualSponsorName != null ? submission.manualSponsorName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSponsorName"
-                                   th:value="${submission.manualSponsorName}" style="display:none;">
+                <!-- WARNING: MARRIED STATUS WITHOUT SPOUSE ASSIGNMENT (UPDATE ONLY) -->
+                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-3" style="font-size: 1.25rem; margin-top: 2px;"></i>
+                        <div>
+                            <strong>Spouse Assignment Required</strong>
+                            <p class="mb-2">This person is marked as married. You must assign a spouse to another parishioner in the system when approving this submission.</p>
+                            <p class="mb-0">If the spouse is not yet in the system, you can <a href="/parishioners/add" target="_blank" class="fw-bold text-warning text-decoration-underline">add them as a member here</a>. Then come back and link them in the relationship assignment section.</p>
                         </div>
                     </div>
                 </div>
@@ -824,33 +805,14 @@
                     </div>
                 </div>
 
-                <!-- RELATIONSHIPS (MANUAL ENTRY) -->
-                <div class="mb-4">
-                    <h6 class="text-dark fw-bold mb-3">Relationships (Manual Entry)</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Spouse:</span>
-                            <span class="view-mode" th:text="${submission.manualSpouseName != null ? submission.manualSpouseName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSpouseName"
-                                   th:value="${submission.manualSpouseName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Godfather:</span>
-                            <span class="view-mode" th:text="${submission.manualGodfatherName != null ? submission.manualGodfatherName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodfatherName"
-                                   th:value="${submission.manualGodfatherName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Godmother:</span>
-                            <span class="view-mode" th:text="${submission.manualGodmotherName != null ? submission.manualGodmotherName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualGodmotherName"
-                                   th:value="${submission.manualGodmotherName}" style="display:none;">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <span class="field-label">Sponsor:</span>
-                            <span class="view-mode" th:text="${submission.manualSponsorName != null ? submission.manualSponsorName : '(not set)'}"></span>
-                            <input type="text" class="edit-mode form-control form-control-sm" name="manualSponsorName"
-                                   th:value="${submission.manualSponsorName}" style="display:none;">
+                <!-- WARNING: MARRIED STATUS WITHOUT SPOUSE ASSIGNMENT (UPDATE ONLY) -->
+                <div th:if="${isUpdate and submission.maritalStatus != null and submission.maritalStatus == 'MARRIED'}" class="alert alert-warning border-warning mb-4" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-3" style="font-size: 1.25rem; margin-top: 2px;"></i>
+                        <div>
+                            <strong>Spouse Assignment Required</strong>
+                            <p class="mb-2">This person is marked as married. You must assign a spouse to another parishioner in the system when approving this submission.</p>
+                            <p class="mb-0">If the spouse is not yet in the system, you can <a href="/parishioners/add" target="_blank" class="fw-bold text-warning text-decoration-underline">add them as a member here</a>. Then come back and link them in the relationship assignment section.</p>
                         </div>
                     </div>
                 </div>
@@ -1196,6 +1158,56 @@
         </div>
     </div>
 
+    <!-- SPOUSE ASSIGNMENT WARNING MODAL FOR NEW MARRIED SUBMISSIONS -->
+    <div class="modal fade" id="spouseAssignmentModal" tabindex="-1" th:if="${!isUpdate}">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-white">
+                <div class="modal-header bg-warning border-bottom border-dark">
+                    <h5 class="modal-title text-dark fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Spouse Assignment Required</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark mb-3"><strong>This person is marked as married.</strong></p>
+                    <p class="text-dark mb-3">You must provide spouse information when approving this submission.</p>
+
+                    <p class="text-dark mb-3"><strong>You have two options:</strong></p>
+                    <div class="ms-3 mb-3">
+                        <p class="text-dark mb-2">
+                            <strong>Option 1: Link to existing parishioner</strong><br>
+                            <small class="text-muted">Select the spouse from the dropdown in the Assign Relationships section</small>
+                        </p>
+                        <p class="text-dark mb-0">
+                            <strong>Option 2: Manual entry</strong><br>
+                            <small class="text-muted">Enter the spouse's name manually if they're not yet in the system</small>
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info mb-3">
+                        <strong>Spouse not in the system?</strong><br>
+                        You can <a href="/parishioners/add" target="_blank" class="fw-bold text-decoration-underline">add them as a member here</a> (opens in a new tab). Then come back and link them. Or simply enter their name manually.
+                    </div>
+
+                    <p class="text-dark mb-0"><strong>Next Steps:</strong></p>
+                    <ol class="text-dark">
+                        <li>Click "Continue" below to proceed</li>
+                        <li>Scroll down to the "Assign Relationships" section</li>
+                        <li>Either:
+                            <ul class="text-dark">
+                                <li>Select spouse from dropdown, OR</li>
+                                <li>Enter spouse name in "OR Keep as Manual Entry" field</li>
+                            </ul>
+                        </li>
+                        <li>Click "Approve & Create" to complete</li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmSpouseAssignment">Continue to Relationships</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const submissionId = window.location.pathname.split('/').pop();
@@ -1359,13 +1371,65 @@
                     // Set the hidden field value
                     document.getElementById('editMembershipStatus').value = selectedStatus;
 
-                    // Collect fields and close modal
-                    collectSelectedFields(approveForm);
-                    bootstrap.Modal.getInstance(document.getElementById('membershipStatusModal')).hide();
+                    // Check if submitted marital status is MARRIED
+                    let isMarried = false;
+                    let hasSpouseInfo = false;
 
-                    // Submit the form without triggering the submit event again
-                    approveForm.removeEventListener('submit', arguments.callee);
-                    approveForm.submit();
+                    // Find the marital status field in the NEW submission form
+                    const maritalStatusSpans = document.querySelectorAll('.view-mode');
+                    for (let span of maritalStatusSpans) {
+                        const fieldLabel = span.parentElement.querySelector('.field-label');
+                        if (fieldLabel && fieldLabel.textContent.includes('Marital Status')) {
+                            if (span.textContent.trim() === 'MARRIED') {
+                                isMarried = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    // Check if spouse info has been provided in the relationship assignment section
+                    if (isMarried) {
+                        const spouseSelect = document.getElementById('spouseSelect');
+                        const manualSpouseName = document.getElementById('manualSpouseName');
+
+                        if ((spouseSelect && spouseSelect.value) || (manualSpouseName && manualSpouseName.value.trim())) {
+                            hasSpouseInfo = true;
+                        }
+                    }
+
+                    // Collect fields and close membership status modal
+                    collectSelectedFields(approveForm);
+                    const membershipModal = bootstrap.Modal.getInstance(document.getElementById('membershipStatusModal'));
+                    membershipModal.hide();
+
+                    // If married but no spouse info provided yet, show spouse assignment modal
+                    if (isMarried && !hasSpouseInfo) {
+                        const spouseModal = new bootstrap.Modal(document.getElementById('spouseAssignmentModal'));
+                        spouseModal.show();
+                    } else {
+                        // Submit the form without triggering the submit event again
+                        approveForm.removeEventListener('submit', arguments.callee);
+                        approveForm.submit();
+                    }
+                });
+            }
+
+            // Handle spouse assignment modal confirmation
+            const confirmSpouseBtn = document.getElementById('confirmSpouseAssignment');
+            if (confirmSpouseBtn) {
+                confirmSpouseBtn.addEventListener('click', function() {
+                    // Hide spouse modal and scroll to relationships section
+                    bootstrap.Modal.getInstance(document.getElementById('spouseAssignmentModal')).hide();
+
+                    // Scroll to the relationship assignment section
+                    const relationshipSection = document.querySelector('h6');
+                    const sections = Array.from(document.querySelectorAll('h6')).find(h =>
+                        h.textContent.includes('Assign Relationships') && h.parentElement.classList.contains('edit-mode')
+                    );
+
+                    if (sections) {
+                        sections.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 });
             }
         }
@@ -1477,13 +1541,35 @@
                 // Turn edit mode ON
                 document.querySelectorAll('.edit-mode').forEach(el => el.style.display = '');
                 document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
-                this.textContent = '✓ Edit Mode Active - Click to Disable';
+                this.innerHTML = '<i class="bi bi-check-circle"></i> Edit Mode Active - Click to Disable';
                 this.classList.replace('btn-warning', 'btn-info');
             } else {
-                // Turn edit mode OFF
-                document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
+                // Turn edit mode OFF - update view-mode with edited values
+                document.querySelectorAll('.edit-mode').forEach(editEl => {
+                    // Find the corresponding view-mode span
+                    const container = editEl.parentElement;
+                    const viewModeSpan = container.querySelector('.view-mode');
+
+                    if (viewModeSpan && editEl.value) {
+                        // Update view-mode text with the edited value
+                        if (editEl.tagName === 'INPUT' && editEl.type === 'date') {
+                            // Format date for display
+                            const date = new Date(editEl.value + 'T00:00:00');
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            viewModeSpan.textContent = date.toLocaleDateString('en-US', options);
+                        } else if (editEl.tagName === 'SELECT') {
+                            // For selects, show the selected option text or value
+                            viewModeSpan.textContent = editEl.options[editEl.selectedIndex]?.text || editEl.value || '(not set)';
+                        } else {
+                            // For text inputs
+                            viewModeSpan.textContent = editEl.value || '(not set)';
+                        }
+                    }
+                    editEl.style.display = 'none';
+                });
+
                 document.querySelectorAll('.view-mode').forEach(el => el.style.display = '');
-                this.textContent = '<i class="bi bi-pencil-square"></i> Enable Edit Mode';
+                this.innerHTML = '<i class="bi bi-pencil-square"></i> Enable Edit Mode';
                 this.classList.replace('btn-info', 'btn-warning');
             }
         });
@@ -1498,13 +1584,35 @@
                 // Turn edit mode ON
                 document.querySelectorAll('.edit-mode').forEach(el => el.style.display = '');
                 document.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
-                this.textContent = '✓ Edit Mode Active - Click to Disable';
+                this.innerHTML = '<i class="bi bi-check-circle"></i> Edit Mode Active - Click to Disable';
                 this.classList.replace('btn-warning', 'btn-info');
             } else {
-                // Turn edit mode OFF
-                document.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
+                // Turn edit mode OFF - update view-mode with edited values
+                document.querySelectorAll('.edit-mode').forEach(editEl => {
+                    // Find the corresponding view-mode span
+                    const container = editEl.parentElement;
+                    const viewModeSpan = container.querySelector('.view-mode');
+
+                    if (viewModeSpan && editEl.value) {
+                        // Update view-mode text with the edited value
+                        if (editEl.tagName === 'INPUT' && editEl.type === 'date') {
+                            // Format date for display
+                            const date = new Date(editEl.value + 'T00:00:00');
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            viewModeSpan.textContent = date.toLocaleDateString('en-US', options);
+                        } else if (editEl.tagName === 'SELECT') {
+                            // For selects, show the selected option text or value
+                            viewModeSpan.textContent = editEl.options[editEl.selectedIndex]?.text || editEl.value || '(not set)';
+                        } else {
+                            // For text inputs
+                            viewModeSpan.textContent = editEl.value || '(not set)';
+                        }
+                    }
+                    editEl.style.display = 'none';
+                });
+
                 document.querySelectorAll('.view-mode').forEach(el => el.style.display = '');
-                this.textContent = '<i class="bi bi-pencil-square"></i> Enable Edit Mode';
+                this.innerHTML = '<i class="bi bi-pencil-square"></i> Enable Edit Mode';
                 this.classList.replace('btn-info', 'btn-warning');
             }
         });

@@ -168,31 +168,6 @@
                     </select>
                 </div>
 
-                <!-- SPOUSE INFORMATION -->
-                <div id="spouseFields" style="display: none;">
-                    <div class="col-12">
-                        <div class="alert alert-warning" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> If your spouse is not already in the system, please reference their information below. Otherwise, mark your marital status as married and leave the name for spouse blank.
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse First Name</label>
-                        <input type="text" name="spouseFirstName" class="form-control" placeholder="First name">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Last Name</label>
-                        <input type="text" name="spouseLastName" class="form-control" placeholder="Last name">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Email</label>
-                        <input type="email" name="spouseEmail" class="form-control" placeholder="email@example.com">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Phone</label>
-                        <input type="tel" name="spousePhoneNumber" class="form-control" placeholder="(123) 456-7890">
-                    </div>
-                </div>
-
                 <!-- MANUAL RELATIONSHIP FIELDS (FALLBACK FOR NON-MATCHED RECORDS) -->
                 <div class="col-12"><div class="section-header">Relationships (Optional)</div></div>
                 <div class="col-md-6">
@@ -206,10 +181,6 @@
                 <div class="col-md-6 orthodox-only">
                     <label>Wedding Sponsor (Koumbaro)</label>
                     <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
-                </div>
-                <div class="col-md-6">
-                    <label>Spouse Name (if not in system)</label>
-                    <input type="text" name="manualSpouseName" class="form-control" placeholder="Spouse name">
                 </div>
 
                 <!-- ADDRESS SECTION (BOTH TYPES) -->
@@ -332,25 +303,6 @@
         }
     }
 
-    // 3. SPOUSE FIELDS VISIBILITY BASED ON MARITAL STATUS
-    const maritalStatusSelect = document.querySelector('select[name="maritalStatusStr"]');
-    const spouseFields = document.getElementById('spouseFields');
-
-    function updateSpouseVisibility() {
-        const selectedStatus = maritalStatusSelect.value;
-        if (selectedStatus === 'MARRIED' || selectedStatus === 'WIDOW' || selectedStatus === 'DIVORCED') {
-            // Show spouse fields for married/widow/divorced statuses
-            spouseFields.style.display = 'block';
-        } else {
-            // Hide spouse fields and clear values
-            spouseFields.style.display = 'none';
-            spouseFields.querySelectorAll('input').forEach(input => input.value = '');
-        }
-    }
-
-    maritalStatusSelect.addEventListener('change', updateSpouseVisibility);
-    // Initialize on page load
-    updateSpouseVisibility();
 </script>
 </body>
 </html>

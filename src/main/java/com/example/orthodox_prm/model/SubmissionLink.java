@@ -40,8 +40,8 @@ public class SubmissionLink {
     private Integer maxSubmissions;
 
     // Count of successful submissions made through this link
-    @Column(nullable = false)
-    private Integer submissionCount;
+    @Column(nullable = true)
+    private Integer submissionCount = 0;
 
     // Constructors
     public SubmissionLink() {
@@ -177,7 +177,7 @@ public class SubmissionLink {
     }
 
     public Integer getSubmissionCount() {
-        return submissionCount;
+        return submissionCount != null ? submissionCount : 0;
     }
 
     public void setSubmissionCount(Integer submissionCount) {

@@ -45,8 +45,7 @@ public class Parishioner {
 
     private LocalDate marriageDate; // The Crowning Date
 
-    // Changed to EAGER to prevent 500 errors on the edit page
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wedding_sponsor_id")
     private Parishioner weddingSponsor; // The Koumbaros / Koumbara
 
@@ -65,22 +64,20 @@ public class Parishioner {
 
     // --- SPIRITUAL PARENTS ---
 
-    // Changed to EAGER so these load immediately for the edit form
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "godfather_id")
     private Parishioner godfather;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "godmother_id")
     private Parishioner godmother;
 
     // --- SPIRITUAL CHILDREN (Godchildren) ---
 
-    // Changed to EAGER so the godchildren list displays on the sponsor's edit page
-    @OneToMany(mappedBy = "godfather", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "godfather", fetch = FetchType.LAZY)
     private List<Parishioner> childrenAsGodfather = new ArrayList<>();
 
-    @OneToMany(mappedBy = "godmother", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "godmother", fetch = FetchType.LAZY)
     private List<Parishioner> childrenAsGodmother = new ArrayList<>();
 
     @OneToMany(mappedBy = "parishioner", cascade = CascadeType.ALL, orphanRemoval = true)

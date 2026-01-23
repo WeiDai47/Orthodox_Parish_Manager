@@ -4,6 +4,7 @@ import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.DashboardService;
 import com.example.orthodox_prm.service.SubmissionService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY','VIEWER')")
     public String showDashboard(Model model) {
         model.addAttribute("stats", dashboardService.getPriestStats());
         model.addAttribute("pendingSubmissionCount", submissionService.getPendingSubmissionCount());

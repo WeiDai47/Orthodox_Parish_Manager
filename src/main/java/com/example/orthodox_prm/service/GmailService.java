@@ -65,12 +65,24 @@ public class GmailService {
     }
 
     /**
+     * Sanitize email header values to prevent header injection attacks.
+     * Removes CR and LF characters that could be used to inject additional headers.
+     */
+    private String sanitizeHeader(String value) {
+        if (value == null) {
+            return "";
+        }
+        // Remove carriage return and line feed characters to prevent header injection
+        return value.replace("\r", "").replace("\n", "");
+    }
+
+    /**
      * Build RFC 2822 MIME message for single recipient
      */
     private String buildMimeMessage(String to, String subject, String body) {
         StringBuilder message = new StringBuilder();
-        message.append("To: ").append(to).append("\r\n");
-        message.append("Subject: ").append(subject).append("\r\n");
+        message.append("To: ").append(sanitizeHeader(to)).append("\r\n");
+        message.append("Subject: ").append(sanitizeHeader(subject)).append("\r\n");
         message.append("Content-Type: text/plain; charset=UTF-8\r\n");
         message.append("\r\n");
         message.append(body);
@@ -82,9 +94,13 @@ public class GmailService {
      */
     private String buildMimeMessageBCC(String subject, String body, List<String> bccRecipients) {
         StringBuilder message = new StringBuilder();
-        // Don't include To: field - Gmail will use BCC
-        message.append("Bcc: ").append(String.join(",", bccRecipients)).append("\r\n");
-        message.append("Subject: ").append(subject).append("\r\n");
+        // Sanitize each BCC recipient to prevent header injection
+        String sanitizedBcc = bccRecipients.stream()
+                .map(this::sanitizeHeader)
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+        message.append("Bcc: ").append(sanitizedBcc).append("\r\n");
+        message.append("Subject: ").append(sanitizeHeader(subject)).append("\r\n");
         message.append("Content-Type: text/plain; charset=UTF-8\r\n");
         message.append("\r\n");
         message.append(body);

@@ -11,6 +11,7 @@ import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.SubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/submissions/review")
+@PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
 public class SubmissionReviewController {
 
     @Autowired

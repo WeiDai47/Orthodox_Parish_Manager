@@ -2,10 +2,14 @@ package com.example.orthodox_prm.service;
 
 import com.example.orthodox_prm.Enum.MaritalStatus;
 import com.example.orthodox_prm.Enum.MembershipStatus;
+import com.example.orthodox_prm.Enum.Role;
 import com.example.orthodox_prm.model.Household;
 import com.example.orthodox_prm.model.Parishioner;
+import com.example.orthodox_prm.model.User;
 import com.example.orthodox_prm.repository.HouseholdRepository;
 import com.example.orthodox_prm.repository.ParishionerRepository;
+import com.example.orthodox_prm.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -19,15 +23,24 @@ public class DataInitializer implements CommandLineRunner {
 
     private final ParishionerRepository parishionerRepo;
     private final HouseholdRepository householdRepo;
+    private final UserRepository userRepo;
     private final Random random = new Random();
 
-    public DataInitializer(ParishionerRepository parishionerRepo, HouseholdRepository householdRepo) {
+    @Value("${app.admin-email:#{null}}")
+    private String adminEmail;
+
+    public DataInitializer(ParishionerRepository parishionerRepo,
+                          HouseholdRepository householdRepo,
+                          UserRepository userRepo) {
         this.parishionerRepo = parishionerRepo;
         this.householdRepo = householdRepo;
+        this.userRepo = userRepo;
     }
 
     @Override
     public void run(String... args) {
+        // Initialize first PRIEST user if no users exist
+        initializeAdminUser();
         // Prevent duplicate data if using a persistent file-based DB
         if (parishionerRepo.count() > 0) {
             System.out.println("--- Data already exists. Skipping initialization. ---");
@@ -113,5 +126,32 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         System.out.println("--- 100 Parishioners Successfully Initialized with Zero Errors ---");
+    }
+
+    /**
+     * Initialize the first PRIEST user if no users exist in the system.
+     * Uses the email from app.admin-email property or environment variable.
+     */
+    private void initializeAdminUser() {
+        if (userRepo.count() > 0) {
+            System.out.println("--- Users already exist. Skipping admin user initialization. ---");
+            return;
+        }
+
+        if (adminEmail == null || adminEmail.trim().isEmpty()) {
+            System.out.println("--- WARNING: No admin email configured. ---");
+            System.out.println("--- Set the 'app.admin-email' property or 'APP_ADMIN_EMAIL' environment variable ---");
+            System.out.println("--- to whitelist the first priest user. ---");
+            return;
+        }
+
+        User admin = new User();
+        admin.setEmail(adminEmail.trim().toLowerCase());
+        admin.setRole(Role.PRIEST);
+        admin.setDisplayName("Parish Administrator");
+        admin.setEnabled(true);
+
+        userRepo.save(admin);
+        System.out.println("--- Initial PRIEST user created: " + adminEmail + " ---");
     }
 }

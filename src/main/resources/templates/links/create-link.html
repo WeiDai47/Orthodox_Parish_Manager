@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,18 +37,21 @@
         <div class="navbar-nav">
             <a class="nav-link" href="/dashboard">Dashboard</a>
             <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add">Add Member</a>
-            <a class="nav-link" href="/links">
+            <a class="nav-link" href="/parishioners/add" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">Add Member</a>
+            <a class="nav-link" href="/links" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                 <i class="bi bi-link-45deg"></i> Submission Links
             </a>
-            <a class="nav-link" href="/submissions/review">
+            <a class="nav-link" href="/submissions/review" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                 <i class="bi bi-inbox"></i> Review Submissions
             </a>
-            <a class="nav-link" href="/gmail">
+            <a class="nav-link" href="/gmail" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                 <i class="bi bi-envelope"></i> Email
             </a>
             <a class="nav-link" href="/settings">
                 <i class="bi bi-gear"></i> Settings
+            </a>
+            <a class="nav-link" href="/admin/users" sec:authorize="hasRole('PRIEST')">
+                <i class="bi bi-people"></i> Users
             </a>
             <form action="/logout" method="POST" style="display: inline;">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}" />

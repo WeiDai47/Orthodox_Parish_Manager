@@ -6,6 +6,7 @@ import com.example.orthodox_prm.model.*;
 import com.example.orthodox_prm.repository.*;
 import com.example.orthodox_prm.service.ConflictDetectionService;
 import com.example.orthodox_prm.service.GoogleCalendarService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -50,6 +51,7 @@ public class ViewParishionerController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY','VIEWER')")
     public String viewParishioner(@PathVariable Long id, Model model) {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
@@ -82,6 +84,7 @@ public class ViewParishionerController {
 
     @PostMapping("/{id}/add-note")
     @Transactional
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String addParishionerNote(
             @PathVariable Long id,
             @RequestParam String noteText) {
@@ -103,6 +106,7 @@ public class ViewParishionerController {
 
     @PostMapping("/{id}/add-household-note")
     @Transactional
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String addHouseholdNote(
             @PathVariable Long id,
             @RequestParam String noteText) {
@@ -128,6 +132,7 @@ public class ViewParishionerController {
 
     @PostMapping("/{id}/add-event")
     @Transactional
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String addScheduledEvent(
             @PathVariable Long id,
             @RequestParam String eventTitle,
@@ -225,6 +230,7 @@ public class ViewParishionerController {
      */
     @PostMapping("/{id}/check-conflicts")
     @ResponseBody
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public ResponseEntity<Map<String, Object>> checkEventConflicts(
             @PathVariable Long id,
             @RequestParam LocalDate eventDate,
@@ -279,6 +285,7 @@ public class ViewParishionerController {
 
     @GetMapping("/{parishionerId}/delete-note/{noteId}")
     @Transactional
+    @PreAuthorize("hasRole('PRIEST')")
     public String deleteNote(@PathVariable Long parishionerId, @PathVariable Long noteId) {
         noteRepository.deleteById(noteId);
         return "redirect:/parishioners/view/" + parishionerId;
@@ -286,6 +293,7 @@ public class ViewParishionerController {
 
     @GetMapping("/{parishionerId}/delete-event/{eventId}")
     @Transactional
+    @PreAuthorize("hasRole('PRIEST')")
     public String deleteEvent(@PathVariable Long parishionerId, @PathVariable Long eventId) {
         scheduledEventRepository.deleteById(eventId);
         return "redirect:/parishioners/view/" + parishionerId;

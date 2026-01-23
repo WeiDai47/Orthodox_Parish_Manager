@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 @Controller
 @RequestMapping("/export")
+@PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
 public class ExportController {
 
     private final ParishionerRepository parishionerRepository;

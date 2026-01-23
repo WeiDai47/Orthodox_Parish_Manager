@@ -10,6 +10,7 @@ import com.example.orthodox_prm.repository.ParishionerRepository;
 import com.example.orthodox_prm.service.EmailHistoryService;
 import com.example.orthodox_prm.service.GmailService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/gmail")
 @Slf4j
+@PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
 public class GmailController {
 
     private final GmailService gmailService;

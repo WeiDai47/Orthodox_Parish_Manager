@@ -3,6 +3,7 @@ package com.example.orthodox_prm;
 import com.example.orthodox_prm.model.UserPreferences;
 import com.example.orthodox_prm.repository.UserPreferencesRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,6 +17,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/settings")
 @Slf4j
+@PreAuthorize("hasAnyRole('PRIEST','SECRETARY','VIEWER')")
 public class SettingsController {
 
     private final UserPreferencesRepository userPreferencesRepository;

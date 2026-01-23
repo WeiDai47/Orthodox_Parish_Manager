@@ -7,6 +7,7 @@ import com.example.orthodox_prm.model.Parishioner;
 import com.example.orthodox_prm.repository.HouseholdRepository;
 import com.example.orthodox_prm.repository.ParishionerRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -33,6 +34,7 @@ public class ParishionerController {
     // Inside ParishionerController.java
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY','VIEWER')")
     public String list(@RequestParam(required = false) String searchName,
                        @RequestParam(required = false) String searchBaptismal,
                        @RequestParam(defaultValue = "lastName") String sortField,
@@ -58,6 +60,7 @@ public class ParishionerController {
 
     // Handles: GET /parishioners/edit/{id}
     @GetMapping("/edit/{id}")
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String showEditForm(@PathVariable Long id, Model model) {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
@@ -86,6 +89,7 @@ public class ParishionerController {
     // Handles: POST /parishioners/update
     @PostMapping("/update")
     @Transactional
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String update(@ModelAttribute Parishioner parishioner,
                          @RequestParam(required = false) Long spouseId,
                          @RequestParam(required = false) Long godfatherId,
@@ -251,6 +255,7 @@ public class ParishionerController {
     }
     @GetMapping("/delete/{id}")
     @Transactional
+    @PreAuthorize("hasRole('PRIEST')")
     public String deleteParishioner(@PathVariable Long id) {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid parishioner Id:" + id));
@@ -302,6 +307,7 @@ public class ParishionerController {
     }
 
     @PostMapping("/departed/{id}")
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String markAsDeparted(@PathVariable Long id) {
         Parishioner p = parishionerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid ID"));
@@ -326,6 +332,7 @@ public class ParishionerController {
 
     // Handles: GET /parishioners/add
     @GetMapping("/add")
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String showAddForm(Model model) {
         Parishioner newParishioner = new Parishioner();
         newParishioner.setStatus(MembershipStatus.VISITOR);
@@ -340,6 +347,7 @@ public class ParishionerController {
     // Handles: POST /parishioners/add
     @PostMapping("/add")
     @Transactional
+    @PreAuthorize("hasAnyRole('PRIEST','SECRETARY')")
     public String addMember(
             @RequestParam String firstName,
             @RequestParam String lastName,

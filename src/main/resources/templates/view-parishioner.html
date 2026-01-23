@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>View Parishioner</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -163,10 +163,10 @@
                 <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-list"></i> All Parishioners
                 </a>
-                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailModal">
+                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailModal" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                     <i class="bi bi-envelope"></i> Email
                 </button>
-                <a th:href="@{/parishioners/edit/{id}(id=${parishioner.id})}" class="btn btn-warning btn-sm">
+                <a th:href="@{/parishioners/edit/{id}(id=${parishioner.id})}" class="btn btn-warning btn-sm" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                     <i class="bi bi-pencil"></i> Edit
                 </a>
                 <a href="/parishioners" class="btn btn-outline-light btn-sm">
@@ -368,8 +368,9 @@
             <i class="bi bi-journal-text"></i> Individual Notes
         </div>
 
-        <!-- Add Note Form -->
-        <form th:action="@{/parishioners/view/{id}/add-note(id=${parishioner.id})}" method="post" class="mb-3">
+        <!-- Add Note Form (PRIEST and SECRETARY only) -->
+        <form th:action="@{/parishioners/view/{id}/add-note(id=${parishioner.id})}" method="post" class="mb-3"
+              sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
             <div class="row g-2">
                 <div class="col-md-10">
                     <textarea name="noteText" class="form-control" rows="2"
@@ -401,7 +402,8 @@
                 </div>
                 <a th:href="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}"
                    class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this note?')">
+                   onclick="return confirm('Delete this note?')"
+                   sec:authorize="hasRole('PRIEST')">
                     <i class="bi bi-trash"></i>
                 </a>
             </div>
@@ -416,8 +418,9 @@
                 </small>
             </div>
 
-            <!-- Add Household Note Form -->
-            <form th:action="@{/parishioners/view/{id}/add-household-note(id=${parishioner.id})}" method="post" class="mb-3">
+            <!-- Add Household Note Form (PRIEST and SECRETARY only) -->
+            <form th:action="@{/parishioners/view/{id}/add-household-note(id=${parishioner.id})}" method="post" class="mb-3"
+                  sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                 <div class="row g-2">
                     <div class="col-md-10">
                         <textarea name="noteText" class="form-control" rows="2"
@@ -447,7 +450,8 @@
                     </div>
                     <a th:href="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}"
                        class="btn btn-sm btn-outline-danger ms-3"
-                       onclick="return confirm('Delete this household note?')">
+                       onclick="return confirm('Delete this household note?')"
+                       sec:authorize="hasRole('PRIEST')">
                         <i class="bi bi-trash"></i>
                     </a>
                 </div>
@@ -460,8 +464,9 @@
             <small class="text-muted" style="font-size: 0.7em;">(Past & Future)</small>
         </div>
 
-        <!-- Add Sacrament Form -->
-        <form id="sacramentForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+        <!-- Add Sacrament Form (PRIEST and SECRETARY only) -->
+        <form id="sacramentForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3"
+              sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
             <!-- Conflict Warning -->
             <div id="sacramentConflictWarning" style="display: none;"></div>
 
@@ -574,7 +579,8 @@
                 </div>
                 <a th:href="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}"
                    class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this sacrament?')">
+                   onclick="return confirm('Delete this sacrament?')"
+                   sec:authorize="hasRole('PRIEST')">
                     <i class="bi bi-trash"></i>
                 </a>
             </div>
@@ -586,8 +592,9 @@
             <small class="text-muted" style="font-size: 0.7em;">(Non-Sacramental)</small>
         </div>
 
-        <!-- Add Regular Event Form -->
-        <form id="regularEventForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3">
+        <!-- Add Regular Event Form (PRIEST and SECRETARY only) -->
+        <form id="regularEventForm" th:action="@{/parishioners/view/{id}/add-event(id=${parishioner.id})}" method="post" class="mb-3"
+              sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
             <!-- Conflict Warning -->
             <div id="regularEventConflictWarning" style="display: none;"></div>
 
@@ -694,7 +701,8 @@
                 </div>
                 <a th:href="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}"
                    class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this event?')">
+                   onclick="return confirm('Delete this event?')"
+                   sec:authorize="hasRole('PRIEST')">
                     <i class="bi bi-trash"></i>
                 </a>
             </div>

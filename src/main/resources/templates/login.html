@@ -97,11 +97,24 @@
     </div>
 
     <!-- Security Messages -->
-    <div th:if="${param.error}" class="alert alert-danger py-2 small">
-        Invalid username or password.
+    <div th:if="${param.error != null and param.error[0] == 'not_authorized'}" class="alert alert-warning py-2 small">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Access Denied:</strong> Your email address is not authorized to access this application.
+        Please contact the parish priest to request access.
+    </div>
+    <div th:if="${param.error != null and param.error[0] == 'disabled'}" class="alert alert-warning py-2 small">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Account Disabled:</strong> Your account has been disabled.
+        Please contact the parish priest.
+    </div>
+    <div th:if="${param.error != null and param.error[0] == 'true'}" class="alert alert-danger py-2 small">
+        <i class="bi bi-x-circle"></i> Invalid username or password.
+    </div>
+    <div th:if="${param.error != null and param.error[0] != 'not_authorized' and param.error[0] != 'disabled' and param.error[0] != 'true'}" class="alert alert-danger py-2 small">
+        <i class="bi bi-x-circle"></i> Authentication failed. Please try again.
     </div>
     <div th:if="${param.logout}" class="alert alert-info py-2 small">
-        You have been signed out.
+        <i class="bi bi-check-circle"></i> You have been signed out.
     </div>
 
     <!-- Traditional Login Form -->

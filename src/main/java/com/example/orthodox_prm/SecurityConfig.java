@@ -52,7 +52,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/login", "/login/oauth2/**", "/error", "/access-denied", "/debug/**").permitAll()
+                        .requestMatchers("/login", "/login/oauth2/**", "/error", "/access-denied").permitAll()
                         .requestMatchers("/public/submit/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("PRIEST")
                         .anyRequest().authenticated()

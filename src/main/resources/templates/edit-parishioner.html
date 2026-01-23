@@ -306,12 +306,7 @@
                 </div>
             </div> </div> <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
             <button type="submit" class="btn btn-warning px-5 fw-bold">Save Changes</button>
-            <a th:href="@{/parishioners/delete/{id}(id=${parishioner.id})}"
-               class="btn btn-outline-danger btn-sm"
-               onclick="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this parishioner? This will also remove spiritual kinship links to others.')"
-               sec:authorize="hasRole('PRIEST')">
-                Delete Parishioner
-            </a>
+            <span id="delete-placeholder"></span>
         </div>
 
             <div class="text-center mt-4">
@@ -320,6 +315,28 @@
                 </a>
             </div>
         </form>
+
+        <!-- Delete form OUTSIDE the main edit form to avoid nested forms -->
+        <form th:action="@{/parishioners/delete/{id}(id=${parishioner.id})}" method="post" id="deleteForm"
+              sec:authorize="hasRole('PRIEST')" style="display: none;"
+              onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this parishioner? This will also remove spiritual kinship links to others.')">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        </form>
+        <script>
+            // Move delete button to placeholder, form submits via JavaScript
+            document.addEventListener('DOMContentLoaded', function() {
+                const placeholder = document.getElementById('delete-placeholder');
+                const deleteForm = document.getElementById('deleteForm');
+                if (placeholder && deleteForm) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-outline-danger btn-sm';
+                    btn.textContent = 'Delete Parishioner';
+                    btn.onclick = function() { deleteForm.requestSubmit(); };
+                    placeholder.appendChild(btn);
+                }
+            });
+        </script>
     </div>
 </div>
 

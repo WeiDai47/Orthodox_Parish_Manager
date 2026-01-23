@@ -283,7 +283,7 @@ public class ViewParishionerController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{parishionerId}/delete-note/{noteId}")
+    @PostMapping("/{parishionerId}/delete-note/{noteId}")
     @Transactional
     @PreAuthorize("hasRole('PRIEST')")
     public String deleteNote(@PathVariable Long parishionerId, @PathVariable Long noteId) {
@@ -291,7 +291,7 @@ public class ViewParishionerController {
         return "redirect:/parishioners/view/" + parishionerId;
     }
 
-    @GetMapping("/{parishionerId}/delete-event/{eventId}")
+    @PostMapping("/{parishionerId}/delete-event/{eventId}")
     @Transactional
     @PreAuthorize("hasRole('PRIEST')")
     public String deleteEvent(@PathVariable Long parishionerId, @PathVariable Long eventId) {

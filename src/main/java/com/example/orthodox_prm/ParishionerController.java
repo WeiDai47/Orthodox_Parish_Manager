@@ -253,7 +253,7 @@ public class ParishionerController {
         parishionerRepository.save(parishioner);
         return "redirect:/parishioners";
     }
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     @Transactional
     @PreAuthorize("hasRole('PRIEST')")
     public String deleteParishioner(@PathVariable Long id) {

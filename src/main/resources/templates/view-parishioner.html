@@ -393,12 +393,12 @@
                     </div>
                     <div class="note-text" th:text="${note.noteText}"></div>
                 </div>
-                <a th:href="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}"
-                   class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this note?')"
-                   sec:authorize="hasRole('PRIEST')">
-                    <i class="bi bi-trash"></i>
-                </a>
+                <form th:action="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}" method="post" style="display: inline;"
+                      sec:authorize="hasRole('PRIEST')"
+                      onsubmit="return confirm('Delete this note?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-3"><i class="bi bi-trash"></i></button>
+                </form>
             </div>
         </div>
 
@@ -441,12 +441,12 @@
                         </div>
                         <div class="note-text" th:text="${note.noteText}"></div>
                     </div>
-                    <a th:href="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}"
-                       class="btn btn-sm btn-outline-danger ms-3"
-                       onclick="return confirm('Delete this household note?')"
-                       sec:authorize="hasRole('PRIEST')">
-                        <i class="bi bi-trash"></i>
-                    </a>
+                    <form th:action="@{/parishioners/view/{pId}/delete-note/{nId}(pId=${parishioner.id}, nId=${note.id})}" method="post" style="display: inline;"
+                          sec:authorize="hasRole('PRIEST')"
+                          onsubmit="return confirm('Delete this household note?')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger ms-3"><i class="bi bi-trash"></i></button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -570,12 +570,12 @@
                     <div class="event-description" th:if="${event.eventDescription != null}"
                          th:text="${event.eventDescription}"></div>
                 </div>
-                <a th:href="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}"
-                   class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this sacrament?')"
-                   sec:authorize="hasRole('PRIEST')">
-                    <i class="bi bi-trash"></i>
-                </a>
+                <form th:action="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}" method="post" style="display: inline;"
+                      sec:authorize="hasRole('PRIEST')"
+                      onsubmit="return confirm('Delete this sacrament?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-3"><i class="bi bi-trash"></i></button>
+                </form>
             </div>
         </div>
 
@@ -692,12 +692,12 @@
                     <div class="event-description" th:if="${event.eventDescription != null}"
                          th:text="${event.eventDescription}"></div>
                 </div>
-                <a th:href="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}"
-                   class="btn btn-sm btn-outline-danger ms-3"
-                   onclick="return confirm('Delete this event?')"
-                   sec:authorize="hasRole('PRIEST')">
-                    <i class="bi bi-trash"></i>
-                </a>
+                <form th:action="@{/parishioners/view/{pId}/delete-event/{eId}(pId=${parishioner.id}, eId=${event.id})}" method="post" style="display: inline;"
+                      sec:authorize="hasRole('PRIEST')"
+                      onsubmit="return confirm('Delete this event?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-3"><i class="bi bi-trash"></i></button>
+                </form>
             </div>
         </div>
 

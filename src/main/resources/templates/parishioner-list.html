@@ -1,342 +1,197 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Master Parishioner Directory</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parishioner Directory - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
     <script src="/js/theme-toggle.js"></script>
     <style>
-        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
-        .table-responsive { overflow-x: auto; }
-        .text-gold { color: var(--accent-gold); }
-        th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-gold); border-bottom: 2px solid var(--border-color); }
-        td { font-size: 0.85rem; vertical-align: middle; }
-        .table-hover tbody tr:hover { background-color: var(--bg-secondary); }
-        .bg-dark { background-color: var(--bg-tertiary) !important; }
-        .border-secondary { border-color: var(--border-secondary) !important; }
-        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
-        .nav-link:hover { color: var(--text-primary) !important; }
-        .navbar { background-color: var(--bg-secondary); }
-        .btn-logout {
-            background-color: #dc3545;
-            border: 2px solid #dc3545;
-            color: white;
-            font-weight: bold;
-            padding: 0.4rem 1rem;
-            font-size: 0.9rem;
-            margin-left: 1rem;
-        }
-        .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
-        }
-        /* ADDED: Hide buttons when printing */
-        @media print { .btn, .input-group, .dropdown, .navbar { display: none !important; } }
+        .search-section { margin-bottom: 1.5rem; }
+        @media print { .btn, .input-group, .dropdown, .navbar, .search-section { display: none !important; } }
     </style>
 </head>
-<body class="py-3">
+<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
-            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">Add Member</a>
-            <a class="nav-link" href="/links" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-link-45deg"></i> Submission Links
-            </a>
-            <a class="nav-link" href="/submissions/review" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-inbox"></i> Review Submissions
-            </a>
-            <a class="nav-link" href="/gmail" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-envelope"></i> Email
-            </a>
-            <a class="nav-link" href="/settings">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-            <a class="nav-link" href="/admin/users" sec:authorize="hasRole('PRIEST')">
-                <i class="bi bi-people"></i> Users
-            </a>
-            <form action="/logout" method="POST" style="display: inline;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
-            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                <i class="bi bi-sun-fill sun-icon"></i>
-                <i class="bi bi-moon-stars-fill moon-icon"></i>
-            </button>
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-building"></i> Orthodox Parish Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/parishioners">Directory</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/parishioners/add">Add Member</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/links"><i class="bi bi-link-45deg"></i> Links</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/submissions/review"><i class="bi bi-inbox"></i> Submissions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/gmail"><i class="bi bi-envelope"></i> Email</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item" sec:authorize="hasRole('PRIEST')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-logout ms-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                        <i class="bi bi-sun-fill sun-icon"></i>
+                        <i class="bi bi-moon-fill moon-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container-fluid">
-
-    <div class="d-flex gap-2 mb-3">
-        <a href="/export/options" class="btn btn-outline-warning btn-sm" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-            <i class="bi bi-file-earmark-spreadsheet"></i> Advanced Export
-        </a>
+<!-- Page Content -->
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-primary-accent mb-1"><i class="bi bi-people"></i> Parishioner Directory</h1>
+            <p class="text-muted mb-0">Complete listing of all parish members</p>
+        </div>
+        <div sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+            <a href="/export/options" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export
+            </a>
+        </div>
     </div>
-    <div class="mb-3">
-        <div class="row g-2">
-            <!-- Search by First and Last Name -->
-            <div class="col-md-4">
-                <label class="form-label text-gold small"><strong>Secular Name</strong></label>
-                <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-gold">
-                            <i class="bi bi-search"></i>
-                        </span>
-                    <input type="text" id="secularNameSearch" class="form-control bg-dark text-white border-secondary"
-                           placeholder="First & Last Name (e.g., Anna Garcia)">
-                </div>
-            </div>
 
-            <!-- Search by Baptismal and Last Name -->
-            <div class="col-md-4">
-                <label class="form-label text-gold small"><strong>Baptismal Name</strong></label>
-                <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-gold">
-                            <i class="bi bi-search"></i>
-                        </span>
-                    <input type="text" id="baptismalNameSearch" class="form-control bg-dark text-white border-secondary"
-                           placeholder="Baptismal & Last Name (e.g., Alexandra Garcia)">
+    <!-- Search Section -->
+    <div class="card search-section">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Secular Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="secularNameSearch" class="form-control" placeholder="First & Last Name">
+                    </div>
                 </div>
-            </div>
-
-            <!-- Search by Household -->
-            <div class="col-md-4">
-                <label class="form-label text-gold small"><strong>Household</strong></label>
-                <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-gold">
-                            <i class="bi bi-search"></i>
-                        </span>
-                    <input type="text" id="householdSearch" class="form-control bg-dark text-white border-secondary"
-                           placeholder="Family Name (e.g., The Garcia Family)">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Baptismal Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="baptismalNameSearch" class="form-control" placeholder="Baptismal & Last Name">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Household</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="householdSearch" class="form-control" placeholder="Family Name">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="table-responsive shadow border border-secondary rounded">
-        <table class="table table-dark table-hover m-0">
-            <thead>
-            <tr>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='id', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        ID <span th:if="${sortField == 'id'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='firstName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        First <span th:if="${sortField == 'firstName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Last <span th:if="${sortField == 'lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='baptismalName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Baptismal <span th:if="${sortField == 'baptismalName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='patronSaint', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Saint <span th:if="${sortField == 'patronSaint'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='status', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Status <span th:if="${sortField == 'status'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='maritalStatus', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Marital <span th:if="${sortField == 'maritalStatus'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='birthday', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Birthday <span th:if="${sortField == 'birthday'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='baptismDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Baptism <span th:if="${sortField == 'baptismDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='chrismationDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Chrismation <span th:if="${sortField == 'chrismationDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='marriageDate', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Marriage <span th:if="${sortField == 'marriageDate'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='nameDay', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Name Day <span th:if="${sortField == 'nameDay'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='household.familyName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Household <span th:if="${sortField == 'household.familyName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='spouse.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Spouse <span th:if="${sortField == 'spouse.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='godfather.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        G.Father <span th:if="${sortField == 'godfather.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='godmother.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        G.Mother <span th:if="${sortField == 'godmother.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{/parishioners(search=${searchQuery}, sortField='weddingSponsor.lastName', sortDir=${reverseSortDir})}" class="text-gold text-decoration-none">
-                        Sponsor <span th:if="${sortField == 'weddingSponsor.lastName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></span>
-                    </a>
-                </th>
-                <th>Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="p : ${parishioners}">
-                <td th:text="${p.id}"></td>
-                <td th:text="${p.firstName}"></td>
-                <td th:text="${p.lastName}"></td>
-                <td th:text="${p.baptismalName}" class="text-gold"></td>
-                <td th:text="${p.patronSaint}"></td>
-                <td th:text="${p.status}"></td>
-                <td th:text="${p.maritalStatus}"></td>
-                <td th:text="${p.birthday}"></td>
-                <td th:text="${p.baptismDate}"></td>
-                <td th:text="${p.chrismationDate}"></td>
-                <td th:text="${p.marriageDate}"></td>
-                <td th:text="${p.nameDay}"></td>
-
-                <td th:text="${p.household != null ? p.household.familyName : 'N/A'}"></td>
-
-                <td th:text="${p.spouse != null ? p.spouse.firstName + ' ' + p.spouse.lastName + (p.spouse.nameSuffix != null && p.spouse.nameSuffix.trim() != '' ? ' ' + p.spouse.nameSuffix : '') : p.manualSpouseName}"></td>
-
-                <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName + (p.godfather.nameSuffix != null && p.godfather.nameSuffix.trim() != '' ? ' ' + p.godfather.nameSuffix : '') : p.manualGodfatherName}"></td>
-
-                <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName + (p.godmother.nameSuffix != null && p.godmother.nameSuffix.trim() != '' ? ' ' + p.godmother.nameSuffix : '') : p.manualGodmotherName}"></td>
-
-                <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName + (p.weddingSponsor.nameSuffix != null && p.weddingSponsor.nameSuffix.trim() != '' ? ' ' + p.weddingSponsor.nameSuffix : '') : p.manualSponsorName}"></td>
-
-                <td>
-                    <a th:href="@{/parishioners/view/{id}(id=${p.id})}"
-                       class="btn btn-sm btn-outline-info me-1">View</a>
-                    <a th:href="@{/parishioners/edit/{id}(id=${p.id})}"
-                       class="btn btn-sm btn-outline-warning" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">Edit</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+    <!-- Data Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th><a th:href="@{/parishioners(sortField='id', sortDir=${reverseSortDir})}" class="text-decoration-none">ID</a></th>
+                            <th><a th:href="@{/parishioners(sortField='firstName', sortDir=${reverseSortDir})}" class="text-decoration-none">First</a></th>
+                            <th><a th:href="@{/parishioners(sortField='lastName', sortDir=${reverseSortDir})}" class="text-decoration-none">Last</a></th>
+                            <th><a th:href="@{/parishioners(sortField='baptismalName', sortDir=${reverseSortDir})}" class="text-decoration-none">Baptismal</a></th>
+                            <th><a th:href="@{/parishioners(sortField='patronSaint', sortDir=${reverseSortDir})}" class="text-decoration-none">Saint</a></th>
+                            <th><a th:href="@{/parishioners(sortField='status', sortDir=${reverseSortDir})}" class="text-decoration-none">Status</a></th>
+                            <th><a th:href="@{/parishioners(sortField='maritalStatus', sortDir=${reverseSortDir})}" class="text-decoration-none">Marital</a></th>
+                            <th><a th:href="@{/parishioners(sortField='birthday', sortDir=${reverseSortDir})}" class="text-decoration-none">Birthday</a></th>
+                            <th><a th:href="@{/parishioners(sortField='baptismDate', sortDir=${reverseSortDir})}" class="text-decoration-none">Baptism</a></th>
+                            <th><a th:href="@{/parishioners(sortField='chrismationDate', sortDir=${reverseSortDir})}" class="text-decoration-none">Chrismation</a></th>
+                            <th><a th:href="@{/parishioners(sortField='marriageDate', sortDir=${reverseSortDir})}" class="text-decoration-none">Marriage</a></th>
+                            <th><a th:href="@{/parishioners(sortField='nameDay', sortDir=${reverseSortDir})}" class="text-decoration-none">Name Day</a></th>
+                            <th><a th:href="@{/parishioners(sortField='household.familyName', sortDir=${reverseSortDir})}" class="text-decoration-none">Household</a></th>
+                            <th>Spouse</th>
+                            <th>Godfather</th>
+                            <th>Godmother</th>
+                            <th>Sponsor</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${parishioners}">
+                            <td th:text="${p.id}"></td>
+                            <td th:text="${p.firstName}"></td>
+                            <td th:text="${p.lastName}"></td>
+                            <td class="text-primary-accent fw-medium" th:text="${p.baptismalName}"></td>
+                            <td th:text="${p.patronSaint}"></td>
+                            <td><span class="badge bg-secondary" th:text="${p.status}"></span></td>
+                            <td th:text="${p.maritalStatus}"></td>
+                            <td th:text="${p.birthday}"></td>
+                            <td th:text="${p.baptismDate}"></td>
+                            <td th:text="${p.chrismationDate}"></td>
+                            <td th:text="${p.marriageDate}"></td>
+                            <td th:text="${p.nameDay}"></td>
+                            <td th:text="${p.household != null ? p.household.familyName : '-'}"></td>
+                            <td th:text="${p.spouse != null ? p.spouse.firstName + ' ' + p.spouse.lastName : p.manualSpouseName}"></td>
+                            <td th:text="${p.godfather != null ? p.godfather.firstName + ' ' + p.godfather.lastName : p.manualGodfatherName}"></td>
+                            <td th:text="${p.godmother != null ? p.godmother.firstName + ' ' + p.godmother.lastName : p.manualGodmotherName}"></td>
+                            <td th:text="${p.weddingSponsor != null ? p.weddingSponsor.firstName + ' ' + p.weddingSponsor.lastName : p.manualSponsorName}"></td>
+                            <td>
+                                <a th:href="@{/parishioners/view/{id}(id=${p.id})}" class="btn btn-sm btn-outline-info">View</a>
+                                <a th:href="@{/parishioners/edit/{id}(id=${p.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">Edit</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.getElementById('secularNameSearch').addEventListener('keyup', function() {
-        const value = this.value.toLowerCase();
-        const rows = document.querySelectorAll('table tbody tr');
-        const baptismalSearch = document.getElementById('baptismalNameSearch').value.toLowerCase();
-        const householdSearch = document.getElementById('householdSearch').value.toLowerCase();
-
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            // Get First Name (index 1) and Last Name (index 2)
-            const firstName = cells[1].textContent.toLowerCase();
-            const lastName = cells[2].textContent.toLowerCase();
-            const secularMatch = (firstName + ' ' + lastName).includes(value);
-
-            // Get Baptismal Name (index 3)
-            const baptismalName = cells[3].textContent.toLowerCase();
-            const baptismalMatch = (baptismalName + ' ' + lastName).includes(baptismalSearch);
-
-            // Get Household Name (index 12)
-            const household = cells[12].textContent.toLowerCase();
-            const householdMatch = household.includes(householdSearch);
-
-            // Show row only if all active searches match (or are empty)
-            const showSecular = value === '' || secularMatch;
-            const showBaptismal = baptismalSearch === '' || baptismalMatch;
-            const showHousehold = householdSearch === '' || householdMatch;
-            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
-        });
-    });
-
-    document.getElementById('baptismalNameSearch').addEventListener('keyup', function() {
-        const value = this.value.toLowerCase();
-        const rows = document.querySelectorAll('table tbody tr');
-        const secularSearch = document.getElementById('secularNameSearch').value.toLowerCase();
-        const householdSearch = document.getElementById('householdSearch').value.toLowerCase();
-
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            // Get First Name (index 1) and Last Name (index 2)
-            const firstName = cells[1].textContent.toLowerCase();
-            const lastName = cells[2].textContent.toLowerCase();
-            const secularMatch = (firstName + ' ' + lastName).includes(secularSearch);
-
-            // Get Baptismal Name (index 3)
-            const baptismalName = cells[3].textContent.toLowerCase();
-            const baptismalMatch = (baptismalName + ' ' + lastName).includes(value);
-
-            // Get Household Name (index 12)
-            const household = cells[12].textContent.toLowerCase();
-            const householdMatch = household.includes(householdSearch);
-
-            // Show row only if all active searches match (or are empty)
-            const showSecular = secularSearch === '' || secularMatch;
-            const showBaptismal = value === '' || baptismalMatch;
-            const showHousehold = householdSearch === '' || householdMatch;
-            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
-        });
-    });
-
-    document.getElementById('householdSearch').addEventListener('keyup', function() {
-        const value = this.value.toLowerCase();
-        const rows = document.querySelectorAll('table tbody tr');
+    // Search functionality
+    function filterTable() {
         const secularSearch = document.getElementById('secularNameSearch').value.toLowerCase();
         const baptismalSearch = document.getElementById('baptismalNameSearch').value.toLowerCase();
+        const householdSearch = document.getElementById('householdSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('table tbody tr');
 
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
-            // Get First Name (index 1) and Last Name (index 2)
             const firstName = cells[1].textContent.toLowerCase();
             const lastName = cells[2].textContent.toLowerCase();
-            const secularMatch = (firstName + ' ' + lastName).includes(secularSearch);
-
-            // Get Baptismal Name (index 3)
             const baptismalName = cells[3].textContent.toLowerCase();
-            const baptismalMatch = (baptismalName + ' ' + lastName).includes(baptismalSearch);
-
-            // Get Household Name (index 12)
             const household = cells[12].textContent.toLowerCase();
-            const householdMatch = household.includes(value);
 
-            // Show row only if all active searches match (or are empty)
-            const showSecular = secularSearch === '' || secularMatch;
-            const showBaptismal = baptismalSearch === '' || baptismalMatch;
-            const showHousehold = value === '' || householdMatch;
-            row.style.display = (showSecular && showBaptismal && showHousehold) ? '' : 'none';
+            const secularMatch = !secularSearch || (firstName + ' ' + lastName).includes(secularSearch);
+            const baptismalMatch = !baptismalSearch || (baptismalName + ' ' + lastName).includes(baptismalSearch);
+            const householdMatch = !householdSearch || household.includes(householdSearch);
+
+            row.style.display = (secularMatch && baptismalMatch && householdMatch) ? '' : 'none';
         });
-    });
+    }
+
+    document.getElementById('secularNameSearch').addEventListener('keyup', filterTable);
+    document.getElementById('baptismalNameSearch').addEventListener('keyup', filterTable);
+    document.getElementById('householdSearch').addEventListener('keyup', filterTable);
 </script>
 </body>
 </html>

@@ -1,154 +1,168 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Export & Reports</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export & Reports - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/theme.css">
     <script src="/js/theme-toggle.js"></script>
     <style>
-        body { background-color: var(--bg-primary); color: var(--text-primary); padding-top: 50px; }
-        .card { background-color: var(--bg-secondary); border: 1px solid var(--accent-gold); border-radius: 15px; }
-        .text-gold { color: var(--accent-gold); }
-        .form-label { color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; }
-        .form-control, .form-select, .ts-control { background-color: var(--bg-tertiary) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
-        .btn-gold { background-color: var(--accent-gold); color: black; font-weight: bold; }
-        .btn-gold:hover { background-color: var(--stat-color); color: black; }
-
-        /* Ensures the dropdown list matches the theme */
-        .ts-dropdown { background: var(--bg-tertiary) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
-        .ts-dropdown .active { background: var(--accent-gold) !important; color: black !important; }
+        .ts-dropdown { background: var(--bg-secondary) !important; border-color: var(--border-color) !important; }
+        .ts-dropdown .active { background: var(--accent-primary) !important; color: white !important; }
         .ts-dropdown .option { color: var(--text-primary); }
-        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
-        .nav-link:hover { color: var(--text-primary) !important; }
-        .navbar { background-color: var(--bg-secondary); }
-        .btn-logout {
-            background-color: #dc3545;
-            border: 2px solid #dc3545;
-            color: white;
-            font-weight: bold;
-            padding: 0.4rem 1rem;
-            font-size: 0.9rem;
-            margin-left: 1rem;
-        }
-        .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
-        }
+        .ts-control { background: var(--bg-tertiary) !important; border-color: var(--border-color) !important; }
     </style>
 </head>
-<body class="py-3">
+<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
-            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add">Add Member</a>
-            <a class="nav-link" href="/links">
-                <i class="bi bi-link-45deg"></i> Submission Links
-            </a>
-            <a class="nav-link" href="/submissions/review">
-                <i class="bi bi-inbox"></i> Review Submissions
-            </a>
-            <a class="nav-link" href="/gmail">
-                <i class="bi bi-envelope"></i> Email
-            </a>
-            <a class="nav-link" href="/settings">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-            <form action="/logout" method="POST" style="display: inline;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
-            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                <i class="bi bi-sun-fill sun-icon"></i>
-                <i class="bi bi-moon-stars-fill moon-icon"></i>
-            </button>
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-building"></i> Orthodox Parish Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/parishioners">Directory</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/parishioners/add">Add Member</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/links"><i class="bi bi-link-45deg"></i> Links</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/submissions/review"><i class="bi bi-inbox"></i> Submissions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/gmail"><i class="bi bi-envelope"></i> Email</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item" sec:authorize="hasRole('PRIEST')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-logout ms-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                        <i class="bi bi-sun-fill sun-icon"></i>
+                        <i class="bi bi-moon-fill moon-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container" style="max-width: 900px;">
-    <h2 class="text-gold mb-4 text-center">Parish Report Generator</h2>
-
-    <form th:action="@{/export/generate}" method="post" class="card p-4 shadow-lg">
-        <div class="row g-4">
-
-            <div class="col-md-6">
-                <label class="form-label">Step 1: Select Format</label>
-                <select name="format" id="formatSelect" class="form-select border-warning">
-                    <option value="excel">Microsoft Excel (.xlsx)</option>
-                    <option value="word">Microsoft Word (.docx)</option>
-                </select>
+<!-- Page Content -->
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-4">
+                <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Directory
+                </a>
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Step 2: Filter by Status</label>
-                <select name="status" id="statusSelect" class="form-select">
-                    <option value="">All Parishioners</option>
-                    <option th:each="s : ${T(com.example.orthodox_prm.Enum.MembershipStatus).values()}"
-                            th:value="${s}" th:text="${s}"></option>
-                </select>
-                <small class="text-muted">Select 'DEPARTED' for Memorial (Panikhida) lists.</small>
-            </div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Parish Report Generator
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/export/generate}" method="post">
+                        <div class="row g-4">
 
-            <div class="col-md-6">
-                <label class="form-label">Filter by Name Day Month</label>
-                <select name="nameDayMonth" class="form-select">
-                    <option value="">Any Month</option>
-                    <option value="1">January</option><option value="2">February</option>
-                    <option value="3">March</option><option value="4">April</option>
-                    <option value="5">May</option><option value="6">June</option>
-                    <option value="7">July</option><option value="8">August</option>
-                    <option value="9">September</option><option value="10">October</option>
-                    <option value="11">November</option><option value="12">December</option>
-                </select>
-            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Step 1: Select Format</label>
+                                <select name="format" id="formatSelect" class="form-select">
+                                    <option value="excel">Microsoft Excel (.xlsx)</option>
+                                    <option value="word">Microsoft Word (.docx)</option>
+                                </select>
+                            </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Filter by Godparent / Sponsor</label>
-                <select name="sponsorId" id="sponsorSelect" class="form-select">
-                    <option value="">Search for a Sponsor...</option>
-                    <option th:each="p : ${parishioners}" th:value="${p.id}"
-                            th:text="${p.firstName + ' ' + p.lastName + (p.nameSuffix != null && p.nameSuffix.trim() != '' ? ' ' + p.nameSuffix : '') + (p.baptismalName != null ? ' (' + p.baptismalName + ')' : '')}"></option>
-                </select>
-            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Step 2: Filter by Status</label>
+                                <select name="status" id="statusSelect" class="form-select">
+                                    <option value="">All Parishioners</option>
+                                    <option th:each="s : ${T(com.example.orthodox_prm.Enum.MembershipStatus).values()}"
+                                            th:value="${s}" th:text="${s}"></option>
+                                </select>
+                                <small class="text-muted">Select 'DEPARTED' for Memorial (Panikhida) lists.</small>
+                            </div>
 
-            <div class="col-12 mt-2">
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="missingBaptismDate" id="sacramentalCheck">
-                    <label class="form-check-label text-warning" for="sacramentalCheck">
-                        <strong>Sacramental Eligibility:</strong> Only show Inquirers/Catechumens missing a Baptism Date
-                    </label>
+                            <div class="col-md-6">
+                                <label class="form-label">Filter by Name Day Month</label>
+                                <select name="nameDayMonth" class="form-select">
+                                    <option value="">Any Month</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Filter by Godparent / Sponsor</label>
+                                <select name="sponsorId" id="sponsorSelect" class="form-select">
+                                    <option value="">Search for a Sponsor...</option>
+                                    <option th:each="p : ${parishioners}" th:value="${p.id}"
+                                            th:text="${p.firstName + ' ' + p.lastName + (p.nameSuffix != null && p.nameSuffix.trim() != '' ? ' ' + p.nameSuffix : '') + (p.baptismalName != null ? ' (' + p.baptismalName + ')' : '')}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mt-2">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="missingBaptismDate" id="sacramentalCheck">
+                                    <label class="form-check-label" for="sacramentalCheck">
+                                        <strong>Sacramental Eligibility:</strong> Only show Inquirers/Catechumens missing a Baptism Date
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-center mt-5 pt-3 border-top">
+                            <a href="/parishioners" class="btn btn-outline-secondary px-4">Back to List</a>
+
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="bi bi-download"></i> Generate Custom Report
+                            </button>
+
+                            <button type="submit"
+                                    onclick="document.getElementById('statusSelect').value='DEPARTED'; document.getElementById('formatSelect').value='word';"
+                                    class="btn btn-outline-danger px-4">
+                                <i class="bi bi-file-earmark-word"></i> Departed List (Word)
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
-        <div class="d-flex gap-3 justify-content-center mt-5">
-            <a href="/parishioners" class="btn btn-outline-light px-4">Back to List</a>
-
-            <button type="submit" class="btn btn-gold px-5">
-                Generate Custom Report
-            </button>
-
-            <button type="submit"
-                    onclick="document.getElementById('statusSelect').value='DEPARTED'; document.getElementById('formatSelect').value='word';"
-                    class="btn btn-outline-danger px-5">
-                Generate Departed List (Word)
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
-    // Initialize searchable dropdown for sponsors
     new TomSelect("#sponsorSelect", {
         create: false,
         sortField: {

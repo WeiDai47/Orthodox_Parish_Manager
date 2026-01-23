@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>View Parishioner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Parishioner - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
@@ -9,16 +11,14 @@
     <script src="/js/time-picker.js"></script>
     <script src="/js/conflict-checker.js"></script>
     <style>
-        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
-        .card { background-color: var(--bg-secondary); border: 1px solid var(--accent-gold); border-radius: 10px; }
         .section-header {
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--accent-primary);
             padding-bottom: 10px;
             margin-top: 25px;
             margin-bottom: 15px;
-            color: var(--accent-gold);
-            font-weight: bold;
-            font-size: 1.1rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 1rem;
         }
         .note-card, .event-card {
             background-color: var(--bg-tertiary);
@@ -29,7 +29,7 @@
             transition: box-shadow 0.2s;
         }
         .note-card:hover, .event-card:hover {
-            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.2);
+            box-shadow: var(--card-shadow);
         }
         .note-timestamp, .event-date {
             font-size: 0.75rem;
@@ -39,25 +39,16 @@
             margin-top: 10px;
             color: var(--text-primary);
         }
-        .text-gold { color: var(--accent-gold); }
-        .form-control, .form-select {
-            background-color: var(--bg-tertiary) !important;
-            border: 1px solid var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
         .past-event {
             opacity: 0.7;
             border-left: 3px solid var(--text-secondary);
         }
         .future-event {
-            border-left: 3px solid var(--accent-gold);
+            border-left: 3px solid var(--accent-primary);
         }
         .sacrament-badge {
-            background-color: var(--accent-gold);
-            color: #000;
+            background-color: var(--accent-primary);
+            color: white;
             font-size: 0.7rem;
             padding: 2px 8px;
             border-radius: 4px;
@@ -76,8 +67,8 @@
         }
         .info-item {
             background-color: var(--bg-tertiary);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
         }
         .info-label {
@@ -91,89 +82,91 @@
             color: var(--text-primary);
             margin-top: 5px;
         }
-        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
-        .nav-link:hover { color: var(--text-primary) !important; }
-        .navbar { background-color: var(--bg-secondary); }
-        .btn-logout {
-            background-color: #dc3545;
-            border: 2px solid #dc3545;
-            color: white;
-            font-weight: bold;
-            padding: 0.4rem 1rem;
-            font-size: 0.9rem;
-            margin-left: 1rem;
+        .info-value a {
+            color: var(--accent-primary);
+            text-decoration: none;
         }
-        .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
+        .info-value a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
-<body class="py-3">
+<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
-            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add">Add Member</a>
-            <a class="nav-link" href="/links">
-                <i class="bi bi-link-45deg"></i> Submission Links
-            </a>
-            <a class="nav-link" href="/submissions/review">
-                <i class="bi bi-inbox"></i> Review Submissions
-            </a>
-            <a class="nav-link" href="/gmail">
-                <i class="bi bi-envelope"></i> Email
-            </a>
-            <a class="nav-link" href="/settings">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-            <form action="/logout" method="POST" style="display: inline;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
-            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                <i class="bi bi-sun-fill sun-icon"></i>
-                <i class="bi bi-moon-stars-fill moon-icon"></i>
-            </button>
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-building"></i> Orthodox Parish Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/parishioners">Directory</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/parishioners/add">Add Member</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/links"><i class="bi bi-link-45deg"></i> Links</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/submissions/review"><i class="bi bi-inbox"></i> Submissions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/gmail"><i class="bi bi-envelope"></i> Email</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item" sec:authorize="hasRole('PRIEST')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-logout ms-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                        <i class="bi bi-sun-fill sun-icon"></i>
+                        <i class="bi bi-moon-fill moon-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container" style="max-width: 1200px;" th:attr="data-parishioner-id=${parishioner.id}">
-    <div class="card p-4 shadow-lg">
+<div class="container py-4" style="max-width: 1200px;" th:attr="data-parishioner-id=${parishioner.id}">
+    <div class="mb-4">
+        <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Directory
+        </a>
+    </div>
 
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="text-gold m-0">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-person"></i>
                 <span th:text="${parishioner.firstName + ' ' + parishioner.lastName + (parishioner.nameSuffix != null && parishioner.nameSuffix.trim() != '' ? ' ' + parishioner.nameSuffix : '')}"></span>
-                <small class="text-muted" style="font-size: 0.6em;" th:if="${parishioner.baptismalName != null}">
+                <small class="text-muted" th:if="${parishioner.baptismalName != null}">
                     (<span th:text="${parishioner.baptismalName}"></span>)
                 </small>
-            </h2>
+            </div>
             <div>
-                <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-house"></i> Dashboard
-                </a>
-                <a href="/parishioners" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-list"></i> All Parishioners
-                </a>
-                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailModal" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#emailModal" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                     <i class="bi bi-envelope"></i> Email
                 </button>
-                <a th:href="@{/parishioners/edit/{id}(id=${parishioner.id})}" class="btn btn-warning btn-sm" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                <a th:href="@{/parishioners/edit/{id}(id=${parishioner.id})}" class="btn btn-sm btn-primary" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
                     <i class="bi bi-pencil"></i> Edit
-                </a>
-                <a href="/parishioners" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Back to List
                 </a>
             </div>
         </div>
+        <div class="card-body">
 
         <!-- Legal Identity & Contact -->
         <div class="section-header"><i class="bi bi-person"></i> Legal Identity & Contact</div>
@@ -212,7 +205,7 @@
                 <div class="info-label">Email</div>
                 <div class="info-value" th:if="${parishioner.email != null && parishioner.email.trim() != ''}">
                     <a th:href="@{'mailto:' + parishioner.email}" th:text="${parishioner.email}"
-                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                       class="text-decoration-none" style="color: var(--accent-primary);"></a>
                 </div>
                 <div class="info-value text-muted" th:if="${parishioner.email == null || parishioner.email.trim() == ''}">(Not provided)</div>
             </div>
@@ -255,7 +248,7 @@
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.spouse.id})}"
                        th:text="${parishioner.spouse.firstName + ' ' + parishioner.spouse.lastName + (parishioner.spouse.nameSuffix != null && parishioner.spouse.nameSuffix.trim() != '' ? ' ' + parishioner.spouse.nameSuffix : '')}"
-                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                       class="text-decoration-none" style="color: var(--accent-primary);"></a>
                 </div>
             </div>
             <div class="info-item" th:if="${parishioner.spouse == null && parishioner.manualSpouseName != null}">
@@ -267,7 +260,7 @@
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.weddingSponsor.id})}"
                        th:text="${parishioner.weddingSponsor.firstName + ' ' + parishioner.weddingSponsor.lastName + (parishioner.weddingSponsor.nameSuffix != null && parishioner.weddingSponsor.nameSuffix.trim() != '' ? ' ' + parishioner.weddingSponsor.nameSuffix : '')}"
-                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                       class="text-decoration-none" style="color: var(--accent-primary);"></a>
                 </div>
             </div>
             <div class="info-item" th:if="${parishioner.weddingSponsor == null && parishioner.manualSponsorName != null}">
@@ -301,7 +294,7 @@
                     <span th:each="member, iterStat : ${parishioner.household.members}">
                         <a th:href="@{/parishioners/view/{id}(id=${member.id})}"
                            th:text="${member.firstName + ' ' + member.lastName}"
-                           class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                           class="text-decoration-none" style="color: var(--accent-primary);"></a><span th:unless="${iterStat.last}">, </span>
                     </span>
                 </div>
             </div>
@@ -315,7 +308,7 @@
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.godfather.id})}"
                        th:text="${parishioner.godfather.firstName + ' ' + parishioner.godfather.lastName}"
-                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                       class="text-decoration-none" style="color: var(--accent-primary);"></a>
                 </div>
             </div>
             <div class="info-item" th:if="${parishioner.godfather == null && parishioner.manualGodfatherName != null}">
@@ -327,7 +320,7 @@
                 <div class="info-value">
                     <a th:href="@{/parishioners/view/{id}(id=${parishioner.godmother.id})}"
                        th:text="${parishioner.godmother.firstName + ' ' + parishioner.godmother.lastName}"
-                       class="text-decoration-none" style="color: var(--accent-gold);"></a>
+                       class="text-decoration-none" style="color: var(--accent-primary);"></a>
                 </div>
             </div>
             <div class="info-item" th:if="${parishioner.godmother == null && parishioner.manualGodmotherName != null}">
@@ -346,7 +339,7 @@
                         <span th:each="child, iterStat : ${parishioner.childrenAsGodfather}">
                             <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
                                th:text="${child.firstName + ' ' + child.lastName}"
-                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                               class="text-decoration-none" style="color: var(--accent-primary);"></a><span th:unless="${iterStat.last}">, </span>
                         </span>
                     </div>
                 </div>
@@ -356,7 +349,7 @@
                         <span th:each="child, iterStat : ${parishioner.childrenAsGodmother}">
                             <a th:href="@{/parishioners/view/{id}(id=${child.id})}"
                                th:text="${child.firstName + ' ' + child.lastName}"
-                               class="text-decoration-none" style="color: var(--accent-gold);"></a><span th:unless="${iterStat.last}">, </span>
+                               class="text-decoration-none" style="color: var(--accent-primary);"></a><span th:unless="${iterStat.last}">, </span>
                         </span>
                     </div>
                 </div>
@@ -547,7 +540,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                        <strong class="text-gold" th:text="${event.eventTitle}"></strong>
+                        <strong class="text-primary-accent" th:text="${event.eventTitle}"></strong>
                         <span class="sacrament-badge" th:text="${event.sacramentType}"></span>
                         <!-- Time Badge (if not all-day event) -->
                         <span th:if="${event.startTime != null && event.endTime != null}"
@@ -566,11 +559,11 @@
                     </div>
                     <!-- Participants List -->
                     <div th:if="${not event.participants.isEmpty()}" class="mt-2 small">
-                        <i class="bi bi-people-fill" style="color: var(--accent-gold);"></i>
+                        <i class="bi bi-people-fill" style="color: var(--accent-primary);"></i>
                         <strong>Participants:</strong>
                         <span th:each="participant, iterStat : ${event.participants}">
                             <a th:href="@{/parishioners/view/{id}(id=${participant.parishioner.id})}"
-                               class="text-decoration-none" style="color: var(--accent-gold);"
+                               class="text-decoration-none" style="color: var(--accent-primary);"
                                th:text="${participant.parishioner.firstName + ' ' + participant.parishioner.lastName}"></a><span th:unless="${iterStat.last}">, </span>
                         </span>
                     </div>
@@ -670,7 +663,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                        <strong class="text-gold" th:text="${event.eventTitle}"></strong>
+                        <strong class="text-primary-accent" th:text="${event.eventTitle}"></strong>
                         <!-- Time Badge (if not all-day event) -->
                         <span th:if="${event.startTime != null && event.endTime != null}"
                               class="badge bg-primary" style="font-size: 0.65rem;">
@@ -688,11 +681,11 @@
                     </div>
                     <!-- Participants List -->
                     <div th:if="${not event.participants.isEmpty()}" class="mt-2 small">
-                        <i class="bi bi-people-fill" style="color: var(--accent-gold);"></i>
+                        <i class="bi bi-people-fill" style="color: var(--accent-primary);"></i>
                         <strong>Participants:</strong>
                         <span th:each="participant, iterStat : ${event.participants}">
                             <a th:href="@{/parishioners/view/{id}(id=${participant.parishioner.id})}"
-                               class="text-decoration-none" style="color: var(--accent-gold);"
+                               class="text-decoration-none" style="color: var(--accent-primary);"
                                th:text="${participant.parishioner.firstName + ' ' + participant.parishioner.lastName}"></a><span th:unless="${iterStat.last}">, </span>
                         </span>
                     </div>
@@ -716,7 +709,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-secondary);">
             <div class="modal-header" style="border-bottom: 1px solid var(--border-secondary);">
-                <h5 class="modal-title text-gold">Add to Mass Email</h5>
+                <h5 class="modal-title text-primary-accent">Add to Mass Email</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">

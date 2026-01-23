@@ -3,149 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Submission Links</title>
+    <title>Submission Links - Orthodox Parish Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" th:href="@{/css/theme.css}">
     <script src="/js/theme-toggle.js"></script>
-    <style>
-        body { background-color: var(--bg-primary); color: var(--text-primary); }
-        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
-        .nav-link:hover { color: var(--text-primary) !important; }
-        .navbar { background-color: var(--bg-secondary); }
-        .btn-logout {
-            background-color: #dc3545;
-            border: 2px solid #dc3545;
-            color: white;
-            font-weight: bold;
-            padding: 0.4rem 1rem;
-            font-size: 0.9rem;
-            margin-left: 1rem;
-        }
-        .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
-        }
-    </style>
 </head>
-<body class="py-3">
+<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
-            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">Add Member</a>
-            <a class="nav-link" href="/links" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-link-45deg"></i> Submission Links
-            </a>
-            <a class="nav-link" href="/submissions/review" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-inbox"></i> Review Submissions
-            </a>
-            <a class="nav-link" href="/gmail" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
-                <i class="bi bi-envelope"></i> Email
-            </a>
-            <a class="nav-link" href="/settings">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-            <a class="nav-link" href="/admin/users" sec:authorize="hasRole('PRIEST')">
-                <i class="bi bi-people"></i> Users
-            </a>
-            <form action="/logout" method="POST" style="display: inline;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
-            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                <i class="bi bi-sun-fill sun-icon"></i>
-                <i class="bi bi-moon-stars-fill moon-icon"></i>
-            </button>
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-building"></i> Orthodox Parish Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/parishioners">Directory</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/parishioners/add">Add Member</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/links"><i class="bi bi-link-45deg"></i> Links</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/submissions/review"><i class="bi bi-inbox"></i> Submissions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/gmail"><i class="bi bi-envelope"></i> Email</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item" sec:authorize="hasRole('PRIEST')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-logout ms-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                        <i class="bi bi-sun-fill sun-icon"></i>
+                        <i class="bi bi-moon-fill moon-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
-    <div class="container mt-5">
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <h1 class="text-gold fw-bold">Submission Links</h1>
-                <p class="text-muted">Manage submission links for parishioner sign-ups and updates</p>
-            </div>
-            <div class="col-md-4 text-end">
-                <a href="/links/create" class="btn btn-warning">
-                    <i class="bi bi-plus-circle"></i> Create New Link
-                </a>
-            </div>
+<!-- Page Content -->
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-primary-accent mb-1"><i class="bi bi-link-45deg"></i> Submission Links</h1>
+            <p class="text-muted mb-0">Manage submission links for parishioner sign-ups</p>
         </div>
+        <a href="/links/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New Link
+        </a>
+    </div>
 
-        <div class="card bg-secondary border-gold">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover table-dark">
-                        <thead>
-                            <tr class="border-gold">
-                                <th class="text-gold">Description</th>
-                                <th class="text-gold">Token</th>
-                                <th class="text-gold">Created</th>
-                                <th class="text-gold">Expires</th>
-                                <th class="text-gold">Status</th>
-                                <th class="text-gold">Submissions</th>
-                                <th class="text-gold">Access Count</th>
-                                <th class="text-gold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="link : ${links}">
-                                <td th:text="${link.description != null ? link.description : 'Untitled'}"></td>
-                                <td>
-                                    <code th:text="${#strings.abbreviate(link.token, 8)}"></code>
-                                </td>
-                                <td th:text="${#temporals.format(link.createdAt, 'MMM dd, yyyy')}"></td>
-                                <td>
-                                    <span th:if="${link.expiresAt != null}" th:text="${#temporals.format(link.expiresAt, 'MMM dd, yyyy')}"></span>
-                                    <span th:unless="${link.expiresAt != null}" class="text-warning">Forever</span>
-                                </td>
-                                <td>
-                                    <span th:if="${link.isActive}" class="badge bg-success">Active</span>
-                                    <span th:unless="${link.isActive}" class="badge bg-danger">Inactive</span>
-                                </td>
-                                <td>
-                                    <span th:text="${link.submissionCount}"></span>
-                                    <span th:if="${link.maxSubmissions != null}">
-                                        / <span th:text="${link.maxSubmissions}"></span>
-                                        <span th:if="${link.submissionCount >= link.maxSubmissions}" class="badge bg-warning text-dark ms-1">Full</span>
-                                    </span>
-                                    <span th:unless="${link.maxSubmissions != null}" class="text-muted">/ ∞</span>
-                                </td>
-                                <td th:text="${link.accessCount}"></td>
-                                <td class="text-center">
-                                    <a th:href="@{/links/{id}/qr-print(id=${link.id})}" class="btn btn-sm btn-outline-info" title="QR Code">
-                                        <i class="bi bi-qr-code"></i>
-                                    </a>
-                                    <a th:href="@{/links/{id}/submissions(id=${link.id})}" class="btn btn-sm btn-outline-primary" title="View Submissions">
-                                        <i class="bi bi-list"></i>
-                                    </a>
-                                    <form th:if="${link.isActive}" th:action="@{/links/{id}/deactivate(id=${link.id})}" method="post" style="display: inline;">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate" onclick="return confirm('Deactivate this link?');">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div th:if="${#lists.isEmpty(links)}" class="alert alert-info">
-                    No submission links created yet. <a href="/links/create">Create one now</a>
-                </div>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Token</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Submissions</th>
+                            <th>Accessed</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="link : ${links}">
+                            <td th:text="${link.description != null ? link.description : 'Untitled'}"></td>
+                            <td><code th:text="${#strings.abbreviate(link.token, 8)}"></code></td>
+                            <td th:text="${#temporals.format(link.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <span th:if="${link.expiresAt != null}" th:text="${#temporals.format(link.expiresAt, 'MMM dd, yyyy')}"></span>
+                                <span th:unless="${link.expiresAt != null}" class="text-muted">Never</span>
+                            </td>
+                            <td>
+                                <span th:if="${link.isActive}" class="badge bg-success">Active</span>
+                                <span th:unless="${link.isActive}" class="badge bg-secondary">Inactive</span>
+                            </td>
+                            <td>
+                                <span th:text="${link.submissionCount}"></span>
+                                <span th:if="${link.maxSubmissions != null}">/ <span th:text="${link.maxSubmissions}"></span></span>
+                                <span th:unless="${link.maxSubmissions != null}" class="text-muted">/ unlimited</span>
+                            </td>
+                            <td th:text="${link.accessCount}"></td>
+                            <td class="text-center">
+                                <a th:href="@{/links/{id}/qr-print(id=${link.id})}" class="btn btn-sm btn-outline-info" title="QR Code">
+                                    <i class="bi bi-qr-code"></i>
+                                </a>
+                                <a th:href="@{/links/{id}/submissions(id=${link.id})}" class="btn btn-sm btn-outline-primary" title="View Submissions">
+                                    <i class="bi bi-list"></i>
+                                </a>
+                                <form th:if="${link.isActive}" th:action="@{/links/{id}/deactivate(id=${link.id})}" method="post" class="d-inline">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate" onclick="return confirm('Deactivate this link?');">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:if="${#lists.isEmpty(links)}" class="p-4 text-center text-muted">
+                <i class="bi bi-link-45deg"></i> No submission links created yet. <a href="/links/create">Create one now</a>.
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

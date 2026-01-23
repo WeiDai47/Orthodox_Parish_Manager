@@ -1,249 +1,277 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Add New Member</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Member - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
     <script src="/js/theme-toggle.js"></script>
     <style>
-        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
-        .card { background-color: var(--bg-secondary); border: 1px solid var(--accent-gold); border-radius: 10px; }
-        .form-control, .form-select { background-color: var(--bg-tertiary) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
-        .text-gold { color: var(--accent-gold); }
-        label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .section-header { border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-top: 25px; color: var(--accent-gold); font-weight: bold; font-size: 0.9rem; }
-        .child-row { background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-        .child-row .btn-outline-danger { font-size: 0.85rem; }
-        .form-check-input { background-color: var(--border-color); border-color: var(--border-color); }
-        .form-check-input:checked { background-color: var(--accent-gold); border-color: var(--accent-gold); }
-        .btn-warning { background-color: var(--accent-gold); color: black; font-weight: bold; }
-        .btn-warning:hover { background-color: var(--stat-color); color: black; }
-        .btn-outline-warning { color: var(--accent-gold); border-color: var(--accent-gold); }
-        .btn-outline-warning:hover { background-color: var(--accent-gold); color: black; }
-        .form-check-label { color: var(--accent-gold); }
-        .nav-link { color: var(--accent-gold) !important; font-weight: bold; }
-        .nav-link:hover { color: var(--text-primary) !important; }
-        .navbar { background-color: var(--bg-secondary); }
-        .btn-logout {
-            background-color: #dc3545;
-            border: 2px solid #dc3545;
-            color: white;
-            font-weight: bold;
-            padding: 0.4rem 1rem;
+        .section-header {
+            border-bottom: 2px solid var(--accent-primary);
+            padding-bottom: 8px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: var(--accent-primary);
+            font-weight: 600;
             font-size: 0.9rem;
-            margin-left: 1rem;
         }
-        .btn-logout:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
+        .child-row {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        .form-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
         }
     </style>
 </head>
-<body class="py-3">
+<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand text-gold fw-bold" href="/dashboard">PARISH PRM</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
-            <a class="nav-link" href="/parishioners">Directory (All Souls)</a>
-            <a class="nav-link" href="/parishioners/add">Add Member</a>
-            <a class="nav-link" href="/links">
-                <i class="bi bi-link-45deg"></i> Submission Links
-            </a>
-            <a class="nav-link" href="/submissions/review">
-                <i class="bi bi-inbox"></i> Review Submissions
-            </a>
-            <a class="nav-link" href="/gmail">
-                <i class="bi bi-envelope"></i> Email
-            </a>
-            <a class="nav-link" href="/settings">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-            <form action="/logout" method="POST" style="display: inline;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
-            <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                <i class="bi bi-sun-fill sun-icon"></i>
-                <i class="bi bi-moon-stars-fill moon-icon"></i>
-            </button>
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-building"></i> Orthodox Parish Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/parishioners">Directory</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/parishioners/add">Add Member</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/links"><i class="bi bi-link-45deg"></i> Links</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/submissions/review"><i class="bi bi-inbox"></i> Submissions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('PRIEST','SECRETARY')">
+                    <a class="nav-link" href="/gmail"><i class="bi bi-envelope"></i> Email</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item" sec:authorize="hasRole('PRIEST')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-logout ms-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                        <i class="bi bi-sun-fill sun-icon"></i>
+                        <i class="bi bi-moon-fill moon-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container" style="max-width: 900px;">
-    <div class="card p-4 shadow-lg border-0">
-
-        <h2 class="text-gold mb-4">Add New Member</h2>
-
-        <form th:action="@{/parishioners/add}" method="post" id="addForm">
-
-            <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
-            <div class="mb-4 p-3 border border-warning rounded">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
-                    <label class="form-check-label" for="isOrthodox">
-                        Orthodox Member (uncheck for Non-Orthodox)
-                    </label>
-                </div>
+<!-- Page Content -->
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-4">
+                <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
             </div>
 
-            <div class="row g-3">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-person-plus"></i> Add New Member
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/parishioners/add}" method="post" id="addForm">
 
-                <!-- REQUIRED FIELDS -->
-                <div class="col-12"><div class="section-header">Basic Information (Required)</div></div>
-                <div class="col-md-6">
-                    <label>First Name *</label>
-                    <input type="text" name="firstName" class="form-control" required>
-                </div>
-                <div class="col-md-6">
-                    <label>Last Name *</label>
-                    <input type="text" name="lastName" class="form-control" required>
-                </div>
-                <div class="col-md-6">
-                    <label>Name Suffix</label>
-                    <select name="nameSuffix" class="form-select">
-                        <option value="">-- None --</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="I">I</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                        <option value="DO">DO</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label>Birthday</label>
-                    <input type="date" name="birthday" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label>Membership Status</label>
-                    <select name="membershipStatusStr" class="form-select">
-                        <option value="VISITOR">Visitor</option>
-                        <option value="INQUIRER">Inquirer</option>
-                        <option value="CATECHUMEN">Catechumen</option>
-                        <option value="MEMBER" selected>Member</option>
-                        <option value="INACTIVE">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="col-md-6">
-                    <label>Personal Phone Number</label>
-                    <input type="tel" name="phoneNumber" class="form-control" placeholder="(123) 456-7890">
-                </div>
-
-                <div class="col-md-6">
-                    <label>Personal Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="email@example.com">
-                </div>
-
-                <!-- ORTHODOX-ONLY FIELDS -->
-                <div id="orthodoxFields">
-                    <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
-                    <div class="col-md-4">
-                        <label>Baptismal Name</label>
-                        <input type="text" name="baptismalName" class="form-control" placeholder="e.g. Spyridon">
-                    </div>
-                    <div class="col-md-4">
-                        <label>Patron Saint</label>
-                        <input type="text" name="patronSaint" class="form-control" placeholder="e.g. St. Spyridon">
-                    </div>
-                    <div class="col-md-4">
-                        <label>Baptism Date</label>
-                        <input type="date" name="baptismDate" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label>Chrismation Date</label>
-                        <input type="date" name="chrismationDate" class="form-control">
-                    </div>
-                </div>
-
-                <!-- MARRIAGE SECTION (BOTH TYPES) -->
-                <div class="col-12"><div class="section-header">Marriage Information</div></div>
-                <div class="col-md-6">
-                    <label>Marital Status</label>
-                    <select name="maritalStatusStr" class="form-select">
-                        <option value="">-- Select --</option>
-                        <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
-                    </select>
-                </div>
-
-                <!-- SPOUSE INFORMATION -->
-                <div id="spouseFields" style="display: none;">
-                    <div class="col-12">
-                        <div class="alert alert-warning" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> This will create a new parishioner record for the spouse with the same household and address. If your spouse is already in the system, use the Edit page to link them instead.
+                        <!-- ORTHODOX/NON-ORTHODOX TOGGLE -->
+                        <div class="mb-4 p-3 border border-primary rounded">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isOrthodox" name="isOrthodox" value="true" checked>
+                                <label class="form-check-label fw-medium" for="isOrthodox">
+                                    Orthodox Member (uncheck for Non-Orthodox)
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse First Name</label>
-                        <input type="text" name="spouseFirstName" class="form-control" placeholder="First name">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Last Name</label>
-                        <input type="text" name="spouseLastName" class="form-control" placeholder="Last name">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Email</label>
-                        <input type="email" name="spouseEmail" class="form-control" placeholder="email@example.com">
-                    </div>
-                    <div class="col-md-3">
-                        <label>Spouse Phone</label>
-                        <input type="tel" name="spousePhoneNumber" class="form-control" placeholder="(123) 456-7890">
-                    </div>
-                </div>
 
-                <!-- ORTHODOX-ONLY: WEDDING SPONSOR -->
-                <div class="col-md-6 orthodox-only">
-                    <label>Wedding Sponsor (Koumbaro)</label>
-                    <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
-                </div>
+                        <div class="row g-3">
 
-                <!-- ADDRESS SECTION (BOTH TYPES) -->
-                <div class="col-12"><div class="section-header">Household Address</div></div>
-                <div class="col-md-12">
-                    <label>Street Address</label>
-                    <input type="text" name="address" class="form-control" placeholder="123 Main St">
-                </div>
-                <div class="col-md-6">
-                    <label>City</label>
-                    <input type="text" name="city" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label>Zip Code</label>
-                    <input type="text" name="zipCode" class="form-control" placeholder="12345">
-                </div>
+                            <!-- REQUIRED FIELDS -->
+                            <div class="col-12"><div class="section-header">Basic Information (Required)</div></div>
+                            <div class="col-md-6">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" name="firstName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" name="lastName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Name Suffix</label>
+                                <select name="nameSuffix" class="form-select">
+                                    <option value="">-- None --</option>
+                                    <option value="Sr.">Sr.</option>
+                                    <option value="Jr.">Jr.</option>
+                                    <option value="I">I</option>
+                                    <option value="II">II</option>
+                                    <option value="III">III</option>
+                                    <option value="IV">IV</option>
+                                    <option value="V">V</option>
+                                    <option value="DO">DO</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Birthday</label>
+                                <input type="date" name="birthday" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Membership Status</label>
+                                <select name="membershipStatusStr" class="form-select">
+                                    <option value="VISITOR">Visitor</option>
+                                    <option value="INQUIRER">Inquirer</option>
+                                    <option value="CATECHUMEN">Catechumen</option>
+                                    <option value="MEMBER" selected>Member</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                </select>
+                            </div>
 
-                <!-- CHILDREN SECTION (BOTH TYPES) -->
-                <div class="col-12"><div class="section-header">Children (Optional)</div></div>
-                <div class="col-12">
-                    <div id="childrenContainer">
-                        <!-- Dynamic child rows will be added here -->
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-warning" id="addChildBtn">
-                        <i class="bi bi-plus-circle"></i> Add Child
-                    </button>
-                </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Personal Phone Number</label>
+                                <input type="tel" name="phoneNumber" class="form-control" placeholder="(123) 456-7890">
+                            </div>
 
+                            <div class="col-md-6">
+                                <label class="form-label">Personal Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="email@example.com">
+                            </div>
+
+                            <!-- ORTHODOX-ONLY FIELDS -->
+                            <div id="orthodoxFields">
+                                <div class="col-12"><div class="section-header">Orthodox Identity</div></div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Baptismal Name</label>
+                                        <input type="text" name="baptismalName" class="form-control" placeholder="e.g. Spyridon">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Patron Saint</label>
+                                        <input type="text" name="patronSaint" class="form-control" placeholder="e.g. St. Spyridon">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Baptism Date</label>
+                                        <input type="date" name="baptismDate" class="form-control">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Chrismation Date</label>
+                                        <input type="date" name="chrismationDate" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MARRIAGE SECTION (BOTH TYPES) -->
+                            <div class="col-12"><div class="section-header">Marriage Information</div></div>
+                            <div class="col-md-6">
+                                <label class="form-label">Marital Status</label>
+                                <select name="maritalStatusStr" class="form-select">
+                                    <option value="">-- Select --</option>
+                                    <option th:each="m : ${allMaritalStatuses}" th:value="${m}" th:text="${m}"></option>
+                                </select>
+                            </div>
+
+                            <!-- SPOUSE INFORMATION -->
+                            <div id="spouseFields" style="display: none;">
+                                <div class="col-12">
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="bi bi-info-circle"></i> <strong>Note:</strong> This will create a new parishioner record for the spouse with the same household and address. If your spouse is already in the system, use the Edit page to link them instead.
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Spouse First Name</label>
+                                        <input type="text" name="spouseFirstName" class="form-control" placeholder="First name">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Spouse Last Name</label>
+                                        <input type="text" name="spouseLastName" class="form-control" placeholder="Last name">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Spouse Email</label>
+                                        <input type="email" name="spouseEmail" class="form-control" placeholder="email@example.com">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Spouse Phone</label>
+                                        <input type="tel" name="spousePhoneNumber" class="form-control" placeholder="(123) 456-7890">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ORTHODOX-ONLY: WEDDING SPONSOR -->
+                            <div class="col-md-6 orthodox-only">
+                                <label class="form-label">Wedding Sponsor (Koumbaro)</label>
+                                <input type="text" name="manualSponsorName" class="form-control" placeholder="Sponsor name">
+                            </div>
+
+                            <!-- ADDRESS SECTION (BOTH TYPES) -->
+                            <div class="col-12"><div class="section-header">Household Address</div></div>
+                            <div class="col-md-12">
+                                <label class="form-label">Street Address</label>
+                                <input type="text" name="address" class="form-control" placeholder="123 Main St">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                <input type="text" name="city" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Zip Code</label>
+                                <input type="text" name="zipCode" class="form-control" placeholder="12345">
+                            </div>
+
+                            <!-- CHILDREN SECTION (BOTH TYPES) -->
+                            <div class="col-12"><div class="section-header">Children (Optional)</div></div>
+                            <div class="col-12">
+                                <div id="childrenContainer">
+                                    <!-- Dynamic child rows will be added here -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addChildBtn">
+                                    <i class="bi bi-plus-circle"></i> Add Child
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <!-- SUBMIT BUTTONS -->
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="bi bi-person-plus"></i> Create Member
+                            </button>
+                            <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+
+                    </form>
+                </div>
             </div>
-
-            <!-- SUBMIT BUTTONS -->
-            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
-                <button type="submit" class="btn btn-warning px-5 fw-bold">Create Member</button>
-                <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
-            </div>
-
-        </form>
+        </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // 1. ORTHODOX/NON-ORTHODOX TOGGLE LOGIC
     const orthodoxCheckbox = document.getElementById('isOrthodox');
@@ -252,11 +280,9 @@
 
     function updateOrthodoxVisibility() {
         if (orthodoxCheckbox.checked) {
-            // Show Orthodox fields
             orthodoxFields.style.display = 'block';
             orthodoxOnlyElements.forEach(el => el.style.display = 'block');
         } else {
-            // Hide Orthodox fields and clear values
             orthodoxFields.style.display = 'none';
             orthodoxOnlyElements.forEach(el => el.style.display = 'none');
             orthodoxFields.querySelectorAll('input').forEach(input => input.value = '');
@@ -265,7 +291,6 @@
     }
 
     orthodoxCheckbox.addEventListener('change', updateOrthodoxVisibility);
-    // Initialize on page load
     updateOrthodoxVisibility();
 
     // 2. DYNAMIC CHILDREN MANAGEMENT
@@ -283,11 +308,11 @@
         childRow.innerHTML = `
             <div class="row g-2 align-items-end">
                 <div class="col-md-6">
-                    <label class="text-warning">Child ${childCount} Name</label>
+                    <label class="form-label">Child ${childCount} Name</label>
                     <input type="text" name="childNames" class="form-control" placeholder="First Last">
                 </div>
                 <div class="col-md-4">
-                    <label class="text-warning">Birthday</label>
+                    <label class="form-label">Birthday</label>
                     <input type="date" name="childBirthdays" class="form-control">
                 </div>
                 <div class="col-md-2">
@@ -315,17 +340,14 @@
     function updateSpouseVisibility() {
         const selectedStatus = maritalStatusSelect.value;
         if (selectedStatus === 'MARRIED' || selectedStatus === 'WIDOW' || selectedStatus === 'DIVORCED') {
-            // Show spouse fields for married/widow/divorced statuses
             spouseFields.style.display = 'block';
         } else {
-            // Hide spouse fields and clear values
             spouseFields.style.display = 'none';
             spouseFields.querySelectorAll('input').forEach(input => input.value = '');
         }
     }
 
     maritalStatusSelect.addEventListener('change', updateSpouseVisibility);
-    // Initialize on page load
     updateSpouseVisibility();
 </script>
 </body>

@@ -1,159 +1,164 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Login - Parish PRM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
-    <script src="/js/theme-toggle.js"></script>
     <style>
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+        }
+        .login-container {
+            max-width: 420px;
+            width: 100%;
+            padding: 2rem;
         }
         .login-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-secondary);
-            border-top: 4px solid var(--accent-gold);
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            border-radius: 8px;
-            position: relative;
+            border-radius: 1rem;
         }
-        .text-gold { color: var(--accent-gold); }
-        .btn-gold {
-            background-color: var(--accent-gold);
-            border-color: var(--accent-gold);
-            color: #000;
-            font-weight: bold;
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
-        .btn-gold:hover {
-            background-color: #d4af37;
-            border-color: #d4af37;
+        .login-header h1 {
+            color: var(--accent-primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
-        .form-control {
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-secondary);
-            color: var(--text-primary);
+        .login-header p {
+            color: var(--text-muted);
+            margin-bottom: 0;
         }
-        .form-control:focus {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
-        }
-        .gif-container {
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-        .theme-toggle-login {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: #fff;
+            font-size: 2rem;
         }
         .btn-google {
-            background-color: #34A853;
-            border: 2px solid #34A853;
-            color: white;
-            font-weight: bold;
+            background-color: #fff;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
         }
         .btn-google:hover {
-            background-color: #2d8659;
-            border-color: #2d8659;
-            color: white;
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .divider span {
+            padding: 0 1rem;
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
+    <div class="login-container">
+        <div class="card login-card">
+            <div class="card-body p-4">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h1>Orthodox Parish Manager</h1>
+                    <p>Sign in to access the administration system</p>
+                </div>
 
-<!-- Theme Toggle in the top right corner -->
-<div class="theme-toggle-login">
-    <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-        <i class="bi bi-sun-fill sun-icon"></i>
-        <i class="bi bi-moon-stars-fill moon-icon"></i>
-    </button>
-</div>
+                <!-- Error Messages -->
+                <div th:if="${param.error}" class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:if="${param.error[0] == 'not_authorized'}">
+                        Your email is not authorized to access this system. Please contact an administrator.
+                    </span>
+                    <span th:if="${param.error[0] == 'disabled'}">
+                        Your account has been disabled. Please contact an administrator.
+                    </span>
+                    <span th:if="${param.error[0] != 'not_authorized' && param.error[0] != 'disabled'}">
+                        Invalid login. Please try again.
+                    </span>
+                </div>
 
-<div class="login-card shadow">
-    <!-- The Funny GIF -->
-    <div class="gif-container">
-        <div class="tenor-gif-embed" data-postid="10866970347426496766" data-share-method="host" data-aspect-ratio="1.76596" data-width="100%">
-            <a href="https://tenor.com/view/jesus-christ-like-jesus-like-christ-jesus-cute-animation-gif-10866970347426496766">Jesus Christ Like GIF</a>
+                <!-- Success Message -->
+                <div th:if="${param.logout}" class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> You have been logged out successfully.
+                </div>
+
+                <!-- Google Sign In -->
+                <a href="/oauth2/authorization/google" class="btn btn-google w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    </svg>
+                    Sign in with Google
+                </a>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Traditional Login Form -->
+                <form th:action="@{/login}" method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-lock"></i> Secure authentication powered by Google OAuth 2.0
+                    </small>
+                </div>
+            </div>
         </div>
-        <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
     </div>
 
-    <div class="text-center mb-4">
-        <h1 class="h3 fw-bold text-gold">PARISH PRM</h1>
-        <p class="text-muted small text-uppercase">Central Management System</p>
-    </div>
-
-    <!-- Security Messages -->
-    <div th:if="${param.error != null and param.error[0] == 'not_authorized'}" class="alert alert-warning py-2 small">
-        <i class="bi bi-exclamation-triangle"></i>
-        <strong>Access Denied:</strong> Your email address is not authorized to access this application.
-        Please contact the parish priest to request access.
-    </div>
-    <div th:if="${param.error != null and param.error[0] == 'disabled'}" class="alert alert-warning py-2 small">
-        <i class="bi bi-exclamation-triangle"></i>
-        <strong>Account Disabled:</strong> Your account has been disabled.
-        Please contact the parish priest.
-    </div>
-    <div th:if="${param.error != null and param.error[0] == 'true'}" class="alert alert-danger py-2 small">
-        <i class="bi bi-x-circle"></i> Invalid username or password.
-    </div>
-    <div th:if="${param.error != null and param.error[0] != 'not_authorized' and param.error[0] != 'disabled' and param.error[0] != 'true'}" class="alert alert-danger py-2 small">
-        <i class="bi bi-x-circle"></i> Authentication failed. Please try again.
-    </div>
-    <div th:if="${param.logout}" class="alert alert-info py-2 small">
-        <i class="bi bi-check-circle"></i> You have been signed out.
-    </div>
-
-    <!-- Traditional Login Form -->
-    <form th:action="@{/login}" method="post">
-        <div class="mb-3">
-            <label for="username" class="form-label small text-muted">Username</label>
-            <input type="text" id="username" name="username" class="form-control" required autofocus>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label small text-muted">Password</label>
-            <input type="password" id="password" name="password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-gold w-100 mt-3">Sign In</button>
-    </form>
-
-    <!-- Divider -->
-    <div class="d-flex align-items-center my-4">
-        <hr class="flex-grow-1" style="border-color: var(--border-color);">
-        <span class="px-2 text-muted small">Or</span>
-        <hr class="flex-grow-1" style="border-color: var(--border-color);">
-    </div>
-
-    <!-- Google OAuth2 Login -->
-    <div>
-        <a href="/oauth2/authorization/google" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2">
-            <!-- Google Logo -->
-            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#FFFFFF" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#FFFFFF" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FFFFFF" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#FFFFFF" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Sign in with Google
-        </a>
-        <p class="text-muted text-center mt-3 small">
-            Google sign-in enables Google Calendar integration
-        </p>
-    </div>
-</div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

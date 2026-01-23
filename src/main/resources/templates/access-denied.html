@@ -1,75 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Access Denied - Parish PRM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - Orthodox Parish Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/theme.css">
-    <script src="/js/theme-toggle.js"></script>
     <style>
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
         }
-        .error-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-secondary);
-            border-top: 4px solid #dc3545;
-            width: 100%;
+        .error-container {
+            text-align: center;
             max-width: 500px;
             padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
         }
-        .text-gold { color: var(--accent-gold); }
         .error-icon {
-            font-size: 4rem;
+            width: 100px;
+            height: 100px;
+            background-color: #f8d7da;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
             color: #dc3545;
-            margin-bottom: 1rem;
+            font-size: 3rem;
+        }
+        .error-code {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 <body>
-
-<div class="error-card shadow">
-    <div class="error-icon">
-        <i class="bi bi-shield-exclamation"></i>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="bi bi-shield-x"></i>
+        </div>
+        <div class="error-code">403</div>
+        <h1 class="h3 mb-3">Access Denied</h1>
+        <p class="text-muted mb-4">
+            You don't have permission to access this page. Please contact your administrator if you believe this is an error.
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="bi bi-house"></i> Go to Dashboard
+            </a>
+            <a href="/login" class="btn btn-outline-secondary">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </a>
+        </div>
     </div>
 
-    <h1 class="h3 fw-bold text-danger mb-3">Access Denied</h1>
-
-    <p class="text-muted mb-4">
-        You do not have permission to access this page. Your current role does not
-        allow this action.
-    </p>
-
-    <p class="text-muted small mb-4">
-        If you believe this is an error, please contact the parish priest to review
-        your access permissions.
-    </p>
-
-    <div class="d-flex gap-2 justify-content-center">
-        <a href="/dashboard" class="btn btn-outline-secondary">
-            <i class="bi bi-house"></i> Go to Dashboard
-        </a>
-        <a href="/login" class="btn btn-outline-secondary">
-            <i class="bi bi-box-arrow-in-right"></i> Sign In Again
-        </a>
-    </div>
-
-    <hr class="my-4 border-secondary">
-
-    <p class="text-muted small mb-0">
-        <i class="bi bi-info-circle"></i>
-        Your access attempt has been logged for security purposes.
-    </p>
-</div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
